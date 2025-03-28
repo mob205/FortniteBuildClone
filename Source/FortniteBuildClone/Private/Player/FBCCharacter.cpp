@@ -2,9 +2,14 @@
 
 
 #include "Player/FBCCharacter.h"
-
 #include "AbilitySystem/FBCAbilitySystemComponent.h"
+#include "GameplayAbilitySpec.h"
 #include "Player/FBCPlayerState.h"
+
+UAbilitySystemComponent* AFBCCharacter::GetAbilitySystemComponent() const
+{
+	return ASC;
+}
 
 // Called on server only
 void AFBCCharacter::PossessedBy(AController* NewController)
@@ -12,6 +17,7 @@ void AFBCCharacter::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 
 	InitAbilityActorInfo();
+	GrantInitialAbilities();
 }
 
 // Called on clients only
@@ -31,4 +37,13 @@ void AFBCCharacter::InitAbilityActorInfo()
 	ASC->InitAbilityActorInfo(PS, this);
 
 	AS = PS->GetAttributeSet();
+}
+
+void AFBCCharacter::GrantInitialAbilities()
+{
+	for (const auto& Ability : InitialAbilities)
+	{
+		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec{Ability, 1};
+		ASC->GiveAbility(AbilitySpec);
+	}
 }
