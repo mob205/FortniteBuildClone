@@ -22,6 +22,9 @@ void AStructureTargetingActor::StartTargeting(UGameplayAbility* Ability)
 	UE_LOG(LogTemp, Warning, TEXT("PC equivalence: %d"), PC.Get() == PrimaryPC.Get());
 	GhostActorComponent->SetChildActorClass(GhostActorClass);
 	GhostActorComponent->CreateChildActor();
+	
+	SetActorRotation(PC->GetControlRotation());
+	SnapRotation();
 }
 
 void AStructureTargetingActor::Tick(float DeltaTime)
@@ -42,6 +45,7 @@ void AStructureTargetingActor::Tick(float DeltaTime)
 		SetActorLocation(HitResult.ImpactPoint);
 	}
 	
+	SnapRotation();
 }
 
 void AStructureTargetingActor::ConfirmTargetingAndContinue()
@@ -57,4 +61,13 @@ void AStructureTargetingActor::ConfirmTargetingAndContinue()
 	FGameplayAbilityTargetDataHandle DataHandle{new FGameplayAbilityTargetData_LocationInfo{LocationInfo}};
 
 	TargetDataReadyDelegate.Broadcast(DataHandle);
+}
+
+void AStructureTargetingActor::SnapRotation()
+{
+	FRotator Rot = GetActorRotation();
+	Rot.Yaw = FMath::RoundToFloat(Rot.Yaw / 90) * 90;
+	Rot.Pitch = 0;
+	Rot.Roll = 0;
+	SetActorRotation(Rot);
 }
