@@ -30,7 +30,5 @@ protected:
 	TObjectPtr<UChildActorComponent> GhostActorComponent;
 	
 	TObjectPtr<APlayerController> PC;
-
-private:
-	void SnapRotation();
+	
 };
