@@ -4,6 +4,8 @@
 #include "Player/FBCCharacter.h"
 #include "AbilitySystem/FBCAbilitySystemComponent.h"
 #include "GameplayAbilitySpec.h"
+#include "Data/StructureInfoDataAsset.h"
+#include "InputAction.h"
 #include "Player/FBCPlayerState.h"
 
 UAbilitySystemComponent* AFBCCharacter::GetAbilitySystemComponent() const
@@ -28,6 +30,13 @@ void AFBCCharacter::OnRep_PlayerState()
 	InitAbilityActorInfo();
 }
 
+void AFBCCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	BuildAbilityTag = FGameplayTag::RequestGameplayTag("Abilities.Build");
+}
+
 void AFBCCharacter::InitAbilityActorInfo()
 {
 	AFBCPlayerState* PS = GetPlayerState<AFBCPlayerState>();
@@ -46,4 +55,36 @@ void AFBCCharacter::GrantInitialAbilities()
 		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec{Ability, 1};
 		ASC->GiveAbility(AbilitySpec);
 	}
+}
+
+void AFBCCharacter::OnBuildAction(UInputAction* InputAction)
+{
+	// Get structure tag associated with the input
+	FGameplayTag StructureTag = StructureInfo->GetTagFromInput(InputAction);
+
+	if (StructureTag.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Invalid build action [%s] provided to OnBuildAction."), *InputAction->GetName());
+	}
+
+	// Alert the ability of switching structure locally
+	HandleBuildAction(StructureTag);
+
+	// Alert server of build action
+	if (GetLocalRole() != ROLE_Authority)
+	{
+		ServerOnBuildAction(StructureTag);
+	}
+}
+
+void AFBCCharacter::HandleBuildAction(const FGameplayTag StructureTag) const
+{
+	ASC->TryActivateAbilitiesByTag(BuildAbilityTag.GetSingleTagContainer());
+	FGameplayEventData Payload{};
+	ASC->HandleGameplayEvent(StructureTag, &Payload);
+}
+
+void AFBCCharacter::ServerOnBuildAction_Implementation(FGameplayTag StructureTag)
+{
+	HandleBuildAction(StructureTag);
 }

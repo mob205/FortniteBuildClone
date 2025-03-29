@@ -21,9 +21,12 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void ConfirmTargetingAndContinue() override;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true))
-	TObjectPtr<UClass> GhostActorClass;
-	
+	// Default ghost actor class to spawn targeting ghost as
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (ExposeOnSpawn = true))
+	TObjectPtr<UClass> DefaultGhostActorClass;
+
+	UFUNCTION(BlueprintCallable)
+	void SetGhostActorClass(TSubclassOf<AActor> InGhostActorClass);
 protected:
 
 	UPROPERTY(VisibleAnywhere)
