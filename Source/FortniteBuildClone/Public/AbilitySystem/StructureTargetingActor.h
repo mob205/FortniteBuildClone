@@ -22,7 +22,7 @@ public:
 	virtual void ConfirmTargetingAndContinue() override;
 
 	// Default ghost actor class to spawn targeting ghost as
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (ExposeOnSpawn = true))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = true))
 	TObjectPtr<UClass> DefaultGhostActorClass;
 
 	UFUNCTION(BlueprintCallable)
