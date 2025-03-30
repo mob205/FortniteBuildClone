@@ -62,7 +62,7 @@ void AFBCCharacter::OnBuildAction(UInputAction* InputAction)
 	// Get structure tag associated with the input
 	FGameplayTag StructureTag = StructureInfo->GetTagFromInput(InputAction);
 
-	if (StructureTag.IsValid())
+	if (!StructureTag.IsValid())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Invalid build action [%s] provided to OnBuildAction."), *InputAction->GetName());
 	}

@@ -1,12 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AbilitySystem/Abilities/BuildAbility.h"
-
+#include "AbilitySystem/Abilities/Build/BuildAbility.h"
 #include "FBCBlueprintLibrary.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "Abilities/Tasks/AbilityTask_WaitTargetData.h"
-#include "AbilitySystem/StructureTargetingActor.h"
+#include "AbilitySystem/Abilities/Build/StructureTargetingActor.h"
 #include "Data/StructureInfoDataAsset.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -82,7 +81,6 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 	}
 
 	GetWorld()->SpawnActor(StructureClasses.StructureActorClass, &BuildingTransform);
-
 }
 
 void UBuildAbility::CallEndAbility(const FGameplayAbilityTargetDataHandle& Data)
@@ -94,8 +92,7 @@ void UBuildAbility::RotateTargetingActor(FGameplayEventData Payload)
 {
 	if (IsValid(TargetingActor))
 	{
-		// Potentially add this to function library with other grid snap functions
-		TargetingActor->AddActorWorldRotation({0, 90, 0});
+		TargetingActor->AddRotationOffset();
 	}
 }
 

@@ -7,7 +7,7 @@
 #include "StructureTargetingActor.generated.h"
 
 class APlayerController;
-class UMaterialInterface;
+class AGhostStructureActor;
 
 UCLASS(Blueprintable, BlueprintType)
 class FORTNITEBUILDCLONE_API AStructureTargetingActor : public AGameplayAbilityTargetActor
@@ -21,12 +21,19 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void ConfirmTargetingAndContinue() override;
 
+	// Sets the type of structure for the targeting actor to use. Used for building preview and location selection 
 	UFUNCTION(BlueprintCallable)
-	void SetGhostActorClass(TSubclassOf<AActor> InGhostActorClass);
+	void SetGhostActorClass(TSubclassOf<AGhostStructureActor> InGhostActorClass);
 
+	// Rotates the targeting actor to face the player. Also applies rotation offset
 	UFUNCTION(BlueprintCallable)
 	void RotateToFacePlayer();
 
+	// Adds a rotation offset. Each call adds a 90-degree turn around Z-axis.
+	UFUNCTION(BlueprintCallable)
+	void AddRotationOffset() { CurrentRotationOffset = (CurrentRotationOffset + 1) % 4; };
+
+	// Sets the building range
 	UFUNCTION(BlueprintCallable)
 	void SetRange(float InRange) { TargetingRange = InRange; }
 protected:
@@ -36,6 +43,9 @@ protected:
 	TObjectPtr<APlayerController> PC;
 
 private:
+	// Number of 90 degree turns to offset from standard rotation
+	int CurrentRotationOffset{};
+	
 	FIntVector GridCoordinateLocation{};
 
 	float TargetingRange{};

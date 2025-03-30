@@ -1,7 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "AbilitySystem/StructureTargetingActor.h"
+#include "AbilitySystem/Abilities/Build/StructureTargetingActor.h"
 #include "FBCBlueprintLibrary.h"
+#include "AbilitySystem/Abilities/Build/GhostStructureActor.h"
 #include "Abilities/GameplayAbility.h"
 
 
@@ -46,12 +47,13 @@ void AStructureTargetingActor::Tick(float DeltaTime)
 	
 	SetActorLocation(UFBCBlueprintLibrary::SnapLocationToGrid(TargetLocation));
 
-	// Rotate to face player if target actor enters new grid square
+	RotateToFacePlayer();
+
 	FIntVector NewGridLocation = UFBCBlueprintLibrary::GetGridCoordinateLocation(GetActorLocation());
 	if (NewGridLocation != GridCoordinateLocation)
 	{
 		GridCoordinateLocation = NewGridLocation;
-		RotateToFacePlayer();
+		// On grid coordinate changed - play sound or something
 	}
 }
 
@@ -70,14 +72,14 @@ void AStructureTargetingActor::ConfirmTargetingAndContinue()
 	TargetDataReadyDelegate.Broadcast(DataHandle);
 }
 
-void AStructureTargetingActor::SetGhostActorClass(TSubclassOf<AActor> InGhostActorClass)
+void AStructureTargetingActor::SetGhostActorClass(TSubclassOf<AGhostStructureActor> InGhostActorClass)
 {
 	GhostActorComponent->SetChildActorClass(InGhostActorClass);
-	GhostActorComponent->CreateChildActor();
 }
 
 void AStructureTargetingActor::RotateToFacePlayer()
 {
 	const float Yaw = OwningAbility->GetAvatarActorFromActorInfo()->GetActorRotation().Yaw;
-	SetActorRotation({0, UFBCBlueprintLibrary::SnapAngleToGrid(Yaw + 180), 0 });
+	SetActorRotation({0, UFBCBlueprintLibrary::SnapAngleToGrid(Yaw + 180 + (CurrentRotationOffset * 90)), 0 });
 }
+
