@@ -26,6 +26,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Targeting")
 	TSubclassOf<AStructureTargetingActor> TargetingActorClass{};
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Targeting")
+	float TargetingRange{1000};
+
 protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 	

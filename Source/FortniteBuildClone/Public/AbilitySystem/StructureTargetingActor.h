@@ -26,11 +26,17 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void RotateToFacePlayer();
-	
+
+	UFUNCTION(BlueprintCallable)
+	void SetRange(float InRange) { TargetingRange = InRange; }
 protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UChildActorComponent> GhostActorComponent;
 	
 	TObjectPtr<APlayerController> PC;
-	
+
+private:
+	FIntVector GridCoordinateLocation{};
+
+	float TargetingRange{};
 };

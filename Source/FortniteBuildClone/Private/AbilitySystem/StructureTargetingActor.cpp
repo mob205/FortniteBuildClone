@@ -30,12 +30,28 @@ void AStructureTargetingActor::Tick(float DeltaTime)
 	PrimaryPC->GetPlayerViewPoint(ViewStart, ViewRot);
 
 	const FVector ViewDir = ViewRot.Vector();
-	const FVector ViewEnd = ViewStart + (ViewDir * 1000); // TODO: Remove magic number
+	const FVector ViewEnd = ViewStart + (ViewDir * TargetingRange);
 
+	FVector TargetLocation{};
+	
 	FHitResult HitResult{};
 	if (GetWorld()->LineTraceSingleByChannel(HitResult, ViewStart, ViewEnd, ECollisionChannel::ECC_Visibility))
 	{
-		SetActorLocation(UFBCBlueprintLibrary::SnapLocationToGrid(HitResult.Location));
+		TargetLocation = HitResult.Location;
+	}
+	else
+	{
+		TargetLocation = ViewEnd;
+	}
+	
+	SetActorLocation(UFBCBlueprintLibrary::SnapLocationToGrid(TargetLocation));
+
+	// Rotate to face player if target actor enters new grid square
+	FIntVector NewGridLocation = UFBCBlueprintLibrary::GetGridCoordinateLocation(GetActorLocation());
+	if (NewGridLocation != GridCoordinateLocation)
+	{
+		GridCoordinateLocation = NewGridLocation;
+		RotateToFacePlayer();
 	}
 }
 
