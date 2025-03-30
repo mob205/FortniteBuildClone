@@ -39,7 +39,7 @@ void UBuildAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	UAbilityTask_WaitTargetData* TargetDataTask = UAbilityTask_WaitTargetData::WaitTargetDataUsingActor(
 		this,
 		"Build Ability Targeting",
-		EGameplayTargetingConfirmation::UserConfirmed,
+		EGameplayTargetingConfirmation::CustomMulti,
 		TargetingActor);
 
 	TargetDataTask->ValidData.AddDynamic(this, &UBuildAbility::PlaceStructure);
@@ -82,7 +82,6 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 
 	GetWorld()->SpawnActor(StructureClasses.StructureActorClass, &BuildingTransform);
 
-	CallEndAbility(Data);
 }
 
 void UBuildAbility::CallEndAbility(const FGameplayAbilityTargetDataHandle& Data)

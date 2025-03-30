@@ -11,6 +11,8 @@ AStructureTargetingActor::AStructureTargetingActor()
 
 	GhostActorComponent = CreateDefaultSubobject<UChildActorComponent>("Ghost Actor");
 	RootComponent = GhostActorComponent;
+	
+	bDestroyOnConfirmation = false;
 }
 
 void AStructureTargetingActor::StartTargeting(UGameplayAbility* Ability)
