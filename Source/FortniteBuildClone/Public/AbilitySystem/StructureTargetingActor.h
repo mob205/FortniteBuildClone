@@ -21,14 +21,13 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void ConfirmTargetingAndContinue() override;
 
-	// Default ghost actor class to spawn targeting ghost as
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = true))
-	TObjectPtr<UClass> DefaultGhostActorClass;
-
 	UFUNCTION(BlueprintCallable)
 	void SetGhostActorClass(TSubclassOf<AActor> InGhostActorClass);
-protected:
 
+	UFUNCTION(BlueprintCallable)
+	void RotateToFacePlayer();
+	
+protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UChildActorComponent> GhostActorComponent;
 	

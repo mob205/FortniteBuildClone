@@ -17,10 +17,6 @@ void AStructureTargetingActor::StartTargeting(UGameplayAbility* Ability)
 {
 	Super::StartTargeting(Ability);
 
-	SetGhostActorClass(DefaultGhostActorClass);
-	
-	const float Yaw = Ability->GetAvatarActorFromActorInfo()->GetActorRotation().Yaw;
-	SetActorRotation({0, UFBCBlueprintLibrary::SnapAngleToGrid(Yaw + 180), 0 });
 	SetActorScale3D({1, 1, 1});
 }
 
@@ -62,3 +58,8 @@ void AStructureTargetingActor::SetGhostActorClass(TSubclassOf<AActor> InGhostAct
 	GhostActorComponent->CreateChildActor();
 }
 
+void AStructureTargetingActor::RotateToFacePlayer()
+{
+	const float Yaw = OwningAbility->GetAvatarActorFromActorInfo()->GetActorRotation().Yaw;
+	SetActorRotation({0, UFBCBlueprintLibrary::SnapAngleToGrid(Yaw + 180), 0 });
+}
