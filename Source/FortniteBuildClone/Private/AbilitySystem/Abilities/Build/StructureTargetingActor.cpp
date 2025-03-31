@@ -2,7 +2,6 @@
 
 #include "AbilitySystem/Abilities/Build/StructureTargetingActor.h"
 #include "FBCBlueprintLibrary.h"
-#include "AbilitySystem/Abilities/Build/GhostStructureActor.h"
 #include "Abilities/GameplayAbility.h"
 
 
@@ -72,7 +71,7 @@ void AStructureTargetingActor::ConfirmTargetingAndContinue()
 	TargetDataReadyDelegate.Broadcast(DataHandle);
 }
 
-void AStructureTargetingActor::SetGhostActorClass(TSubclassOf<AGhostStructureActor> InGhostActorClass)
+void AStructureTargetingActor::SetGhostActorClass(TSubclassOf<AActor> InGhostActorClass)
 {
 	GhostActorComponent->SetChildActorClass(InGhostActorClass);
 }

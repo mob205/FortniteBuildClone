@@ -9,6 +9,7 @@
 
 class AStructureTargetingActor;
 class UStructureInfoDataAsset;
+class UGridWorldSubsystem;
 /**
  * 
  */
@@ -34,6 +35,8 @@ protected:
 	
 private:
 	TObjectPtr<AStructureTargetingActor> TargetingActor{};
+
+	TObjectPtr<UGridWorldSubsystem> GridWorldSubsystem{};
 
 	FGameplayTag SelectedStructureTag{};
 

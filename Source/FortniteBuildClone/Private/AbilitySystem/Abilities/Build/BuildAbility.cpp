@@ -1,13 +1,15 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "AbilitySystem/Abilities/Build/BuildAbility.h"
-#include "FBCBlueprintLibrary.h"
+
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "Abilities/Tasks/AbilityTask_WaitTargetData.h"
 #include "AbilitySystem/Abilities/Build/StructureTargetingActor.h"
+#include "AbilitySystem/Abilities/Build/PlacedStructure.h"
 #include "Data/StructureInfoDataAsset.h"
 #include "Kismet/GameplayStatics.h"
+#include "GridWorldSubsystem.h"
+#include "FBCBlueprintLibrary.h"
 
 UBuildAbility::UBuildAbility()
 {
@@ -21,6 +23,8 @@ void UBuildAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 
 	AActor* Avatar = GetAvatarActorFromActorInfo();
 
+	GridWorldSubsystem = GetWorld()->GetSubsystem<UGridWorldSubsystem>();
+	
 	// Spawn targeting actor
 	TargetingActor = GetWorld()->SpawnActorDeferred<AStructureTargetingActor>(TargetingActorClass,
 		Avatar->GetActorTransform(),
@@ -68,19 +72,29 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 {
 	// Only the server should place structures
 	if (!UKismetSystemLibrary::IsServer(this)) { return; }
+	
 
 	FTransform BuildingTransform = Data.Data[0]->GetEndPointTransform();
 	
-	// Target actor should already be snapped to grid by client, but snap again just to be safe 
+	// Target actor should already be snapped to grid by client, but snap again just to be safe
+	FIntVector GridLocation = UFBCBlueprintLibrary::GetGridCoordinateLocation(BuildingTransform.GetLocation());
+
+	if (GridWorldSubsystem->IsOccupied(GridLocation, SelectedStructureTag)) { return; }
+	
 	BuildingTransform = UFBCBlueprintLibrary::SnapTransformToGrid(BuildingTransform);
 
 	FStructureClasses StructureClasses{};
 	if (!StructureInfo->GetStructureClasses(SelectedStructureTag, StructureClasses))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No valid structure classes found for structure tag %s"), *SelectedStructureTag.GetTagName().ToString());
+		UE_LOG(LogTemp, Warning, TEXT("No valid structure classes found for structure tag %s"),
+			*SelectedStructureTag.GetTagName().ToString());
 	}
 
-	GetWorld()->SpawnActor(StructureClasses.StructureActorClass, &BuildingTransform);
+	APlacedStructure* PlacedStructure = GetWorld()->SpawnActor<APlacedStructure>(StructureClasses.StructureActorClass,
+		BuildingTransform.GetLocation(), BuildingTransform.Rotator());
+		
+	PlacedStructure->SetStructureTag(SelectedStructureTag);
+	GridWorldSubsystem->RegisterPlacedStructure(GridLocation, PlacedStructure);
 }
 
 void UBuildAbility::CallEndAbility(const FGameplayAbilityTargetDataHandle& Data)

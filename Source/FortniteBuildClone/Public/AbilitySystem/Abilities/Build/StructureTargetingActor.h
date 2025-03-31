@@ -23,7 +23,7 @@ public:
 
 	// Sets the type of structure for the targeting actor to use. Used for building preview and location selection 
 	UFUNCTION(BlueprintCallable)
-	void SetGhostActorClass(TSubclassOf<AGhostStructureActor> InGhostActorClass);
+	void SetGhostActorClass(TSubclassOf<AActor> InGhostActorClass);
 
 	// Rotates the targeting actor to face the player. Also applies rotation offset
 	UFUNCTION(BlueprintCallable)

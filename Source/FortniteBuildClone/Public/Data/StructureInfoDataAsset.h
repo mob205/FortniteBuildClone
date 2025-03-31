@@ -8,7 +8,7 @@
 #include "StructureInfoDataAsset.generated.h"
 
 class UInputAction;
-class AGhostStructureActor;
+class APlacedStructure;
 
 USTRUCT(BlueprintType)
 struct FStructureClasses
@@ -16,10 +16,10 @@ struct FStructureClasses
 	GENERATED_BODY()
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<AGhostStructureActor> TargetingActorClass{};
+	TSubclassOf<AActor> TargetingActorClass{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<AActor> StructureActorClass{};
+	TSubclassOf<APlacedStructure> StructureActorClass{};
 };
 
 USTRUCT(BlueprintType)
