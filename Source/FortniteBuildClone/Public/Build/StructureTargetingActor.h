@@ -6,8 +6,10 @@
 #include "Abilities/GameplayAbilityTargetActor.h"
 #include "StructureTargetingActor.generated.h"
 
+class UGridWorldSubsystem;
 class APlayerController;
 class AGhostStructureActor;
+class UPlacementStrategy;
 
 UCLASS(Blueprintable, BlueprintType)
 class FORTNITEBUILDCLONE_API AStructureTargetingActor : public AGameplayAbilityTargetActor
@@ -23,11 +25,7 @@ public:
 
 	// Sets the type of structure for the targeting actor to use. Used for building preview and location selection 
 	UFUNCTION(BlueprintCallable)
-	void SetGhostActorClass(TSubclassOf<AActor> InGhostActorClass);
-
-	// Rotates the targeting actor to face the player. Also applies rotation offset
-	UFUNCTION(BlueprintCallable)
-	void RotateToFacePlayer();
+	void SetGhostActorClass(const TSubclassOf<AActor>& InGhostActorClass);
 
 	// Adds a rotation offset. Each call adds a 90-degree turn around Z-axis.
 	UFUNCTION(BlueprintCallable)
@@ -36,12 +34,12 @@ public:
 	// Sets the building range
 	UFUNCTION(BlueprintCallable)
 	void SetRange(float InRange) { TargetingRange = InRange; }
+
+	void SetPlacementStrategy(const TSubclassOf<UPlacementStrategy>& StrategyClass);
 protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UChildActorComponent> GhostActorComponent;
 	
-	TObjectPtr<APlayerController> PC;
-
 private:
 	// Number of 90 degree turns to offset from standard rotation
 	int CurrentRotationOffset{};
@@ -49,4 +47,10 @@ private:
 	FIntVector GridCoordinateLocation{};
 
 	float TargetingRange{};
+
+	// Prevent CurrentStrategy from being garbage collected
+	UPROPERTY()
+	TObjectPtr<UPlacementStrategy> CurrentStrategy;
+	
+	TObjectPtr<UGridWorldSubsystem> GridSubsystem;
 };

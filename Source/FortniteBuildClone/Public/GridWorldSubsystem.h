@@ -13,9 +13,17 @@ enum class EGridBuildingType : uint8
 {
 	GRID_Main,
 	GRID_Floor,
-	GRID_Wall,
+	GRID_NorthWall,
+	GRID_EastWall,
 	GRID_Max
 };
+
+struct FGridStructureInfo
+{
+	FIntVector GridLocation;
+	EGridBuildingType BuildingType;
+};
+
 /**
  * 
  */
@@ -29,11 +37,17 @@ public:
 	
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 
-	void RegisterPlacedStructure(FIntVector GridPosition, APlacedStructure* Structure);
+	// Registers the structure into the grid
+	void RegisterPlacedStructure(APlacedStructure* Structure);
 
-	bool IsOccupied(FIntVector GridPosition, FGameplayTag StructureTag);
+	// Returns true if the grid space at the specified transform is occupied for the structure
+	bool IsOccupied(const FTransform& Transform, FGameplayTag StructureTag);
+	
+	APlacedStructure* GetStructureAtPosition(FIntVector GridPosition, EGridBuildingType BuildingType, bool bIsEastWall = false);
 private:
-	TMap<EGridBuildingType, TMap<FIntVector, APlacedStructure*>> Grid{};
+	TMap<FIntVector, TStaticArray<APlacedStructure*, static_cast<int>(EGridBuildingType::GRID_Max)>> Grid;
 	
 	TMap<FGameplayTag, EGridBuildingType> TagToType{};
+
+	FGridStructureInfo GetGridStructureInfo(APlacedStructure* Structure);
 };

@@ -28,5 +28,8 @@ public:
 	static float SnapAngleToGrid(const float InAngle);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Grid")
+	static int SnapAngleToGridInt(const float InAngle);
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Grid")
 	static FIntVector GetGridCoordinateLocation(FVector InWorldLocation);
 };

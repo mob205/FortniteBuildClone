@@ -9,6 +9,7 @@
 
 class UInputAction;
 class APlacedStructure;
+class UPlacementStrategy;
 
 USTRUCT(BlueprintType)
 struct FStructureClasses
@@ -35,6 +36,9 @@ struct FStructureInfo
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FStructureClasses StructureClasses{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<UPlacementStrategy> PlacementStrategyClass{};
 };
 
 
@@ -47,16 +51,21 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StructureInfo")
 	FGameplayTag GetTagFromInput(const UInputAction* InputAction) const;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Structure Info")
-	bool GetStructureClasses(const FGameplayTag& GameplayTag, FStructureClasses& Classes);
+	TSubclassOf<AActor> GetGhostClass(const FGameplayTag& StructureTag);
 
+	TSubclassOf<APlacedStructure> GetStructureActorClass(const FGameplayTag& StructureTag);
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Structure Info")
+	bool GetStructureClasses(const FGameplayTag& StructureTag, FStructureClasses& Classes);
+
+	TSubclassOf<UPlacementStrategy> GetPlacementStrategy(const FGameplayTag& StructureTag);
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FStructureInfo> StructureInfo{};
 
-	TMap<FGameplayTag, FStructureClasses> StructureClasses{};
-	bool bHasInitializedStructureClasses{};
-
-	void InitializeStructureClasses();
+	bool bHasInitializedMaps{};
 	
+	TMap<FGameplayTag, FStructureClasses> StructureClasses{};
+	TMap<FGameplayTag, TSubclassOf<UPlacementStrategy>> StrategyClasses{};
+	void InitializeMaps();
 };

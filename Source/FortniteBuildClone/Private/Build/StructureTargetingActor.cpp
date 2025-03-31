@@ -1,8 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "AbilitySystem/Abilities/Build/StructureTargetingActor.h"
+#include "Build/StructureTargetingActor.h"
 #include "FBCBlueprintLibrary.h"
 #include "Abilities/GameplayAbility.h"
+#include "GridWorldSubsystem.h"
+#include "Build/PlacementStrategy/PlacementStrategy.h"
 
 
 AStructureTargetingActor::AStructureTargetingActor()
@@ -20,33 +22,20 @@ void AStructureTargetingActor::StartTargeting(UGameplayAbility* Ability)
 	Super::StartTargeting(Ability);
 
 	SetActorScale3D({1, 1, 1});
+	GridSubsystem = GetWorld()->GetSubsystem<UGridWorldSubsystem>();
 }
 
 void AStructureTargetingActor::Tick(float DeltaTime)
 {
-	FVector ViewStart{};
-	FRotator ViewRot{};
-
-	PrimaryPC->GetPlayerViewPoint(ViewStart, ViewRot);
-
-	const FVector ViewDir = ViewRot.Vector();
-	const FVector ViewEnd = ViewStart + (ViewDir * TargetingRange);
-
-	FVector TargetLocation{};
+	if (!IsValid(CurrentStrategy)) { return; }
 	
-	FHitResult HitResult{};
-	if (GetWorld()->LineTraceSingleByChannel(HitResult, ViewStart, ViewEnd, ECollisionChannel::ECC_Visibility))
-	{
-		TargetLocation = HitResult.Location;
-	}
-	else
-	{
-		TargetLocation = ViewEnd;
-	}
+	FTransform ResultTransform{};
 	
-	SetActorLocation(UFBCBlueprintLibrary::SnapLocationToGrid(TargetLocation));
-
-	RotateToFacePlayer();
+	if (CurrentStrategy->GetTargetingLocation(PrimaryPC, GridSubsystem,
+		TargetingRange, CurrentRotationOffset, ResultTransform))
+	{
+		SetActorTransform(ResultTransform);
+	}
 
 	FIntVector NewGridLocation = UFBCBlueprintLibrary::GetGridCoordinateLocation(GetActorLocation());
 	if (NewGridLocation != GridCoordinateLocation)
@@ -71,14 +60,15 @@ void AStructureTargetingActor::ConfirmTargetingAndContinue()
 	TargetDataReadyDelegate.Broadcast(DataHandle);
 }
 
-void AStructureTargetingActor::SetGhostActorClass(TSubclassOf<AActor> InGhostActorClass)
+void AStructureTargetingActor::SetGhostActorClass(const TSubclassOf<AActor>& InGhostActorClass)
 {
 	GhostActorComponent->SetChildActorClass(InGhostActorClass);
 }
 
-void AStructureTargetingActor::RotateToFacePlayer()
+void AStructureTargetingActor::SetPlacementStrategy(const TSubclassOf<UPlacementStrategy>& StrategyClass)
 {
-	const float Yaw = OwningAbility->GetAvatarActorFromActorInfo()->GetActorRotation().Yaw;
-	SetActorRotation({0, UFBCBlueprintLibrary::SnapAngleToGrid(Yaw + 180 + (CurrentRotationOffset * 90)), 0 });
+	// If needed, can cache strategies instead of making new ones each time for some optimization when building a lot
+	CurrentStrategy = NewObject<UPlacementStrategy>(this, StrategyClass);
 }
+
 

@@ -2,7 +2,9 @@
 
 
 #include "GridWorldSubsystem.h"
-#include "AbilitySystem/Abilities/Build/PlacedStructure.h"
+
+#include "FBCBlueprintLibrary.h"
+#include "Build/PlacedStructure.h"
 #include "GameplayTagContainer.h"
 
 UGridWorldSubsystem::UGridWorldSubsystem()
@@ -21,30 +23,71 @@ UGridWorldSubsystem::UGridWorldSubsystem()
 	
 	TagToType.Add(
 		FGameplayTag::RequestGameplayTag("Abilities.Build.Structure.Wall"),
-		EGridBuildingType::GRID_Wall);
+		EGridBuildingType::GRID_NorthWall);
 }
 
 void UGridWorldSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
-
-	Grid.Add(EGridBuildingType::GRID_Main, {});
-	Grid.Add(EGridBuildingType::GRID_Wall, {});
-	Grid.Add(EGridBuildingType::GRID_Floor, {});
 }
 
-void UGridWorldSubsystem::RegisterPlacedStructure(FIntVector GridPosition, APlacedStructure* Structure)
+void UGridWorldSubsystem::RegisterPlacedStructure(APlacedStructure* Structure)
 {
-	FGameplayTag StructureTag = Structure->GetStructureTag();
-	if (!IsOccupied(GridPosition, StructureTag))
+	FGridStructureInfo Info = GetGridStructureInfo(Structure);
+	
+	if (GetStructureAtPosition(Info.GridLocation, Info.BuildingType) != nullptr)
 	{
-		EGridBuildingType GridType = TagToType[StructureTag];
-		Grid[GridType].Add(GridPosition, Structure);
+		UE_LOG(LogTemp, Warning,
+			TEXT("Attempted to register a structure at a location with a pre-existing structure!"));
+		return;
 	}
+
+	if (!Grid.Contains(Info.GridLocation))
+	{
+		Grid.Add(Info.GridLocation, {});
+	}
+	Grid[Info.GridLocation][static_cast<int>(Info.BuildingType)] = Structure;
 }
 
-bool UGridWorldSubsystem::IsOccupied(FIntVector GridPosition, FGameplayTag BuildingTag)
+bool UGridWorldSubsystem::IsOccupied(const FTransform& Transform, FGameplayTag StructureTag)
 {
-	EGridBuildingType GridType = TagToType[BuildingTag];
-	return Grid[GridType].Contains(GridPosition);
+	const FIntVector GridLocation = UFBCBlueprintLibrary::GetGridCoordinateLocation(Transform.GetLocation());
+	const int Yaw = UFBCBlueprintLibrary::SnapAngleToGridInt(Transform.Rotator().Yaw);
+	EGridBuildingType BuildingType = TagToType[StructureTag];
+	
+	return GetStructureAtPosition(GridLocation, BuildingType, Yaw % 180 != 0) != nullptr;
 }
+
+APlacedStructure* UGridWorldSubsystem::GetStructureAtPosition(FIntVector GridPosition, EGridBuildingType BuildingType,
+                                                              bool bIsEastWall)
+{
+	if (!Grid.Contains(GridPosition)) { return nullptr; }
+	if (BuildingType == EGridBuildingType::GRID_NorthWall && bIsEastWall)
+	{
+		BuildingType = EGridBuildingType::GRID_EastWall;
+	}
+	return Grid[GridPosition][static_cast<int>(BuildingType)];
+}
+
+FGridStructureInfo UGridWorldSubsystem::GetGridStructureInfo(APlacedStructure* Structure)
+{
+	FGridStructureInfo Result{};
+	
+	FGameplayTag StructureTag = Structure->GetStructureTag();
+	EGridBuildingType BuildingType = TagToType[StructureTag];
+	
+	Result.GridLocation = UFBCBlueprintLibrary::GetGridCoordinateLocation(Structure->GetActorLocation());
+
+	// Each grid slot can have two walls, so verify which wall it is
+	if (BuildingType == EGridBuildingType::GRID_NorthWall)
+	{
+		const int Yaw = UFBCBlueprintLibrary::SnapAngleToGridInt(Structure->GetActorRotation().Yaw);
+		bool bIsEastWall = Yaw % 180 != 0;
+		
+		BuildingType = static_cast<EGridBuildingType>(static_cast<int>(BuildingType) + bIsEastWall);
+	}
+	Result.BuildingType = BuildingType;
+	return Result;
+}
+
+

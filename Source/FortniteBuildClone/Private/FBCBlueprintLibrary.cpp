@@ -36,6 +36,11 @@ float UFBCBlueprintLibrary::SnapAngleToGrid(const float InAngle)
 	return FMath::RoundToFloat(InAngle / SnapRotation) * SnapRotation;
 }
 
+int UFBCBlueprintLibrary::SnapAngleToGridInt(const float InAngle)
+{
+	return FMath::RoundToInt(InAngle / SnapRotation) * SnapRotation;
+}
+
 FIntVector UFBCBlueprintLibrary::GetGridCoordinateLocation(FVector InWorldLocation)
 {
 	FIntVector Result;

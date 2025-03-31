@@ -17,25 +17,57 @@ FGameplayTag UStructureInfoDataAsset::GetTagFromInput(const UInputAction* InputA
 	return {};
 }
 
-bool UStructureInfoDataAsset::GetStructureClasses(const FGameplayTag& GameplayTag, FStructureClasses& Classes)
+TSubclassOf<AActor> UStructureInfoDataAsset::GetGhostClass(const FGameplayTag& StructureTag)
 {
-	if (!bHasInitializedStructureClasses) { InitializeStructureClasses(); }
+	FStructureClasses Classes;
+	if (GetStructureClasses(StructureTag, Classes))
+	{
+		return Classes.TargetingActorClass;
+	}
+	return {};
+}
 
-	if (!StructureClasses.Contains(GameplayTag))
+TSubclassOf<APlacedStructure> UStructureInfoDataAsset::GetStructureActorClass(const FGameplayTag& StructureTag)
+{
+	FStructureClasses Classes;
+	if (GetStructureClasses(StructureTag, Classes))
+	{
+		return Classes.StructureActorClass;
+	}
+	return {};
+}
+
+bool UStructureInfoDataAsset::GetStructureClasses(const FGameplayTag& StructureTag, FStructureClasses& Classes)
+{
+	if (!bHasInitializedMaps) { InitializeMaps(); }
+
+	if (!StructureClasses.Contains(StructureTag))
 	{
 		Classes = {};
 		return false;
 	}
 
-	Classes = StructureClasses[GameplayTag];
+	Classes = StructureClasses[StructureTag];
 	return true;
 }
 
-void UStructureInfoDataAsset::InitializeStructureClasses()
+TSubclassOf<UPlacementStrategy> UStructureInfoDataAsset::GetPlacementStrategy(const FGameplayTag& StructureTag)
+{
+	if (!bHasInitializedMaps) { InitializeMaps(); }
+
+	checkf(StrategyClasses.Contains(StructureTag),
+		TEXT("Attempted to find placement strategy of invalid structure tag %s."),
+		*StructureTag.GetTagName().ToString());
+	
+	return StrategyClasses[StructureTag];
+}
+
+void UStructureInfoDataAsset::InitializeMaps()
 {
 	for (const auto& Structure : StructureInfo)
 	{
 		StructureClasses.Add(Structure.GameplayTag, Structure.StructureClasses);
+		StrategyClasses.Add(Structure.GameplayTag, Structure.PlacementStrategyClass);
 	}
-	bHasInitializedStructureClasses = true;
+	bHasInitializedMaps = true;
 }

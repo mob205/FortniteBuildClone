@@ -40,15 +40,19 @@ private:
 
 	FGameplayTag SelectedStructureTag{};
 
+	// Places a structure after target data is received
 	UFUNCTION()
 	void PlaceStructure(const FGameplayAbilityTargetDataHandle& Data);
 
+	// Ends the ability, but can bind to FWaitTargetDataDelegate
 	UFUNCTION()
 	void CallEndAbility(const FGameplayAbilityTargetDataHandle& Data);
 
+	// Alerts the targeting actor of a request to rotate
 	UFUNCTION()
 	void RotateTargetingActor(FGameplayEventData Payload);
 
+	// Updates targeting actor with the newly selected structure
 	UFUNCTION()
 	void OnSelectStructure(FGameplayEventData Payload);
 };
