@@ -31,7 +31,8 @@ bool UWallPlacementStrategy::GetTargetingLocation(APlayerController* PC,
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid(TargetLocation));
 	
 	const float Yaw = PC->GetControlRotation().Yaw;
-	const FRotator TargetRotator = {0, UFBCBlueprintLibrary::SnapAngleToGrid(Yaw + 180 + (RotationOffset * 90)), 0};
+	const FRotator TargetRotator = {0, UFBCBlueprintLibrary::SnapAngleToGrid(Yaw + (RotationOffset * 90)), 0};
+	
 	OutResult.SetRotation(TargetRotator.Quaternion());
 	return true;
 }

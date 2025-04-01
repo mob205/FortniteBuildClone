@@ -82,9 +82,11 @@ FGridStructureInfo UGridWorldSubsystem::GetGridStructureInfo(APlacedStructure* S
 	if (BuildingType == EGridBuildingType::GRID_NorthWall)
 	{
 		const int Yaw = UFBCBlueprintLibrary::SnapAngleToGridInt(Structure->GetActorRotation().Yaw);
-		bool bIsEastWall = Yaw % 180 != 0;
-		
-		BuildingType = static_cast<EGridBuildingType>(static_cast<int>(BuildingType) + bIsEastWall);
+
+		if (Yaw % 180 != 0)
+		{
+			BuildingType = EGridBuildingType::GRID_EastWall;
+		}
 	}
 	Result.BuildingType = BuildingType;
 	return Result;
