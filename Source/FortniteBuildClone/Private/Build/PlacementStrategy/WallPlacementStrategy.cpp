@@ -7,7 +7,7 @@
 #include "GridSizes.h"
 
 bool UWallPlacementStrategy::GetTargetingLocation(APlayerController* PC,
-                                                  UGridWorldSubsystem* GridSubsystem, float Range, int RotationOffset, FTransform& OutResult)
+                                                  UGridWorldSubsystem* GridSubsystem, int RotationOffset, FTransform& OutResult)
 {
 	FVector ViewStart{};
 	FRotator ViewRot{};
@@ -15,12 +15,18 @@ bool UWallPlacementStrategy::GetTargetingLocation(APlayerController* PC,
 	PC->GetPlayerViewPoint(ViewStart, ViewRot);
 
 	const FVector ViewDir = ViewRot.Vector();
-	const FVector ViewEnd = ViewStart + (ViewDir * Range);
+	const FVector ViewEnd = ViewStart + (ViewDir * TargetingRange);
 
 	FVector TargetLocation{};
 	
 	FHitResult HitResult{};
-	if (GetWorld()->LineTraceSingleByChannel(HitResult, ViewStart, ViewEnd, ECollisionChannel::ECC_Visibility))
+	FCollisionObjectQueryParams ObjectQueryParams{};
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+	
+	DrawDebugLine(PC->GetWorld(), ViewStart, ViewEnd, FColor::Red, false, 0, 0, 2);
+	DrawDebugSphere(PC->GetWorld(), ViewEnd, 5, 10, FColor::Blue, false, 0, 0, 2);
+	
+	if (GetWorld()->LineTraceSingleByObjectType(HitResult, ViewStart, ViewEnd, ObjectQueryParams))
 	{
 		TargetLocation = HitResult.Location;
 	}
@@ -28,7 +34,6 @@ bool UWallPlacementStrategy::GetTargetingLocation(APlayerController* PC,
 	{
 		TargetLocation = ViewEnd;
 	}
-	
 	
 	int Yaw = UFBCBlueprintLibrary::SnapAngleToGridInt(PC->GetControlRotation().Yaw);
 
@@ -47,7 +52,7 @@ bool UWallPlacementStrategy::GetTargetingLocation(APlayerController* PC,
 	return true;
 }
 
-bool UWallPlacementStrategy::CanPlace(UGridWorldSubsystem* GridSubsystem, FTransform QueryTransform)
+bool UWallPlacementStrategy::CanPlace(UGridWorldSubsystem* GridSubsystem, const FTransform& QueryTransform)
 {
 	return Super::CanPlace(GridSubsystem, QueryTransform);
 }

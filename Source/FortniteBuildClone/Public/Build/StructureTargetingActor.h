@@ -31,10 +31,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddRotationOffset() { CurrentRotationOffset = (CurrentRotationOffset + 1) % 4; };
 
-	// Sets the building range
-	UFUNCTION(BlueprintCallable)
-	void SetRange(float InRange) { TargetingRange = InRange; }
-
 	void SetPlacementStrategy(const TSubclassOf<UPlacementStrategy>& StrategyClass);
 protected:
 	UPROPERTY(VisibleAnywhere)
@@ -45,8 +41,6 @@ private:
 	int CurrentRotationOffset{};
 	
 	FIntVector GridCoordinateLocation{};
-
-	float TargetingRange{};
 
 	// Prevent CurrentStrategy from being garbage collected
 	UPROPERTY()

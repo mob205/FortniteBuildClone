@@ -6,7 +6,7 @@
 #include "FBCBlueprintLibrary.h"
 
 bool URampPlacementStrategy::GetTargetingLocation(APlayerController* PC,
-                                                  UGridWorldSubsystem* GridSubsystem, float Range, int RotationOffset, FTransform& OutResult)
+                                                  UGridWorldSubsystem* GridSubsystem, int RotationOffset, FTransform& OutResult)
 {
 	FVector ViewStart{};
 	FRotator ViewRot{};
@@ -14,7 +14,7 @@ bool URampPlacementStrategy::GetTargetingLocation(APlayerController* PC,
 	PC->GetPlayerViewPoint(ViewStart, ViewRot);
 
 	const FVector ViewDir = ViewRot.Vector();
-	const FVector ViewEnd = ViewStart + (ViewDir * Range);
+	const FVector ViewEnd = ViewStart + (ViewDir * TargetingRange);
 
 	FVector TargetLocation{};
 	
@@ -36,7 +36,7 @@ bool URampPlacementStrategy::GetTargetingLocation(APlayerController* PC,
 	return true;
 }
 
-bool URampPlacementStrategy::CanPlace(UGridWorldSubsystem* GridSubsystem, FTransform QueryTransform)
+bool URampPlacementStrategy::CanPlace(UGridWorldSubsystem* GridSubsystem, const FTransform& QueryTransform)
 {
 	return Super::CanPlace(GridSubsystem, QueryTransform);
 }
