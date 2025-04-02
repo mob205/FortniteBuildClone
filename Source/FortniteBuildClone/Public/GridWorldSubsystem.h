@@ -13,15 +13,29 @@ enum class EGridBuildingType : uint8
 {
 	GRID_Main,
 	GRID_Floor,
-	GRID_NorthWall,
-	GRID_EastWall,
+	GRID_Wall,
 	GRID_Max
+};
+
+enum class EWallDirection : uint8
+{
+	DIR_North,
+	DIR_East,
+	DIR_South,
+	DIR_West
+};
+
+struct FGridSlotInfo
+{
+	APlacedStructure* Main{};
+	APlacedStructure* Floor{};
+	TStaticArray<APlacedStructure*, 4> Walls{};
 };
 
 struct FGridStructureInfo
 {
-	FIntVector GridLocation;
-	EGridBuildingType BuildingType;
+	FIntVector GridLocation{};
+	EGridBuildingType BuildingType{};
 };
 
 /**
@@ -43,11 +57,32 @@ public:
 	// Returns true if the grid space at the specified transform is occupied for the structure
 	bool IsOccupied(const FTransform& Transform, FGameplayTag StructureTag);
 	
-	APlacedStructure* GetStructureAtPosition(FIntVector GridPosition, EGridBuildingType BuildingType, bool bIsEastWall = false);
+	
 private:
-	TMap<FIntVector, TStaticArray<APlacedStructure*, static_cast<int>(EGridBuildingType::GRID_Max)>> Grid;
+	/**
+	 * Attempts to find where a structure is stored in the grid
+	 *	@param GridPosition The coordinates of the grid slot to check
+	 *	@param BuildingType Type of building to look for
+	 *	@param WallRotation Rotation of the structure. Only used to distinguish walls
+	 *	@param OutStructureRef Out parameter with a reference to the structure pointer
+	 *	@returns True if the pointer was successfully found. Returns false if the grid slot doesn't exist.
+	 *	Return value does NOT depend on if OutStructureRef is null.
+	 */
+	APlacedStructure** FindStructureAtPosition(const FIntVector& GridPosition, EGridBuildingType BuildingType,
+		const FRotator& WallRotation);
+
+	// Helper function for FindStructureAtPosition
+	APlacedStructure** FindMainStructureAtPosition(const FIntVector& GridPosition, EGridBuildingType BuildingType);
+
+	// Helper function for FindStructureAtPosition
+	APlacedStructure** FindWallStructureAtPosition(const FIntVector& GridPosition, EWallDirection WallDirection);
+
+	
+	TMap<FIntVector, FGridSlotInfo> Grid;
 	
 	TMap<FGameplayTag, EGridBuildingType> TagToType{};
 
-	FGridStructureInfo GetGridStructureInfo(APlacedStructure* Structure);
+	FGridStructureInfo GetGridStructureInfo(const APlacedStructure* Structure);
+
+	static EWallDirection GetWallDirection(const FRotator& WallRotation);
 };

@@ -76,7 +76,11 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 	FTransform BuildingTransform = Data.Data[0]->GetEndPointTransform();
 
 	// Verify that there isn't another structure already taking up the space
-	if (GridWorldSubsystem->IsOccupied(BuildingTransform, SelectedStructureTag)) { return; }
+	if (GridWorldSubsystem->IsOccupied(BuildingTransform, SelectedStructureTag))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Attempted to place at already occupied spot."))
+		return;
+	}
 	
 	BuildingTransform = UFBCBlueprintLibrary::SnapTransformToGrid(BuildingTransform);
 

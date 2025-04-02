@@ -1,11 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "FBCBlueprintLibrary.h"
+#include "GridSizes.h"
 
-constexpr float GridX{512};
-constexpr float GridY{512};
-constexpr float GridZ{384};
-constexpr float SnapRotation{90};
+
 
 FTransform UFBCBlueprintLibrary::SnapTransformToGrid(const FTransform& InTransform)
 {
@@ -25,9 +23,9 @@ FRotator UFBCBlueprintLibrary::SnapRotationToGrid(const FRotator& InRotator)
 FVector UFBCBlueprintLibrary::SnapLocationToGrid(const FVector& InLocation)
 {
 	FVector Result;
-	Result.X = FMath::RoundToFloat(InLocation.X / GridX) * GridX;
-	Result.Y = FMath::RoundToFloat(InLocation.Y / GridY) * GridY;
-	Result.Z = FMath::RoundToFloat(InLocation.Z / GridZ) * GridZ;
+	Result.X = FMath::RoundToFloat(InLocation.X / GridSizeHorizontal) * GridSizeHorizontal;
+	Result.Y = FMath::RoundToFloat(InLocation.Y / GridSizeHorizontal) * GridSizeHorizontal;
+	Result.Z = FMath::RoundToFloat(InLocation.Z / GridSizeVertical) * GridSizeVertical;
 	return Result;
 }
 
@@ -44,8 +42,8 @@ int UFBCBlueprintLibrary::SnapAngleToGridInt(const float InAngle)
 FIntVector UFBCBlueprintLibrary::GetGridCoordinateLocation(FVector InWorldLocation)
 {
 	FIntVector Result;
-	Result.X = FMath::RoundToInt(InWorldLocation.X / GridX);
-	Result.Y = FMath::RoundToInt(InWorldLocation.Y / GridY);
-	Result.Z = FMath::RoundToInt(InWorldLocation.Z / GridZ);
+	Result.X = FMath::RoundToInt(InWorldLocation.X / GridSizeHorizontal);
+	Result.Y = FMath::RoundToInt(InWorldLocation.Y / GridSizeHorizontal);
+	Result.Z = FMath::RoundToInt(InWorldLocation.Z / GridSizeVertical);
 	return Result;
 }
