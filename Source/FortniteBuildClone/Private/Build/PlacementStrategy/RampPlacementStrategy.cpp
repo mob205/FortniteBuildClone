@@ -5,9 +5,11 @@
 
 #include "FBCBlueprintLibrary.h"
 
-bool URampPlacementStrategy::GetTargetingLocation(APlayerController* PC,
+bool URampPlacementStrategy::GetTargetingLocation(APawn* Player,
                                                   UGridWorldSubsystem* GridSubsystem, int RotationOffset, FTransform& OutResult)
 {
+	APlayerController* PC = Cast<APlayerController>(Player->GetController());
+
 	FVector ViewStart{};
 	FRotator ViewRot{};
 

@@ -6,9 +6,11 @@
 #include "FBCBlueprintLibrary.h"
 #include "GridSizes.h"
 
-bool UWallPlacementStrategy::GetTargetingLocation(APlayerController* PC,
+bool UWallPlacementStrategy::GetTargetingLocation(APawn* Player,
                                                   UGridWorldSubsystem* GridSubsystem, int RotationOffset, FTransform& OutResult)
 {
+	APlayerController* PC = Cast<APlayerController>(Player->GetController());
+	
 	FVector ViewStart{};
 	FRotator ViewRot{};
 

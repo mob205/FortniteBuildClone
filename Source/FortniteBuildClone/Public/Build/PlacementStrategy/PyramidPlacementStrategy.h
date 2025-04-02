@@ -15,7 +15,7 @@ class FORTNITEBUILDCLONE_API UPyramidPlacementStrategy : public UPlacementStrate
 	GENERATED_BODY()
 
 public:
-	virtual bool GetTargetingLocation(APlayerController* PC, UGridWorldSubsystem* GridSubsystem, int RotationOffset, FTransform& OutResult) override;
+	virtual bool GetTargetingLocation(APawn* PlayerController, UGridWorldSubsystem* GridSubsystem, int RotationOffset, FTransform& OutResult) override;
 
 	virtual bool CanPlace(UGridWorldSubsystem* GridSubsystem, const FTransform& QueryTransform) override;
 };

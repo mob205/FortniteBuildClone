@@ -23,7 +23,7 @@ public:
 	 *	@param OutResult Out parameter to store the valid transform, if found
 	 *	@returns true if a valid location was found
 	 */
-	virtual bool GetTargetingLocation(APlayerController* PC, UGridWorldSubsystem* GridSubsystem,
+	virtual bool GetTargetingLocation(APawn* PC, UGridWorldSubsystem* GridSubsystem,
 	                                  int RotationOffset, FTransform& OutResult) { return false; }
 
 	/**

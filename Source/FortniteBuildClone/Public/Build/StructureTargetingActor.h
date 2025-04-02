@@ -32,6 +32,8 @@ public:
 	void AddRotationOffset() { CurrentRotationOffset = (CurrentRotationOffset + 1) % 4; };
 
 	void SetPlacementStrategy(const TSubclassOf<UPlacementStrategy>& StrategyClass);
+
+	void SetAvatar(APawn* InAvatar) { Avatar = InAvatar; }
 protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UChildActorComponent> GhostActorComponent;
@@ -47,4 +49,6 @@ private:
 	TObjectPtr<UPlacementStrategy> CurrentStrategy;
 	
 	TObjectPtr<UGridWorldSubsystem> GridSubsystem;
+
+	TObjectPtr<APawn> Avatar;
 };

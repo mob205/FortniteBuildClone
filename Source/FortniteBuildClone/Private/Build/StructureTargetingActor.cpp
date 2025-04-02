@@ -31,7 +31,7 @@ void AStructureTargetingActor::Tick(float DeltaTime)
 	
 	FTransform ResultTransform{};
 	
-	if (CurrentStrategy->GetTargetingLocation(PrimaryPC, GridSubsystem,
+	if (CurrentStrategy->GetTargetingLocation(Avatar, GridSubsystem,
 		CurrentRotationOffset, ResultTransform))
 	{
 		SetActorTransform(ResultTransform);

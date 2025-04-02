@@ -35,6 +35,7 @@ void UBuildAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	FGameplayAbilityTargetingLocationInfo StartLocation{};
 	StartLocation.SourceActor = Avatar;
 	TargetingActor->StartLocation = StartLocation;
+	TargetingActor->SetAvatar(Cast<APawn>(Avatar));
 
 	UGameplayStatics::FinishSpawningActor(TargetingActor, Avatar->GetActorTransform());
 

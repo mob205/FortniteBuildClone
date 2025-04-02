@@ -5,9 +5,11 @@
 
 #include "FBCBlueprintLibrary.h"
 
-bool UPyramidPlacementStrategy::GetTargetingLocation(APlayerController* PC,
+bool UPyramidPlacementStrategy::GetTargetingLocation(APawn* Player,
                                                      UGridWorldSubsystem* GridSubsystem, int RotationOffset, FTransform& OutResult)
 {
+	APlayerController* PC = Player->GetLocalViewingPlayerController();
+	
 	FVector ViewStart{};
 	FRotator ViewRot{};
 

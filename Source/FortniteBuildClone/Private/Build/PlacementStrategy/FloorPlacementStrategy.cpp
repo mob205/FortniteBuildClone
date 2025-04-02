@@ -5,9 +5,11 @@
 
 #include "FBCBlueprintLibrary.h"
 
-bool UFloorPlacementStrategy::GetTargetingLocation(APlayerController* PC,
+bool UFloorPlacementStrategy::GetTargetingLocation(APawn* Player,
                                                    UGridWorldSubsystem* GridSubsystem, int RotationOffset, FTransform& OutResult)
 {
+	APlayerController* PC = Player->GetLocalViewingPlayerController();
+	
 	FVector ViewStart{};
 	FRotator ViewRot{};
 
