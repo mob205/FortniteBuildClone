@@ -25,7 +25,7 @@ FVector UFBCBlueprintLibrary::SnapLocationToGrid(const FVector& InLocation)
 	FVector Result;
 	Result.X = FMath::RoundToFloat(InLocation.X / GridSizeHorizontal) * GridSizeHorizontal;
 	Result.Y = FMath::RoundToFloat(InLocation.Y / GridSizeHorizontal) * GridSizeHorizontal;
-	Result.Z = FMath::RoundToFloat(InLocation.Z / GridSizeVertical) * GridSizeVertical;
+	Result.Z = FMath::FloorToFloat(InLocation.Z / GridSizeVertical) * GridSizeVertical;
 	return Result;
 }
 
