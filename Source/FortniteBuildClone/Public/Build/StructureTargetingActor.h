@@ -46,8 +46,6 @@ private:
 	
 	FIntVector GridCoordinateLocation{};
 
-	// Prevent CurrentStrategy from being garbage collected
-	UPROPERTY()
 	TObjectPtr<UPlacementStrategy> CurrentStrategy;
 	
 	TObjectPtr<UGridWorldSubsystem> GridSubsystem;
@@ -56,5 +54,7 @@ private:
 
 	FGameplayTag CurrentStructureTag{};
 
+	// Prevent strategy garbage collection
+	UPROPERTY()
 	TMap<TSubclassOf<UPlacementStrategy>, UPlacementStrategy*> CachedStrategies{};
 };

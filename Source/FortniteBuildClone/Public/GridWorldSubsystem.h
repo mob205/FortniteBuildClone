@@ -64,9 +64,7 @@ private:
 	 *	@param GridPosition The coordinates of the grid slot to check
 	 *	@param BuildingType Type of building to look for
 	 *	@param WallRotation Rotation of the structure. Only used to distinguish walls
-	 *	@param OutStructureRef Out parameter with a reference to the structure pointer
-	 *	@returns True if the pointer was successfully found. Returns false if the grid slot doesn't exist.
-	 *	Return value does NOT depend on if OutStructureRef is null.
+	 *	@returns A pointer to where the structure would go in the grid slot struct
 	 */
 	APlacedStructure** FindStructureAtPosition(const FIntVector& GridPosition, EGridBuildingType BuildingType,
 		const FRotator& WallRotation);

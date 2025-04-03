@@ -123,5 +123,6 @@ void UBuildAbility::OnSelectStructure(FGameplayEventData Payload)
 	{
 		TargetingActor->SetGhostActorClass(StructureInfo->GetGhostClass(SelectedStructureTag));
 		TargetingActor->SetPlacementStrategy(StructureInfo->GetPlacementStrategy(SelectedStructureTag));
+		TargetingActor->SetStructureTag(SelectedStructureTag);
 	}
 }

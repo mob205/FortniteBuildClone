@@ -36,6 +36,7 @@ public:
 	float TargetingRange{};
 
 protected:
+	UPROPERTY()
 	TObjectPtr<AActor> OverlapQueryActor{};
 
 	TObjectPtr<APawn> Player{};
