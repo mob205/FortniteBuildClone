@@ -2,12 +2,11 @@
 
 
 #include "Build/PlacementStrategy/WallPlacementStrategy.h"
-
 #include "FBCBlueprintLibrary.h"
 #include "GridSizes.h"
 
-bool UWallPlacementStrategy::GetTargetingLocation(APawn* Player,
-                                                  UGridWorldSubsystem* GridSubsystem, int RotationOffset, FTransform& OutResult)
+bool UWallPlacementStrategy::GetTargetingLocation(
+	int RotationOffset, FTransform& OutResult)
 {
 	APlayerController* PC = Cast<APlayerController>(Player->GetController());
 	
@@ -25,9 +24,6 @@ bool UWallPlacementStrategy::GetTargetingLocation(APawn* Player,
 	FCollisionObjectQueryParams ObjectQueryParams{};
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
 	
-	DrawDebugLine(PC->GetWorld(), ViewStart, ViewEnd, FColor::Red, false, 0, 0, 2);
-	DrawDebugSphere(PC->GetWorld(), ViewEnd, 5, 10, FColor::Blue, false, 0, 0, 2);
-	
 	if (GetWorld()->LineTraceSingleByObjectType(HitResult, ViewStart, ViewEnd, ObjectQueryParams))
 	{
 		TargetLocation = HitResult.Location;
@@ -43,6 +39,7 @@ bool UWallPlacementStrategy::GetTargetingLocation(APawn* Player,
 	// Flip the wall
 	if (RotationOffset % 2 == 1)
 	{
+		// TODO: Simplify angle axis call with simple direction array
 		TargetLocation += GridSizeHorizontal * FVector::ForwardVector.RotateAngleAxis(Yaw, FVector::UpVector);
 		Yaw += 180;
 	}
@@ -51,10 +48,7 @@ bool UWallPlacementStrategy::GetTargetingLocation(APawn* Player,
 	
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid(TargetLocation));
 	OutResult.SetRotation(TargetRotator.Quaternion());
-	return true;
-}
 
-bool UWallPlacementStrategy::CanPlace(UGridWorldSubsystem* GridSubsystem, const FTransform& QueryTransform)
-{
-	return Super::CanPlace(GridSubsystem, QueryTransform);
+	
+	return CanPlace(OutResult);
 }

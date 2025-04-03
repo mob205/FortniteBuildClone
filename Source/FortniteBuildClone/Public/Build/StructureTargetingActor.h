@@ -34,6 +34,8 @@ public:
 	void SetPlacementStrategy(const TSubclassOf<UPlacementStrategy>& StrategyClass);
 
 	void SetAvatar(APawn* InAvatar) { Avatar = InAvatar; }
+
+	void SetStructureTag(FGameplayTag InStructureTag) { CurrentStructureTag = InStructureTag; }
 protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UChildActorComponent> GhostActorComponent;
@@ -51,4 +53,8 @@ private:
 	TObjectPtr<UGridWorldSubsystem> GridSubsystem;
 
 	TObjectPtr<APawn> Avatar;
+
+	FGameplayTag CurrentStructureTag{};
+
+	TMap<TSubclassOf<UPlacementStrategy>, UPlacementStrategy*> CachedStrategies{};
 };

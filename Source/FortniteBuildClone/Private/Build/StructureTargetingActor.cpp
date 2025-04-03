@@ -30,13 +30,13 @@ void AStructureTargetingActor::Tick(float DeltaTime)
 	if (!IsValid(CurrentStrategy)) { return; }
 	
 	FTransform ResultTransform{};
-	
-	if (CurrentStrategy->GetTargetingLocation(Avatar, GridSubsystem,
-		CurrentRotationOffset, ResultTransform))
+
+	if (CurrentStrategy->GetTargetingLocation(CurrentRotationOffset, ResultTransform)
+		&& !GridSubsystem->IsOccupied(ResultTransform, CurrentStructureTag))
 	{
 		SetActorTransform(ResultTransform);
 	}
-
+	
 	FIntVector NewGridLocation = UFBCBlueprintLibrary::GetGridCoordinateLocation(GetActorLocation());
 	if (NewGridLocation != GridCoordinateLocation)
 	{
@@ -67,8 +67,18 @@ void AStructureTargetingActor::SetGhostActorClass(const TSubclassOf<AActor>& InG
 
 void AStructureTargetingActor::SetPlacementStrategy(const TSubclassOf<UPlacementStrategy>& StrategyClass)
 {
-	// If needed, can cache strategies instead of making new ones each time for some optimization when building a lot
+	// Check if there is a cached strategy
+	if (CachedStrategies.Contains(StrategyClass))
+	{
+		CurrentStrategy = CachedStrategies[StrategyClass];
+		return;
+	}
+
+	// Create new strategy
 	CurrentStrategy = NewObject<UPlacementStrategy>(this, StrategyClass);
+	CurrentStrategy->InitializeStrategy(Avatar, GridSubsystem);
+
+	CachedStrategies.Add(StrategyClass, CurrentStrategy);
 }
 
 

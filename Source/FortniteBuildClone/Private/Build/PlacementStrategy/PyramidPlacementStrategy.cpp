@@ -5,8 +5,8 @@
 
 #include "FBCBlueprintLibrary.h"
 
-bool UPyramidPlacementStrategy::GetTargetingLocation(APawn* Player,
-                                                     UGridWorldSubsystem* GridSubsystem, int RotationOffset, FTransform& OutResult)
+bool UPyramidPlacementStrategy::GetTargetingLocation(
+	int RotationOffset, FTransform& OutResult)
 {
 	APlayerController* PC = Player->GetLocalViewingPlayerController();
 	
@@ -35,10 +35,6 @@ bool UPyramidPlacementStrategy::GetTargetingLocation(APawn* Player,
 	const float Yaw = PC->GetControlRotation().Yaw;
 	const FRotator TargetRotator = {0, UFBCBlueprintLibrary::SnapAngleToGrid(Yaw + (RotationOffset * 90)), 0};
 	OutResult.SetRotation(TargetRotator.Quaternion());
-	return true;
-}
-
-bool UPyramidPlacementStrategy::CanPlace(UGridWorldSubsystem* GridSubsystem, const FTransform& QueryTransform)
-{
-	return Super::CanPlace(GridSubsystem, QueryTransform);
+	
+	return CanPlace(OutResult);
 }
