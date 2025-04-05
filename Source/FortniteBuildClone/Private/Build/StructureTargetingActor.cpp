@@ -4,6 +4,7 @@
 #include "FBCBlueprintLibrary.h"
 #include "Abilities/GameplayAbility.h"
 #include "GridWorldSubsystem.h"
+#include "Build/GhostPreviewStructure.h"
 #include "Build/PlacementStrategy/PlacementStrategy.h"
 
 
@@ -27,24 +28,35 @@ void AStructureTargetingActor::StartTargeting(UGameplayAbility* Ability)
 
 void AStructureTargetingActor::Tick(float DeltaTime)
 {
+	bHasValidTarget = false;
+	
 	if (!IsValid(CurrentStrategy)) { return; }
 	
 	FTransform ResultTransform{};
 
-	bool bIsValidTargetLocation = CurrentStrategy->GetTargetingLocation(CurrentRotationOffset, ResultTransform)
-		&& !GridSubsystem->IsOccupied(ResultTransform, CurrentStructureTag);
-	
-	if (bIsValidTargetLocation)
+	bool bReceivedValidLocation = CurrentStrategy->GetTargetingLocation(CurrentRotationOffset, ResultTransform);
+	bool bIsOccupied{};
+	if (bReceivedValidLocation)
+	{
+		bIsOccupied = GridSubsystem->IsOccupied(ResultTransform, CurrentStructureTag);
+	}
+
+	if (bIsOccupied)
+	{
+		HideGhost();
+	}
+	else if (bReceivedValidLocation)
 	{
 		SetActorTransform(ResultTransform);
-
-		GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Green, FString::Printf(TEXT("Can place: true")));
+		bHasValidTarget = true;
+		
+		ValidateGhost();
 	}
 	else
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Red, FString::Printf(TEXT("Can place: false")));
+		SetActorTransform(ResultTransform);
+		InvalidateGhost();
 	}
-
 	
 	FIntVector NewGridLocation = UFBCBlueprintLibrary::GetGridCoordinateLocation(GetActorLocation());
 	if (NewGridLocation != GridCoordinateLocation)
@@ -56,6 +68,11 @@ void AStructureTargetingActor::Tick(float DeltaTime)
 
 void AStructureTargetingActor::ConfirmTargetingAndContinue()
 {
+	if (!bHasValidTarget)
+	{
+		return;
+	}
+	
 	FGameplayAbilityTargetData_LocationInfo LocationInfo{};
 
 	LocationInfo.SourceLocation.LocationType = EGameplayAbilityTargetingLocationType::ActorTransform;
@@ -69,9 +86,10 @@ void AStructureTargetingActor::ConfirmTargetingAndContinue()
 	TargetDataReadyDelegate.Broadcast(DataHandle);
 }
 
-void AStructureTargetingActor::SetGhostActorClass(const TSubclassOf<AActor>& InGhostActorClass)
+void AStructureTargetingActor::SetGhostActorClass(const TSubclassOf<AGhostPreviewStructure>& InGhostActorClass)
 {
 	GhostActorComponent->SetChildActorClass(InGhostActorClass);
+	GhostActor = Cast<AGhostPreviewStructure>(GhostActorComponent->GetChildActor());
 }
 
 void AStructureTargetingActor::SetPlacementStrategy(const TSubclassOf<UPlacementStrategy>& StrategyClass)
@@ -89,5 +107,23 @@ void AStructureTargetingActor::SetPlacementStrategy(const TSubclassOf<UPlacement
 
 	CachedStrategies.Add(StrategyClass, CurrentStrategy);
 }
+
+void AStructureTargetingActor::ValidateGhost() const
+{
+	GhostActor->SetActorHiddenInGame(false);
+	GhostActor->SetMaterial(ValidGhostMaterial);
+}
+
+void AStructureTargetingActor::InvalidateGhost() const
+{
+	GhostActor->SetActorHiddenInGame(false);
+	GhostActor->SetMaterial(InvalidGhostMaterial);
+}
+
+void AStructureTargetingActor::HideGhost() const
+{
+	GhostActor->SetActorHiddenInGame(true);
+}
+
 
 

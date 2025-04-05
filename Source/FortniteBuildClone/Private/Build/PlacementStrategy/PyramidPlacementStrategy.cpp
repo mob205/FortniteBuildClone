@@ -14,7 +14,7 @@ bool UPyramidPlacementStrategy::GetTargetingLocation(
 
 	FVector TargetLocation = GetViewLocation(ObjectQueryParams);
 	
-	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid(TargetLocation));
+	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_RoundZ(TargetLocation));
 	
 	const float Yaw = PC->GetControlRotation().Yaw;
 	const FRotator TargetRotator = {0, UFBCBlueprintLibrary::SnapAngleToGrid(Yaw + (RotationOffset * 90)), 0};

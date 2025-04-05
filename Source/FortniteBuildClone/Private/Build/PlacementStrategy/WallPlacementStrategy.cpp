@@ -25,7 +25,7 @@ bool UWallPlacementStrategy::GetTargetingLocation(
 	
 	const FRotator TargetRotator = {0, UFBCBlueprintLibrary::SnapAngleToGrid(Yaw), 0};
 	
-	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid(TargetLocation));
+	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation));
 	OutResult.SetRotation(TargetRotator.Quaternion());
 	
 	return CanPlace(OutResult);

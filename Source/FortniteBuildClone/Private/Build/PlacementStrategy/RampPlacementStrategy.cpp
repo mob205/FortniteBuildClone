@@ -14,20 +14,13 @@ bool URampPlacementStrategy::GetTargetingLocation(
 
 	FVector TargetLocation = GetViewLocation(ObjectQueryParams);
 	
-	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid(TargetLocation));
+	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation));
 
+	DrawDebugSphere(Player->GetWorld(), TargetLocation, 1.f, 10, FColor::Cyan);
 	const float Yaw = UFBCBlueprintLibrary::SnapAngleToGrid(PC->GetControlRotation().Yaw + (RotationOffset * 90.0f));
 
-	// Try the calculated yaw as well as the flipped yaw
-	for (int i = 0; i < 2; ++i)
-	{
-		const FRotator TargetRotator = {0, Yaw + (i * 180), 0};
-		OutResult.SetRotation(TargetRotator.Quaternion());
+	FRotator TargetRotator = {0, Yaw, 0};
+	OutResult.SetRotation(TargetRotator.Quaternion());
 
-		if (CanPlace(OutResult))
-		{
-			return true;
-		}
-	}
-	return false;
+	return CanPlace(OutResult);
 }

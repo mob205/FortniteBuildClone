@@ -9,7 +9,7 @@ FTransform UFBCBlueprintLibrary::SnapTransformToGrid(const FTransform& InTransfo
 {
 	FTransform Result{};
 	Result.SetRotation(SnapRotationToGrid(InTransform.Rotator()).Quaternion());
-	Result.SetLocation(SnapLocationToGrid(InTransform.GetLocation()));
+	Result.SetLocation(SnapLocationToGrid_FloorZ(InTransform.GetLocation()));
 	return Result;
 }
 
@@ -20,12 +20,21 @@ FRotator UFBCBlueprintLibrary::SnapRotationToGrid(const FRotator& InRotator)
 	return Result;
 }
 
-FVector UFBCBlueprintLibrary::SnapLocationToGrid(const FVector& InLocation)
+FVector UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(const FVector& InLocation)
 {
 	FVector Result;
 	Result.X = FMath::RoundToFloat(InLocation.X / GridSizeHorizontal) * GridSizeHorizontal;
 	Result.Y = FMath::RoundToFloat(InLocation.Y / GridSizeHorizontal) * GridSizeHorizontal;
 	Result.Z = FMath::FloorToFloat(InLocation.Z / GridSizeVertical) * GridSizeVertical;
+	return Result;
+}
+
+FVector UFBCBlueprintLibrary::SnapLocationToGrid_RoundZ(const FVector& InLocation)
+{
+	FVector Result;
+	Result.X = FMath::RoundToFloat(InLocation.X / GridSizeHorizontal) * GridSizeHorizontal;
+	Result.Y = FMath::RoundToFloat(InLocation.Y / GridSizeHorizontal) * GridSizeHorizontal;
+	Result.Z = FMath::RoundToFloat(InLocation.Z / GridSizeVertical) * GridSizeVertical;
 	return Result;
 }
 

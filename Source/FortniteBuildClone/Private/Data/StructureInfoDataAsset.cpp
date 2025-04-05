@@ -17,7 +17,7 @@ FGameplayTag UStructureInfoDataAsset::GetTagFromInput(const UInputAction* InputA
 	return {};
 }
 
-TSubclassOf<AActor> UStructureInfoDataAsset::GetGhostClass(const FGameplayTag& StructureTag)
+TSubclassOf<AGhostPreviewStructure> UStructureInfoDataAsset::GetGhostClass(const FGameplayTag& StructureTag)
 {
 	FStructureClasses Classes;
 	if (GetStructureClasses(StructureTag, Classes))

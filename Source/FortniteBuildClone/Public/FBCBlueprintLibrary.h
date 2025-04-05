@@ -22,7 +22,10 @@ public:
     static FRotator SnapRotationToGrid(const FRotator& InRotator);
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Grid")
-    static FVector SnapLocationToGrid(const FVector& InLocation);
+    static FVector SnapLocationToGrid_FloorZ(const FVector& InLocation);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Grid")
+	static FVector SnapLocationToGrid_RoundZ(const FVector& InLocation);
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Grid")
 	static float SnapAngleToGrid(const float InAngle);

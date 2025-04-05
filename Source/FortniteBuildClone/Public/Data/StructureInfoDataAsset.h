@@ -9,6 +9,7 @@
 
 class UInputAction;
 class APlacedStructure;
+class AGhostPreviewStructure;
 class UPlacementStrategy;
 
 USTRUCT(BlueprintType)
@@ -17,7 +18,7 @@ struct FStructureClasses
 	GENERATED_BODY()
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<AActor> TargetingActorClass{};
+	TSubclassOf<AGhostPreviewStructure> TargetingActorClass{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<APlacedStructure> StructureActorClass{};
@@ -51,7 +52,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StructureInfo")
 	FGameplayTag GetTagFromInput(const UInputAction* InputAction) const;
 
-	TSubclassOf<AActor> GetGhostClass(const FGameplayTag& StructureTag);
+	TSubclassOf<AGhostPreviewStructure> GetGhostClass(const FGameplayTag& StructureTag);
 
 	TSubclassOf<APlacedStructure> GetStructureActorClass(const FGameplayTag& StructureTag);
 	

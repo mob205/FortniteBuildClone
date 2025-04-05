@@ -6,10 +6,12 @@
 #include "Abilities/GameplayAbilityTargetActor.h"
 #include "StructureTargetingActor.generated.h"
 
+class AGhostPreviewStructure;
 class UGridWorldSubsystem;
 class APlayerController;
 class AGhostStructureActor;
 class UPlacementStrategy;
+class UMaterialInstance;
 
 UCLASS(Blueprintable, BlueprintType)
 class FORTNITEBUILDCLONE_API AStructureTargetingActor : public AGameplayAbilityTargetActor
@@ -25,7 +27,7 @@ public:
 
 	// Sets the type of structure for the targeting actor to use. Used for building preview and location selection 
 	UFUNCTION(BlueprintCallable)
-	void SetGhostActorClass(const TSubclassOf<AActor>& InGhostActorClass);
+	void SetGhostActorClass(const TSubclassOf<AGhostPreviewStructure>& InGhostActorClass);
 
 	// Adds a rotation offset. Each call adds a 90-degree turn around Z-axis.
 	UFUNCTION(BlueprintCallable)
@@ -39,22 +41,34 @@ public:
 protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UChildActorComponent> GhostActorComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UMaterialInstance> ValidGhostMaterial{};
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UMaterialInstance> InvalidGhostMaterial{};
 	
 private:
+	bool bHasValidTarget{};
+
 	// Number of 90 degree turns to offset from standard rotation
 	int CurrentRotationOffset{};
 	
 	FIntVector GridCoordinateLocation{};
 
 	TObjectPtr<UPlacementStrategy> CurrentStrategy;
-	
 	TObjectPtr<UGridWorldSubsystem> GridSubsystem;
-
 	TObjectPtr<APawn> Avatar;
-
+	
 	FGameplayTag CurrentStructureTag{};
+
+	TObjectPtr<AGhostPreviewStructure> GhostActor{};
 
 	// Prevent strategy garbage collection
 	UPROPERTY()
 	TMap<TSubclassOf<UPlacementStrategy>, UPlacementStrategy*> CachedStrategies{};
+
+	void ValidateGhost() const;
+	void InvalidateGhost() const;
+	void HideGhost() const;
 };
