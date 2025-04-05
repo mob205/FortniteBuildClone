@@ -16,6 +16,7 @@ bool URampPlacementStrategy::GetTargetingLocation(
 	
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid(TargetLocation));
 
+	const float Yaw = UFBCBlueprintLibrary::SnapAngleToGrid(PC->GetControlRotation().Yaw + (RotationOffset * 90.0f));
 
 	// Try the calculated yaw as well as the flipped yaw
 	for (int i = 0; i < 2; ++i)
