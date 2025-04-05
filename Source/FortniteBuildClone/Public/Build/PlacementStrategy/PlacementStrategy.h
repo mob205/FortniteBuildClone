@@ -39,13 +39,16 @@ protected:
 	TObjectPtr<AActor> OverlapQueryActor{};
 
 	TObjectPtr<APawn> Player{};
+	
+	TObjectPtr<APlayerController> PC{};
 
 	TObjectPtr<UGridWorldSubsystem> GridSubsystem{};
+
+	FVector GetViewLocation(const FCollisionObjectQueryParams& ObjectQueryParams) const;
 
 private:
 	// Actor to use to check overlaps
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AActor> OverlapQueryActorClass;
 
-	
 };

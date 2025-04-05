@@ -31,11 +31,20 @@ void AStructureTargetingActor::Tick(float DeltaTime)
 	
 	FTransform ResultTransform{};
 
-	if (CurrentStrategy->GetTargetingLocation(CurrentRotationOffset, ResultTransform)
-		&& !GridSubsystem->IsOccupied(ResultTransform, CurrentStructureTag))
+	bool bIsValidTargetLocation = CurrentStrategy->GetTargetingLocation(CurrentRotationOffset, ResultTransform)
+		&& !GridSubsystem->IsOccupied(ResultTransform, CurrentStructureTag);
+	
+	if (bIsValidTargetLocation)
 	{
 		SetActorTransform(ResultTransform);
+
+		GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Green, FString::Printf(TEXT("Can place: true")));
 	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Red, FString::Printf(TEXT("Can place: false")));
+	}
+
 	
 	FIntVector NewGridLocation = UFBCBlueprintLibrary::GetGridCoordinateLocation(GetActorLocation());
 	if (NewGridLocation != GridCoordinateLocation)

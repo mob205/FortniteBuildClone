@@ -8,33 +8,25 @@
 bool URampPlacementStrategy::GetTargetingLocation(
 	int RotationOffset, FTransform& OutResult)
 {
-	APlayerController* PC = Cast<APlayerController>(Player->GetController());
+	FCollisionObjectQueryParams ObjectQueryParams{};
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
 
-	FVector ViewStart{};
-	FRotator ViewRot{};
-
-	PC->GetPlayerViewPoint(ViewStart, ViewRot);
-
-	const FVector ViewDir = ViewRot.Vector();
-	const FVector ViewEnd = ViewStart + (ViewDir * TargetingRange);
-
-	FVector TargetLocation{};
-	
-	FHitResult HitResult{};
-	if (GetWorld()->LineTraceSingleByChannel(HitResult, ViewStart, ViewEnd, ECollisionChannel::ECC_Visibility))
-	{
-		TargetLocation = HitResult.Location;
-	}
-	else
-	{
-		TargetLocation = ViewEnd;
-	}
+	FVector TargetLocation = GetViewLocation(ObjectQueryParams);
 	
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid(TargetLocation));
-	
-	const float Yaw = PC->GetControlRotation().Yaw;
-	const FRotator TargetRotator = {0, UFBCBlueprintLibrary::SnapAngleToGrid(Yaw + (RotationOffset * 90)), 0};
-	OutResult.SetRotation(TargetRotator.Quaternion());
-	
-	return CanPlace(OutResult);
+
+
+	// Try the calculated yaw as well as the flipped yaw
+	for (int i = 0; i < 2; ++i)
+	{
+		const FRotator TargetRotator = {0, Yaw + (i * 180), 0};
+		OutResult.SetRotation(TargetRotator.Quaternion());
+
+		if (CanPlace(OutResult))
+		{
+			return true;
+		}
+	}
+	return false;
 }

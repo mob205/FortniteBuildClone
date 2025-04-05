@@ -8,27 +8,11 @@
 bool UFloorPlacementStrategy::GetTargetingLocation(
 	int RotationOffset, FTransform& OutResult)
 {
-	APlayerController* PC = Player->GetLocalViewingPlayerController();
-	
-	FVector ViewStart{};
-	FRotator ViewRot{};
+	FCollisionObjectQueryParams ObjectQueryParams{};
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
 
-	PC->GetPlayerViewPoint(ViewStart, ViewRot);
-
-	const FVector ViewDir = ViewRot.Vector();
-	const FVector ViewEnd = ViewStart + (ViewDir * TargetingRange);
-
-	FVector TargetLocation{};
-	
-	FHitResult HitResult{};
-	if (GetWorld()->LineTraceSingleByChannel(HitResult, ViewStart, ViewEnd, ECollisionChannel::ECC_Visibility))
-	{
-		TargetLocation = HitResult.Location;
-	}
-	else
-	{
-		TargetLocation = ViewEnd;
-	}
+	FVector TargetLocation = GetViewLocation(ObjectQueryParams);
 	
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid(TargetLocation));
 	

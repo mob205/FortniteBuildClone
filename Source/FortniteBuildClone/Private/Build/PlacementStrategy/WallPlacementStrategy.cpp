@@ -8,30 +8,9 @@
 bool UWallPlacementStrategy::GetTargetingLocation(
 	int RotationOffset, FTransform& OutResult)
 {
-	APlayerController* PC = Cast<APlayerController>(Player->GetController());
-	
-	FVector ViewStart{};
-	FRotator ViewRot{};
-
-	PC->GetPlayerViewPoint(ViewStart, ViewRot);
-
-	const FVector ViewDir = ViewRot.Vector();
-	const FVector ViewEnd = ViewStart + (ViewDir * TargetingRange);
-
-	FVector TargetLocation{};
-	
-	FHitResult HitResult{};
 	FCollisionObjectQueryParams ObjectQueryParams{};
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
-	
-	if (GetWorld()->LineTraceSingleByObjectType(HitResult, ViewStart, ViewEnd, ObjectQueryParams))
-	{
-		TargetLocation = HitResult.Location;
-	}
-	else
-	{
-		TargetLocation = ViewEnd;
-	}
+	FVector TargetLocation = GetViewLocation(ObjectQueryParams);
 	
 	int Yaw = UFBCBlueprintLibrary::SnapAngleToGridInt(PC->GetControlRotation().Yaw);
 
@@ -48,7 +27,6 @@ bool UWallPlacementStrategy::GetTargetingLocation(
 	
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid(TargetLocation));
 	OutResult.SetRotation(TargetRotator.Quaternion());
-
 	
 	return CanPlace(OutResult);
 }
