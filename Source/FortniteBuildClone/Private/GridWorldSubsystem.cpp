@@ -166,7 +166,12 @@ FGridStructureInfo UGridWorldSubsystem::GetGridStructureInfo(const APlacedStruct
 
 EWallDirection UGridWorldSubsystem::GetWallDirection(const FRotator& WallRotation)
 {
-	return static_cast<EWallDirection>(UFBCBlueprintLibrary::SnapAngleToGridInt(WallRotation.Yaw) / 90);
+	int Yaw = UFBCBlueprintLibrary::SnapAngleToGridInt(WallRotation.Yaw);
+	if (Yaw < 0)
+	{
+		Yaw += 360;
+	}
+	return static_cast<EWallDirection>(Yaw / 90);
 }
 
 
