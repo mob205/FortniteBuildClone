@@ -78,6 +78,12 @@ void UGridWorldSubsystem::RegisterPlacedStructure(APlacedStructure* Structure)
 bool UGridWorldSubsystem::IsOccupied(const FTransform& Transform, FGameplayTag StructureTag)
 {
 	const FIntVector GridLocation = UFBCBlueprintLibrary::GetGridCoordinateLocation(Transform.GetLocation());
+
+	if (!TagToType.Contains(StructureTag))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Structure tag not found!"));
+		return true;
+	}
 	EGridBuildingType BuildingType = TagToType[StructureTag];
 
 	APlacedStructure** StructureLocation = FindStructureAtPosition(GridLocation, BuildingType, Transform.Rotator());

@@ -13,6 +13,7 @@ UCLASS()
 class FORTNITEBUILDCLONE_API URampPlacementStrategy : public UPlacementStrategy
 {
 	GENERATED_BODY()
+
 public:
 	virtual bool GetTargetingLocation(int RotationOffset, FTransform& OutResult) override;
 };

@@ -4,6 +4,7 @@
 #include "Build/PlacementStrategy/PyramidPlacementStrategy.h"
 
 #include "FBCBlueprintLibrary.h"
+#include "GridWorldSubsystem.h"
 
 bool UPyramidPlacementStrategy::GetTargetingLocation(
 	int RotationOffset, FTransform& OutResult)
@@ -31,7 +32,14 @@ bool UPyramidPlacementStrategy::GetTargetingLocation(
 	TargetLocation.Z = Player->GetActorLocation().Z;
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_RoundZ(TargetLocation));
 
-	if (CanPlace(OutResult))
+	if (CanPlace(OutResult) && !GridSubsystem->IsOccupied(OutResult, StructureTag))
+	{
+		return true;
+	}
+
+	// Try the player's current grid slot
+	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(Player->GetActorLocation()));
+	if (CanPlace(OutResult) && !GridSubsystem->IsOccupied(OutResult, StructureTag))
 	{
 		return true;
 	}

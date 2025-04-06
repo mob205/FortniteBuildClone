@@ -4,6 +4,7 @@
 #include "Build/PlacementStrategy/RampPlacementStrategy.h"
 
 #include "FBCBlueprintLibrary.h"
+#include "GridWorldSubsystem.h"
 
 bool URampPlacementStrategy::GetTargetingLocation(
 	int RotationOffset, FTransform& OutResult)
@@ -32,7 +33,7 @@ bool URampPlacementStrategy::GetTargetingLocation(
 	TargetLocation.Z = Player->GetActorLocation().Z;
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation));
 
-	if (CanPlace(OutResult))
+	if (CanPlace(OutResult) && !GridSubsystem->IsOccupied(OutResult, StructureTag))
 	{
 		return true;
 	}

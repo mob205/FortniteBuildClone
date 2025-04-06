@@ -4,6 +4,7 @@
 #include "Build/PlacementStrategy/FloorPlacementStrategy.h"
 
 #include "FBCBlueprintLibrary.h"
+#include "GridWorldSubsystem.h"
 
 bool UFloorPlacementStrategy::GetTargetingLocation(
 	int RotationOffset, FTransform& OutResult)
@@ -31,11 +32,18 @@ bool UFloorPlacementStrategy::GetTargetingLocation(
 	TargetLocation.Z = Player->GetActorLocation().Z;
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_RoundZ(TargetLocation));
 
-	if (CanPlace(OutResult))
+	if (CanPlace(OutResult) && !GridSubsystem->IsOccupied(OutResult, StructureTag))
 	{
 		return true;
 	}
 
+	// Try the player's current grid slot
+	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(Player->GetActorLocation()));
+	if (CanPlace(OutResult) && !GridSubsystem->IsOccupied(OutResult, StructureTag))
+	{
+		return true;
+	}
+	
 	// Use cached target location to show invalid placement indicator
 	OutResult = PrimaryTargetLocation;
 	return false;

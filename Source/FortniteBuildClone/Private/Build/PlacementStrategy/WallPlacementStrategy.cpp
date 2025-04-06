@@ -4,6 +4,7 @@
 #include "Build/PlacementStrategy/WallPlacementStrategy.h"
 #include "FBCBlueprintLibrary.h"
 #include "GridSizes.h"
+#include "GridWorldSubsystem.h"
 
 bool UWallPlacementStrategy::GetTargetingLocation(
 	int RotationOffset, FTransform& OutResult)
@@ -39,7 +40,14 @@ bool UWallPlacementStrategy::GetTargetingLocation(
 	TargetLocation.Z = Player->GetActorLocation().Z;
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation));
 
-	if (CanPlace(OutResult))
+	if (CanPlace(OutResult) && !GridSubsystem->IsOccupied(OutResult, StructureTag))
+	{
+		return true;
+	}
+
+	// Try the player's current grid slot
+	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(Player->GetActorLocation()));
+	if (CanPlace(OutResult) && !GridSubsystem->IsOccupied(OutResult, StructureTag))
 	{
 		return true;
 	}

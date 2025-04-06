@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "UObject/Object.h"
 #include "PlacementStrategy.generated.h"
 
@@ -46,6 +47,8 @@ protected:
 
 	FVector GetViewLocation(const FCollisionObjectQueryParams& ObjectQueryParams) const;
 
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayTag StructureTag{};
 private:
 	// Actor to use to check overlaps
 	UPROPERTY(EditDefaultsOnly)
