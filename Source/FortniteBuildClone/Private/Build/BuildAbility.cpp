@@ -95,11 +95,9 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 	}
 
 	// Spawn and register structure
-	APlacedStructure* PlacedStructure = GetWorld()->SpawnActor<APlacedStructure>(StructureActorClass,
-		BuildingTransform.GetLocation(), BuildingTransform.Rotator());
-		
+	APlacedStructure* PlacedStructure = GetWorld()->SpawnActorDeferred<APlacedStructure>(StructureActorClass, BuildingTransform);
 	PlacedStructure->SetStructureTag(SelectedStructureTag);
-	GridWorldSubsystem->RegisterPlacedStructure(PlacedStructure);
+	UGameplayStatics::FinishSpawningActor(PlacedStructure, BuildingTransform);
 }
 
 void UBuildAbility::CallEndAbility(const FGameplayAbilityTargetDataHandle& Data)

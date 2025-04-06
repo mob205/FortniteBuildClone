@@ -7,6 +7,8 @@
 #include "GameFramework/Actor.h"
 #include "PlacedStructure.generated.h"
 
+class UGridWorldSubsystem;
+
 UCLASS()
 class FORTNITEBUILDCLONE_API APlacedStructure : public AActor
 {
@@ -19,6 +21,12 @@ public:
 	void SetStructureTag(FGameplayTag Tag) { StructureTag = Tag; }
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability System")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Ability System")
 	FGameplayTag StructureTag{};
+
+	TObjectPtr<UGridWorldSubsystem> GridWorldSubsystem;
+	
+	virtual void BeginPlay() override;
+
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 };
