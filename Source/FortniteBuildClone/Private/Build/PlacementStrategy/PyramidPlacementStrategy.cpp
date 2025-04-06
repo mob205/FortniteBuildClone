@@ -19,6 +19,24 @@ bool UPyramidPlacementStrategy::GetTargetingLocation(
 	const float Yaw = PC->GetControlRotation().Yaw;
 	const FRotator TargetRotator = {0, UFBCBlueprintLibrary::SnapAngleToGrid(Yaw + (RotationOffset * 90)), 0};
 	OutResult.SetRotation(TargetRotator.Quaternion());
+
+	FTransform PrimaryTargetLocation = OutResult;
 	
-	return CanPlace(OutResult);
+	if (CanPlace(OutResult))
+	{
+		return true;
+	}
+
+	// Try placing in same vertical block as player
+	TargetLocation.Z = Player->GetActorLocation().Z;
+	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_RoundZ(TargetLocation));
+
+	if (CanPlace(OutResult))
+	{
+		return true;
+	}
+
+	// Use cached target location to show invalid placement indicator
+	OutResult = PrimaryTargetLocation;
+	return false;
 }

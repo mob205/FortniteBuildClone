@@ -16,11 +16,28 @@ bool URampPlacementStrategy::GetTargetingLocation(
 	
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation));
 
-	DrawDebugSphere(Player->GetWorld(), TargetLocation, 1.f, 10, FColor::Cyan);
 	const float Yaw = UFBCBlueprintLibrary::SnapAngleToGrid(PC->GetControlRotation().Yaw + (RotationOffset * 90.0f));
 
 	FRotator TargetRotator = {0, Yaw, 0};
 	OutResult.SetRotation(TargetRotator.Quaternion());
 
-	return CanPlace(OutResult);
+	FTransform PrimaryTargetLocation = OutResult;
+	
+	if (CanPlace(OutResult))
+	{
+		return true;
+	}
+
+	// Try placing in same vertical block as player
+	TargetLocation.Z = Player->GetActorLocation().Z;
+	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation));
+
+	if (CanPlace(OutResult))
+	{
+		return true;
+	}
+
+	// Use cached target location to show invalid placement indicator
+	OutResult = PrimaryTargetLocation;
+	return false;
 }

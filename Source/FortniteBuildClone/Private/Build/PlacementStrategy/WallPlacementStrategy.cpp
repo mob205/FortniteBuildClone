@@ -28,5 +28,23 @@ bool UWallPlacementStrategy::GetTargetingLocation(
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation));
 	OutResult.SetRotation(TargetRotator.Quaternion());
 	
-	return CanPlace(OutResult);
+	FTransform PrimaryTargetLocation = OutResult;
+	
+	if (CanPlace(OutResult))
+	{
+		return true;
+	}
+
+	// Try placing in same vertical block as player
+	TargetLocation.Z = Player->GetActorLocation().Z;
+	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation));
+
+	if (CanPlace(OutResult))
+	{
+		return true;
+	}
+
+	// Use cached target location to show invalid placement indicator
+	OutResult = PrimaryTargetLocation;
+	return false;
 }
