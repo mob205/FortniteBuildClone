@@ -10,6 +10,8 @@
 class AStructureTargetingActor;
 class UStructureInfoDataAsset;
 class UGridWorldSubsystem;
+class UPlacementStrategy;
+
 /**
  * 
  */
@@ -37,6 +39,10 @@ private:
 
 	FGameplayTag SelectedStructureTag{};
 
+	// Prevent strategy garbage collection
+	UPROPERTY()
+	TMap<FGameplayTag, UPlacementStrategy*> CachedStrategies{};
+
 	// Places a structure after target data is received
 	UFUNCTION()
 	void PlaceStructure(const FGameplayAbilityTargetDataHandle& Data);
@@ -52,5 +58,7 @@ private:
 	// Updates targeting actor with the newly selected structure
 	UFUNCTION()
 	void OnSelectStructure(FGameplayEventData Payload);
+
+	UPlacementStrategy* GetPlacementStrategy(FGameplayTag StructureTag);
 };
 

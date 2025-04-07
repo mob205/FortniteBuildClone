@@ -59,7 +59,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Structure Info")
 	bool GetStructureClasses(const FGameplayTag& StructureTag, FStructureClasses& Classes);
 
-	TSubclassOf<UPlacementStrategy> GetPlacementStrategy(const FGameplayTag& StructureTag);
+	TSubclassOf<UPlacementStrategy> GetPlacementStrategyClass(const FGameplayTag& StructureTag);
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FStructureInfo> StructureInfo{};

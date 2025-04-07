@@ -51,7 +51,7 @@ bool UStructureInfoDataAsset::GetStructureClasses(const FGameplayTag& StructureT
 	return true;
 }
 
-TSubclassOf<UPlacementStrategy> UStructureInfoDataAsset::GetPlacementStrategy(const FGameplayTag& StructureTag)
+TSubclassOf<UPlacementStrategy> UStructureInfoDataAsset::GetPlacementStrategyClass(const FGameplayTag& StructureTag)
 {
 	if (!bHasInitializedMaps) { InitializeMaps(); }
 

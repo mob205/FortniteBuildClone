@@ -33,7 +33,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddRotationOffset() { CurrentRotationOffset = (CurrentRotationOffset + 1) % 4; };
 
-	void SetPlacementStrategy(const TSubclassOf<UPlacementStrategy>& StrategyClass);
+	void SetPlacementStrategy(UPlacementStrategy* InStrategy);
 
 	void SetAvatar(APawn* InAvatar) { Avatar = InAvatar; }
 
@@ -63,10 +63,6 @@ private:
 	FGameplayTag CurrentStructureTag{};
 
 	TObjectPtr<AGhostPreviewStructure> GhostActor{};
-
-	// Prevent strategy garbage collection
-	UPROPERTY()
-	TMap<TSubclassOf<UPlacementStrategy>, UPlacementStrategy*> CachedStrategies{};
 
 	void ValidateGhost() const;
 	void InvalidateGhost() const;

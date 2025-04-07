@@ -92,20 +92,9 @@ void AStructureTargetingActor::SetGhostActorClass(const TSubclassOf<AGhostPrevie
 	GhostActor = Cast<AGhostPreviewStructure>(GhostActorComponent->GetChildActor());
 }
 
-void AStructureTargetingActor::SetPlacementStrategy(const TSubclassOf<UPlacementStrategy>& StrategyClass)
+void AStructureTargetingActor::SetPlacementStrategy(UPlacementStrategy* InStrategy)
 {
-	// Check if there is a cached strategy
-	if (CachedStrategies.Contains(StrategyClass))
-	{
-		CurrentStrategy = CachedStrategies[StrategyClass];
-		return;
-	}
-
-	// Create new strategy
-	CurrentStrategy = NewObject<UPlacementStrategy>(this, StrategyClass);
-	CurrentStrategy->InitializeStrategy(Avatar, GridSubsystem);
-
-	CachedStrategies.Add(StrategyClass, CurrentStrategy);
+	CurrentStrategy = InStrategy;
 }
 
 void AStructureTargetingActor::ValidateGhost() const

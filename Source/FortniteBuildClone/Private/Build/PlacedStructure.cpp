@@ -19,7 +19,7 @@ void APlacedStructure::BeginPlay()
 	GridWorldSubsystem->RegisterPlacedStructure(this);
 }
 
-void APlacedStructure::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+void APlacedStructure::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 

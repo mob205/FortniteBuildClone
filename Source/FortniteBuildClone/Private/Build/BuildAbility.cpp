@@ -10,6 +10,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GridWorldSubsystem.h"
 #include "FBCBlueprintLibrary.h"
+#include "Build/PlacementStrategy/PlacementStrategy.h"
 
 UBuildAbility::UBuildAbility()
 {
@@ -120,7 +121,27 @@ void UBuildAbility::OnSelectStructure(FGameplayEventData Payload)
 	if (IsValid(TargetingActor))
 	{
 		TargetingActor->SetGhostActorClass(StructureInfo->GetGhostClass(SelectedStructureTag));
-		TargetingActor->SetPlacementStrategy(StructureInfo->GetPlacementStrategy(SelectedStructureTag));
+		TargetingActor->SetPlacementStrategy(GetPlacementStrategy(SelectedStructureTag));
 		TargetingActor->SetStructureTag(SelectedStructureTag);
 	}
+}
+
+UPlacementStrategy* UBuildAbility::GetPlacementStrategy(FGameplayTag StructureTag)
+{
+	UPlacementStrategy* Result{};
+	
+	// Check if there is a cached strategy
+	if (CachedStrategies.Contains(StructureTag))
+	{
+		Result = CachedStrategies[StructureTag];
+		return Result;
+	}
+
+	// Create new strategy
+	Result = NewObject<UPlacementStrategy>(this, StructureInfo->GetPlacementStrategyClass(StructureTag));
+	Result->InitializeStrategy(Cast<APawn>(GetAvatarActorFromActorInfo()), GridWorldSubsystem);
+
+	CachedStrategies.Add(SelectedStructureTag, Result);
+	
+	return Result;
 }
