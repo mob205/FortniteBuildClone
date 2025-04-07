@@ -3,7 +3,9 @@
 
 #include "Build/PlacedStructure.h"
 
+#include "FBCBlueprintLibrary.h"
 #include "GridWorldSubsystem.h"
+#include "FortniteBuildClone/FortniteBuildClone.h"
 #include "Net/UnrealNetwork.h"
 
 APlacedStructure::APlacedStructure()
@@ -40,5 +42,10 @@ void APlacedStructure::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 void APlacedStructure::FinishStructureDestruction()
 {
+	UE_LOG(LogFBC, Display, TEXT("Destroying structure %s at grid slot %s"), *GetName(),
+		*UFBCBlueprintLibrary::GetGridCoordinateLocation(GetActorLocation()).ToString());
+	
+	GridWorldSubsystem->UnregisterStructure(this);
+	Destroy();
 }
 

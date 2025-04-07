@@ -76,6 +76,23 @@ void UGridWorldSubsystem::RegisterPlacedStructure(APlacedStructure* Structure)
 	*StructureLocation = Structure;
 }
 
+void UGridWorldSubsystem::UnregisterStructure(APlacedStructure* Structure)
+{
+	if (!Structure) { return; }
+	
+	FGridStructureInfo Info = GetGridStructureInfo(Structure);
+
+	APlacedStructure** StructureLocation = FindStructureAtPosition(Info.GridLocation, Info.BuildingType, Structure->GetActorRotation());
+	
+	if (StructureLocation == nullptr || *StructureLocation == nullptr)
+	{
+		UE_LOG(LogFBC, Warning, TEXT("GridSubsystem: Attempted to unregister a structure that wasn't registered."));
+		return;
+	}
+	
+	*StructureLocation = nullptr;
+}
+
 bool UGridWorldSubsystem::IsOccupied(const FTransform& Transform, FGameplayTag StructureTag)
 {
 	const FIntVector GridLocation = UFBCBlueprintLibrary::GetGridCoordinateLocation(Transform.GetLocation());

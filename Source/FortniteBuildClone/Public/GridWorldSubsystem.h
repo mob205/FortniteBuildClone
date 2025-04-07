@@ -54,6 +54,8 @@ public:
 	// Registers the structure into the grid
 	void RegisterPlacedStructure(APlacedStructure* Structure);
 
+	void UnregisterStructure(APlacedStructure* Structure);
+
 	// Returns true if the grid space at the specified transform is occupied for the structure
 	bool IsOccupied(const FTransform& Transform, FGameplayTag StructureTag);
 	
