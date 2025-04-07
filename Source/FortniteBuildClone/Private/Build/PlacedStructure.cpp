@@ -19,7 +19,14 @@ void APlacedStructure::StartStructureDestruction()
 	
 	GetWorld()->GetTimerManager().SetTimer(
 		DestroyTimerHandle,
-		FTimerDelegate::CreateUObject(this, &APlacedStructure::FinishStructureDestruction),
+		FTimerDelegate::CreateLambda(
+		[this]()
+		{
+			if (!IsGrounded())
+			{
+				FinishStructureDestruction();
+			}
+		}),
 		DestructionDelay,
 		false);
 }
@@ -44,8 +51,48 @@ void APlacedStructure::FinishStructureDestruction()
 {
 	UE_LOG(LogFBC, Display, TEXT("Destroying structure %s at grid slot %s"), *GetName(),
 		*UFBCBlueprintLibrary::GetGridCoordinateLocation(GetActorLocation()).ToString());
+
+	TArray<AActor*> OverlappingActors{};
+	GetOverlappingActors(OverlappingActors);
+	for (const auto& Actor : OverlappingActors)
+	{
+		if (APlacedStructure* AsStructure = Cast<APlacedStructure>(Actor))
+		{
+			AsStructure->StartStructureDestruction();
+		}
+	}
 	
 	GridWorldSubsystem->UnregisterStructure(this);
 	Destroy();
+}
+
+bool APlacedStructure::IsGrounded()
+{
+	TSet<APlacedStructure*> SeenStructures{};
+	TArray<AActor*> OverlappingActors{};
+	TQueue<APlacedStructure*> Queue{};
+	Queue.Enqueue(this);
+
+	while (!Queue.IsEmpty())
+	{
+		APlacedStructure* CurStructure = *Queue.Peek();
+		Queue.Pop();
+
+		CurStructure->GetOverlappingActors(OverlappingActors);
+		for (const auto& Actor : OverlappingActors)
+		{
+			if (APlacedStructure* AsStructure = Cast<APlacedStructure>(Actor))
+			{
+				if (SeenStructures.Contains(AsStructure)) { continue; }
+				SeenStructures.Add(AsStructure);
+				Queue.Enqueue(AsStructure);
+			}
+			else if (Actor->GetRootComponent()->GetCollisionObjectType() == ECC_WorldStatic)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
 }
 

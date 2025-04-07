@@ -20,8 +20,14 @@ public:
 	FGameplayTag GetStructureTag() const { return StructureTag; }
 	void SetStructureTag(FGameplayTag Tag) { StructureTag = Tag; }
 
+	// Initiates destroying the structure after a delay
 	UFUNCTION(BlueprintCallable)
 	void StartStructureDestruction();
+
+	// Destroys and unregisters the structure without checking for groundedness
+	// Prompts nearby structures to start destroying if not grounded
+	UFUNCTION(BlueprintCallable)
+	void FinishStructureDestruction();
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Ability System")
@@ -37,5 +43,6 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
-	void FinishStructureDestruction();
+	// Returns true if the structure has a path to a structure connected to the ground
+	bool IsGrounded();
 };
