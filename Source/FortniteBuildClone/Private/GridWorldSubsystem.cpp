@@ -7,6 +7,7 @@
 #include "Build/PlacedStructure.h"
 #include "GameplayTagContainer.h"
 #include "GridSizes.h"
+#include "FortniteBuildClone/FortniteBuildClone.h"
 #include "Kismet/BlueprintInstancedStructLibrary.h"
 
 
@@ -57,15 +58,15 @@ void UGridWorldSubsystem::RegisterPlacedStructure(APlacedStructure* Structure)
 	if (StructureLocation == nullptr)
 	{
 		// Couldn't find grid slot. This shouldn't happen since it was just added
-		UE_LOG(LogTemp, Warning,
-			TEXT("Attempted to register a structure at an invalid grid slot!"));
+		UE_LOG(LogFBC, Warning,
+			TEXT("GridSubsystem: Attempted to register a structure at an invalid grid slot!"));
 		return;
 	}
 	
 	if (*StructureLocation != nullptr)
 	{
-		UE_LOG(LogTemp, Warning,
-			TEXT("Attempted to register a structure at a location with a pre-existing structure!"));
+		UE_LOG(LogFBC, Warning,
+			TEXT("GridSubsystem: Attempted to register a structure at an occupied location!"));
 		return;
 
 		// Maybe clean up newly added grid slot since if it's unused?
@@ -81,7 +82,7 @@ bool UGridWorldSubsystem::IsOccupied(const FTransform& Transform, FGameplayTag S
 
 	if (!TagToType.Contains(StructureTag))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Structure tag not found!"));
+		UE_LOG(LogFBC, Warning, TEXT("GridSubsystem: Attempted to check occupation with invalid structure tag"));
 		return true;
 	}
 	EGridBuildingType BuildingType = TagToType[StructureTag];
@@ -120,7 +121,7 @@ APlacedStructure** UGridWorldSubsystem::FindMainStructureAtPosition(const FIntVe
 		return &Grid[GridPosition].Main;
 
 	default:
-		UE_LOG(LogTemp, Error, TEXT("GridWorldSubsystem: Attempted to get invalid main structure."));
+		UE_LOG(LogFBC, Error, TEXT("GridSubsystem: Attempted to get invalid main structure."));
 		return nullptr;
 	}
 }

@@ -11,6 +11,7 @@
 #include "GridWorldSubsystem.h"
 #include "FBCBlueprintLibrary.h"
 #include "Build/PlacementStrategy/PlacementStrategy.h"
+#include "FortniteBuildClone/FortniteBuildClone.h"
 
 UBuildAbility::UBuildAbility()
 {
@@ -82,19 +83,19 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 	// (e.g. make sure player isn't trying to build across the map)
 	if (GridWorldSubsystem->IsOccupied(BuildingTransform, SelectedStructureTag))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Attempted to place at already occupied spot."))
+		UE_LOG(LogFBC, Warning, TEXT("BuildAbility: Request placement is in an occupied location."))
 		return;
 	}
 
 	UPlacementStrategy* PlacementStrategy = GetPlacementStrategy(SelectedStructureTag);
 	if (!IsValid(PlacementStrategy))
 	{
-		UE_LOG(LogTemp, Error, TEXT("No valid placement strategy found."));
+		UE_LOG(LogFBC, Error, TEXT("BuildAbility: No valid placement strategy found."));
 	}
 	
 	if (!PlacementStrategy->CanPlace(BuildingTransform))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Requested to place building in invalid location."));
+		UE_LOG(LogFBC, Warning, TEXT("BuildAbility: Requested placement is invalid (not supported by structures or ground)"));
 	}
 	
 	// Build request validated
@@ -104,7 +105,8 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 
 	if (!IsValid(StructureActorClass))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No valid structure classes found for structure tag %s"),
+		UE_LOG(LogFBC, Error,
+			TEXT("BuildAbility: No valid structure classes found for structure tag %s. Could not spawn structure."),
 			*SelectedStructureTag.GetTagName().ToString());
 		return;
 	}

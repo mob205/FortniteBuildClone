@@ -20,13 +20,22 @@ public:
 	FGameplayTag GetStructureTag() const { return StructureTag; }
 	void SetStructureTag(FGameplayTag Tag) { StructureTag = Tag; }
 
+	UFUNCTION(BlueprintCallable)
+	void StartStructureDestruction();
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Ability System")
 	FGameplayTag StructureTag{};
 
+	UPROPERTY(EditDefaultsOnly)
+	float DestructionDelay{.2f};
+	
 	TObjectPtr<UGridWorldSubsystem> GridWorldSubsystem;
 	
 	virtual void BeginPlay() override;
 
-	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+private:
+	void FinishStructureDestruction();
 };

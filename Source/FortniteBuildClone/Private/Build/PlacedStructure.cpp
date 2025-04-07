@@ -11,6 +11,17 @@ APlacedStructure::APlacedStructure()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
+void APlacedStructure::StartStructureDestruction()
+{
+	FTimerHandle DestroyTimerHandle;
+	
+	GetWorld()->GetTimerManager().SetTimer(
+		DestroyTimerHandle,
+		FTimerDelegate::CreateUObject(this, &APlacedStructure::FinishStructureDestruction),
+		DestructionDelay,
+		false);
+}
+
 void APlacedStructure::BeginPlay()
 {
 	Super::BeginPlay();
@@ -25,5 +36,9 @@ void APlacedStructure::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME_CONDITION(APlacedStructure, StructureTag, COND_None);
 
+}
+
+void APlacedStructure::FinishStructureDestruction()
+{
 }
 

@@ -6,6 +6,7 @@
 #include "GameplayAbilitySpec.h"
 #include "Data/StructureInfoDataAsset.h"
 #include "InputAction.h"
+#include "FortniteBuildClone/FortniteBuildClone.h"
 #include "Player/FBCPlayerState.h"
 
 UAbilitySystemComponent* AFBCCharacter::GetAbilitySystemComponent() const
@@ -64,7 +65,7 @@ void AFBCCharacter::OnBuildAction(UInputAction* InputAction)
 
 	if (!StructureTag.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Invalid build action [%s] provided to OnBuildAction."), *InputAction->GetName());
+		UE_LOG(LogFBC, Warning, TEXT("Invalid build action [%s] provided to OnBuildAction."), *InputAction->GetName());
 	}
 
 	// Alert the ability of switching structure locally
