@@ -75,16 +75,30 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 	if (!UKismetSystemLibrary::IsServer(this)) { return; }
 	
 	FTransform BuildingTransform = Data.Data[0]->GetEndPointTransform();
+	BuildingTransform = UFBCBlueprintLibrary::SnapTransformToGrid(BuildingTransform);
 
-	// Verify that there isn't another structure already taking up the space
+	// Validate the requested build
+	// Could also check for range using placement strategy's TargetingRange
+	// (e.g. make sure player isn't trying to build across the map)
 	if (GridWorldSubsystem->IsOccupied(BuildingTransform, SelectedStructureTag))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Attempted to place at already occupied spot."))
 		return;
 	}
-	
-	BuildingTransform = UFBCBlueprintLibrary::SnapTransformToGrid(BuildingTransform);
 
+	UPlacementStrategy* PlacementStrategy = GetPlacementStrategy(SelectedStructureTag);
+	if (!IsValid(PlacementStrategy))
+	{
+		UE_LOG(LogTemp, Error, TEXT("No valid placement strategy found."));
+	}
+	
+	if (!PlacementStrategy->CanPlace(BuildingTransform))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Requested to place building in invalid location."));
+	}
+	
+	// Build request validated
+	
 	// Get class of actor to spawn
 	TSubclassOf<APlacedStructure> StructureActorClass = StructureInfo->GetStructureActorClass(SelectedStructureTag);
 
@@ -95,7 +109,7 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 		return;
 	}
 
-	// Spawn and register structure
+	// Spawn and initialize structure
 	APlacedStructure* PlacedStructure = GetWorld()->SpawnActorDeferred<APlacedStructure>(StructureActorClass, BuildingTransform);
 	PlacedStructure->SetStructureTag(SelectedStructureTag);
 	UGameplayStatics::FinishSpawningActor(PlacedStructure, BuildingTransform);
