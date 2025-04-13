@@ -35,4 +35,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Grid")
 	static FIntVector GetGridCoordinateLocation(FVector InWorldLocation);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ground Detection")
+	static bool IsGround(AActor* Actor);
 };

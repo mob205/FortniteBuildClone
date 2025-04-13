@@ -2,6 +2,8 @@
 
 
 #include "Build/PlacementStrategy/PlacementStrategy.h"
+
+#include "FBCBlueprintLibrary.h"
 #include "Build/PlacedStructure.h"
 
 bool UPlacementStrategy::CanPlace(const FTransform& QueryTransform) const
@@ -14,18 +16,19 @@ bool UPlacementStrategy::CanPlace(const FTransform& QueryTransform) const
 
 	for (AActor* OverlappingActor : OverlappingActors)
 	{
-		if (OverlappingActor->GetRootComponent()->GetCollisionObjectType() == ECC_WorldStatic)
-		{
-			// Grounded - remember it somehow?
-			OverlapQueryActor->SetActorEnableCollision(false);
-			return true;
-		}
 		if (APlacedStructure* AsPlacedStructure = Cast<APlacedStructure>(OverlappingActor))
 		{
 			// Valid support found - tell supporting neighbors?
 			OverlapQueryActor->SetActorEnableCollision(false);
 			return true;
 		}
+		if (UFBCBlueprintLibrary::IsGround(OverlappingActor))
+		{
+			// Grounded - remember it somehow?
+			OverlapQueryActor->SetActorEnableCollision(false);
+			return true;
+		}
+		
 	}
 	
 	OverlapQueryActor->SetActorEnableCollision(false);

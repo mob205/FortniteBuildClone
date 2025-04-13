@@ -87,7 +87,7 @@ bool APlacedStructure::IsGrounded()
 				SeenStructures.Add(AsStructure);
 				Queue.Enqueue(AsStructure);
 			}
-			else if (Actor->GetRootComponent()->GetCollisionObjectType() == ECC_WorldStatic)
+			else if (UFBCBlueprintLibrary::IsGround(Actor))
 			{
 				return true;
 			}

@@ -2,7 +2,7 @@
 
 #include "FBCBlueprintLibrary.h"
 #include "GridSizes.h"
-
+#include "LandscapeComponent.h"
 
 
 FTransform UFBCBlueprintLibrary::SnapTransformToGrid(const FTransform& InTransform)
@@ -55,4 +55,14 @@ FIntVector UFBCBlueprintLibrary::GetGridCoordinateLocation(FVector InWorldLocati
 	Result.Y = FMath::RoundToInt(InWorldLocation.Y / GridSizeHorizontal);
 	Result.Z = FMath::RoundToInt(InWorldLocation.Z / GridSizeVertical);
 	return Result;
+}
+
+bool UFBCBlueprintLibrary::IsGround(AActor* Actor)
+{
+	UPrimitiveComponent* PrimitiveComp = Actor->GetComponentByClass<UPrimitiveComponent>();
+	if (PrimitiveComp && PrimitiveComp->GetCollisionObjectType() == ECC_WorldStatic)
+	{
+		return true;
+	}
+	return false;
 }
