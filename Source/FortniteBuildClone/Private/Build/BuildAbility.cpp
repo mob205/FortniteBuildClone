@@ -10,12 +10,27 @@
 #include "Kismet/GameplayStatics.h"
 #include "GridWorldSubsystem.h"
 #include "FBCBlueprintLibrary.h"
+#include "GameplayTagContainer.h"
 #include "Build/PlacementStrategy/PlacementStrategy.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 
 UBuildAbility::UBuildAbility()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+
+	SelectedMaterialTag = FGameplayTag::RequestGameplayTag("Material.Wood");
+}
+
+UGameplayEffect* UBuildAbility::GetCostGameplayEffect() const
+{
+	if (MaterialCostEffects.Contains(SelectedMaterialTag))
+	{
+		return MaterialCostEffects[SelectedMaterialTag]->GetDefaultObject<UGameplayEffect>();
+	}
+	else
+	{
+		return nullptr;
+	}
 }
 
 void UBuildAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
@@ -67,13 +82,19 @@ void UBuildAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	
 	SelectStructureGameplayEvent->EventReceived.AddDynamic(this, &UBuildAbility::OnSelectStructure);
 	SelectStructureGameplayEvent->ReadyForActivation();
-	
 }
 
 void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 {
 	// Only the server should place structures
 	if (!UKismetSystemLibrary::IsServer(this)) { return; }
+
+	if (!CommitAbility(GetCurrentAbilitySpecHandle(), CurrentActorInfo, GetCurrentActivationInfo()))
+	{
+		UE_LOG(LogFBC, Warning, TEXT("BuildAbility: Insufficient materials"));
+		return;
+	}
+
 	
 	FTransform BuildingTransform = Data.Data[0]->GetEndPointTransform();
 	BuildingTransform = UFBCBlueprintLibrary::SnapTransformToGrid(BuildingTransform);

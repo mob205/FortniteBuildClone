@@ -4,6 +4,7 @@
 #include "Player/FBCCharacter.h"
 #include "AbilitySystem/FBCAbilitySystemComponent.h"
 #include "GameplayAbilitySpec.h"
+#include "GameplayEffect.h"
 #include "Data/StructureInfoDataAsset.h"
 #include "InputAction.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
@@ -21,6 +22,7 @@ void AFBCCharacter::PossessedBy(AController* NewController)
 
 	InitAbilityActorInfo();
 	GrantInitialAbilities();
+	InitializeAttributes();
 }
 
 // Called on clients only
@@ -56,6 +58,15 @@ void AFBCCharacter::GrantInitialAbilities()
 		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec{Ability, 1};
 		ASC->GiveAbility(AbilitySpec);
 	}
+}
+
+void AFBCCharacter::InitializeAttributes()
+{
+	if (!InitialAttributesEffect) { return; }
+
+	FGameplayEffectContextHandle Context = ASC->MakeEffectContext();
+	FGameplayEffectSpecHandle Effect = ASC->MakeOutgoingSpec(InitialAttributesEffect, 1, Context);
+	ASC->ApplyGameplayEffectSpecToSelf(*Effect.Data);
 }
 
 void AFBCCharacter::OnBuildAction(UInputAction* InputAction)

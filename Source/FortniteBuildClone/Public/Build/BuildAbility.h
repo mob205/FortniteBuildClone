@@ -29,8 +29,13 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Targeting")
 	TSubclassOf<AStructureTargetingActor> TargetingActorClass{};
 
+	virtual UGameplayEffect* GetCostGameplayEffect() const override;
+	
 protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Costs")
+	TMap<FGameplayTag, TSubclassOf<UGameplayEffect>> MaterialCostEffects{};
 	
 private:
 	TObjectPtr<AStructureTargetingActor> TargetingActor{};
@@ -38,6 +43,7 @@ private:
 	TObjectPtr<UGridWorldSubsystem> GridWorldSubsystem{};
 
 	FGameplayTag SelectedStructureTag{};
+	FGameplayTag SelectedMaterialTag{};
 
 	// Prevent strategy garbage collection
 	UPROPERTY()

@@ -11,6 +11,7 @@
 class UFBCAttributeSet;
 class UFBCAbilitySystemComponent;
 class UGameplayAbility;
+class UGameplayEffect;
 class UStructureInfoDataAsset;
 class UInputAction;
 
@@ -36,10 +37,14 @@ protected:
 private:
 	void InitAbilityActorInfo();
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Ability System")
 	TArray<TSubclassOf<UGameplayAbility>> InitialAbilities;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Ability System")
+	TSubclassOf<UGameplayEffect> InitialAttributesEffect;
+	
 	void GrantInitialAbilities();
+	void InitializeAttributes();
 
 	UPROPERTY()
 	TObjectPtr<UFBCAbilitySystemComponent> ASC;

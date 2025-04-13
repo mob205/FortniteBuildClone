@@ -36,16 +36,18 @@ void AStructureTargetingActor::Tick(float DeltaTime)
 
 	bool bReceivedValidLocation = CurrentStrategy->GetTargetingLocation(CurrentRotationOffset, ResultTransform);
 	bool bIsOccupied{};
+	bool bHasEnoughMaterial{ true };
 	if (bReceivedValidLocation)
 	{
 		bIsOccupied = GridSubsystem->IsOccupied(ResultTransform, CurrentStructureTag);
+		bHasEnoughMaterial = OwningAbility->CheckCost(OwningAbility->GetCurrentAbilitySpecHandle(), OwningAbility->GetCurrentActorInfo());
 	}
 
 	if (bIsOccupied)
 	{
 		HideGhost();
 	}
-	else if (bReceivedValidLocation)
+	else if (bReceivedValidLocation && bHasEnoughMaterial)
 	{
 		SetActorTransform(ResultTransform);
 		bHasValidTarget = true;
