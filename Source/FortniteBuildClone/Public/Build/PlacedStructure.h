@@ -43,6 +43,8 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
+	FTimerHandle DestroyTimerHandle;
+	
 	// Returns true if the structure has a path to a structure connected to the ground
 	bool IsGrounded();
 };

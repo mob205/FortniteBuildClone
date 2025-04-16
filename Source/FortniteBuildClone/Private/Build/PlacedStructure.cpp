@@ -15,7 +15,9 @@ APlacedStructure::APlacedStructure()
 
 void APlacedStructure::StartStructureDestruction()
 {
-	FTimerHandle DestroyTimerHandle;
+	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+	if (TimerManager.TimerExists(DestroyTimerHandle) &&
+		TimerManager.GetTimerRemaining(DestroyTimerHandle) < .03) { return; }
 	
 	GetWorld()->GetTimerManager().SetTimer(
 		DestroyTimerHandle,
@@ -49,9 +51,9 @@ void APlacedStructure::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 void APlacedStructure::FinishStructureDestruction()
 {
-	UE_LOG(LogFBC, Display, TEXT("Destroying structure %s at grid slot %s"), *GetName(),
+	UE_LOG(LogFBC, Display, TEXT("Destroying structure %s at grid slot %s"), *GetActorNameOrLabel(),
 		*UFBCBlueprintLibrary::GetGridCoordinateLocation(GetActorLocation()).ToString());
-
+	
 	TArray<AActor*> OverlappingActors{};
 	GetOverlappingActors(OverlappingActors);
 	for (const auto& Actor : OverlappingActors)

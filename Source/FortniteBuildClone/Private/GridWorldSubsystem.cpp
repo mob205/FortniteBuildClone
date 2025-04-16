@@ -86,7 +86,7 @@ void UGridWorldSubsystem::UnregisterStructure(APlacedStructure* Structure)
 
 	APlacedStructure** StructureLocation = FindStructureAtPosition(Info.GridLocation, Info.BuildingType, Structure->GetActorRotation());
 
-	if (Structure == nullptr)
+	if (StructureLocation == nullptr)
 	{
 		UE_LOG(LogFBC, Warning, TEXT("GridSubsystem: Attempted to unregister at an invalid grid slot! %s at %s with yaw %d"),
 			*Structure->GetActorNameOrLabel(), *Structure->GetActorLocation().ToCompactString(), GetWallDirection(Structure->GetActorRotation()));
@@ -170,7 +170,7 @@ APlacedStructure** UGridWorldSubsystem::FindWallStructureAtPosition(const FIntVe
 
 	// No alternative grid slot. So, just return the one provided
 	// Do this one last since we want to return this one if both representations are nullptr
-	if (Grid.Contains(GridPosition) && Grid[GridPosition].Walls[WallDirectionInt])
+	if (Grid.Contains(GridPosition))
 	{
 		return &Grid[GridPosition].Walls[WallDirectionInt];
 	}
