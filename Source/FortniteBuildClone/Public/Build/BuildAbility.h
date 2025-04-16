@@ -5,12 +5,12 @@
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbility.h"
 #include "GameplayTagContainer.h"
+#include "Subsystem/StructureStrategyWorldSubsystem.h"
 #include "BuildAbility.generated.h"
 
 class AStructureTargetingActor;
 class UStructureInfoDataAsset;
 class UGridWorldSubsystem;
-class UPlacementStrategy;
 
 /**
  * 
@@ -39,16 +39,12 @@ protected:
 	
 private:
 	TObjectPtr<AStructureTargetingActor> TargetingActor{};
-
 	TObjectPtr<UGridWorldSubsystem> GridWorldSubsystem{};
+	TObjectPtr<UStructureStrategyWorldSubsystem> StrategyWorldSubsystem{};
 
 	FGameplayTag SelectedStructureTag{};
 	FGameplayTag SelectedMaterialTag{};
-
-	// Prevent strategy garbage collection
-	UPROPERTY()
-	TMap<FGameplayTag, UPlacementStrategy*> CachedStrategies{};
-
+	
 	// Places a structure after target data is received
 	UFUNCTION()
 	void PlaceStructure(const FGameplayAbilityTargetDataHandle& Data);
@@ -64,7 +60,5 @@ private:
 	// Updates targeting actor with the newly selected structure
 	UFUNCTION()
 	void OnSelectStructure(FGameplayEventData Payload);
-
-	UPlacementStrategy* GetPlacementStrategy(FGameplayTag StructureTag);
 };
 

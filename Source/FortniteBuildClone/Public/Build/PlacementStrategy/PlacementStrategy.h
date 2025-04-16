@@ -23,7 +23,7 @@ public:
 	 *	@returns true if a valid location was found
 	 */
 	virtual bool GetTargetingLocation(
-		int RotationOffset, FTransform& OutResult) { return false; }
+		APawn* Player, int RotationOffset, FTransform& OutResult) { return false; }
 
 	/**
 	 * @param QueryTransform The transform to check structure's placement of
@@ -31,21 +31,16 @@ public:
 	 */
 	bool CanPlace(const FTransform& QueryTransform) const;
 
-	void InitializeStrategy(APawn* Player, UGridWorldSubsystem* GridSubsystem);
+	void InitializeStrategy(UGridWorldSubsystem* GridSubsystem);
 	
 	UPROPERTY(EditDefaultsOnly)
 	float TargetingRange{};
 
 protected:
 	TObjectPtr<AActor> OverlapQueryActor{};
-
-	TObjectPtr<APawn> Player{};
-	
-	TObjectPtr<APlayerController> PC{};
-
 	TObjectPtr<UGridWorldSubsystem> GridSubsystem{};
 
-	FVector GetViewLocation(const FCollisionObjectQueryParams& ObjectQueryParams) const;
+	FVector GetViewLocation(APlayerController* PC, const FCollisionObjectQueryParams& ObjectQueryParams) const;
 
 	UPROPERTY(EditDefaultsOnly)
 	FGameplayTag StructureTag{};
@@ -53,5 +48,4 @@ private:
 	// Actor to use to check overlaps
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AActor> OverlapQueryActorClass;
-
 };

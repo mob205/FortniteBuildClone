@@ -47,4 +47,6 @@ private:
 	
 	// Returns true if the structure has a path to a structure connected to the ground
 	bool IsGrounded();
+
+	
 };

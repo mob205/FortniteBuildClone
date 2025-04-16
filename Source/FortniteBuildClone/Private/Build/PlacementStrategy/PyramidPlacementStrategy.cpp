@@ -4,16 +4,18 @@
 #include "Build/PlacementStrategy/PyramidPlacementStrategy.h"
 
 #include "FBCBlueprintLibrary.h"
-#include "GridWorldSubsystem.h"
+#include "Subsystem/GridWorldSubsystem.h"
 
 bool UPyramidPlacementStrategy::GetTargetingLocation(
-	int RotationOffset, FTransform& OutResult)
+	APawn* Player, int RotationOffset, FTransform& OutResult)
 {
+	APlayerController* PC = Cast<APlayerController>(Player->GetController());
+
 	FCollisionObjectQueryParams ObjectQueryParams{};
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
 
-	FVector TargetLocation = GetViewLocation(ObjectQueryParams);
+	FVector TargetLocation = GetViewLocation(PC, ObjectQueryParams);
 	
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_RoundZ(TargetLocation));
 	

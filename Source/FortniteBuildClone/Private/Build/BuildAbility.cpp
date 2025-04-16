@@ -8,7 +8,7 @@
 #include "Build/PlacedStructure.h"
 #include "Data/StructureInfoDataAsset.h"
 #include "Kismet/GameplayStatics.h"
-#include "GridWorldSubsystem.h"
+#include "Subsystem/GridWorldSubsystem.h"
 #include "FBCBlueprintLibrary.h"
 #include "GameplayTagContainer.h"
 #include "Build/PlacementStrategy/PlacementStrategy.h"
@@ -41,6 +41,7 @@ void UBuildAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	AActor* Avatar = GetAvatarActorFromActorInfo();
 
 	GridWorldSubsystem = GetWorld()->GetSubsystem<UGridWorldSubsystem>();
+	StrategyWorldSubsystem = GetWorld()->GetSubsystem<UStructureStrategyWorldSubsystem>();
 	
 	// Spawn targeting actor
 	TargetingActor = GetWorld()->SpawnActorDeferred<AStructureTargetingActor>(TargetingActorClass,
@@ -108,7 +109,7 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 		return;
 	}
 
-	UPlacementStrategy* PlacementStrategy = GetPlacementStrategy(SelectedStructureTag);
+	UPlacementStrategy* PlacementStrategy = StrategyWorldSubsystem->GetStrategy(SelectedStructureTag);
 	if (!IsValid(PlacementStrategy))
 	{
 		UE_LOG(LogFBC, Error, TEXT("BuildAbility: No valid placement strategy found."));
@@ -158,27 +159,7 @@ void UBuildAbility::OnSelectStructure(FGameplayEventData Payload)
 	if (IsValid(TargetingActor))
 	{
 		TargetingActor->SetGhostActorClass(StructureInfo->GetGhostClass(SelectedStructureTag));
-		TargetingActor->SetPlacementStrategy(GetPlacementStrategy(SelectedStructureTag));
+		TargetingActor->SetPlacementStrategy(StrategyWorldSubsystem->GetStrategy(SelectedStructureTag));
 		TargetingActor->SetStructureTag(SelectedStructureTag);
 	}
-}
-
-UPlacementStrategy* UBuildAbility::GetPlacementStrategy(FGameplayTag StructureTag)
-{
-	UPlacementStrategy* Result{};
-	
-	// Check if there is a cached strategy
-	if (CachedStrategies.Contains(StructureTag))
-	{
-		Result = CachedStrategies[StructureTag];
-		return Result;
-	}
-
-	// Create new strategy
-	Result = NewObject<UPlacementStrategy>(this, StructureInfo->GetPlacementStrategyClass(StructureTag));
-	Result->InitializeStrategy(Cast<APawn>(GetAvatarActorFromActorInfo()), GridWorldSubsystem);
-
-	CachedStrategies.Add(SelectedStructureTag, Result);
-	
-	return Result;
 }

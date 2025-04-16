@@ -62,6 +62,12 @@ TSubclassOf<UPlacementStrategy> UStructureInfoDataAsset::GetPlacementStrategyCla
 	return StrategyClasses[StructureTag];
 }
 
+TMap<FGameplayTag, TSubclassOf<UPlacementStrategy>> UStructureInfoDataAsset::GetAllPlacementStrategyClasses()
+{
+	if (!bHasInitializedMaps) { InitializeMaps(); }
+	return StrategyClasses;
+}
+
 void UStructureInfoDataAsset::InitializeMaps()
 {
 	for (const auto& Structure : StructureInfo)

@@ -52,14 +52,21 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StructureInfo")
 	FGameplayTag GetTagFromInput(const UInputAction* InputAction) const;
 
-	TSubclassOf<AGhostPreviewStructure> GetGhostClass(const FGameplayTag& StructureTag);
-
-	TSubclassOf<APlacedStructure> GetStructureActorClass(const FGameplayTag& StructureTag);
-	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Structure Info")
 	bool GetStructureClasses(const FGameplayTag& StructureTag, FStructureClasses& Classes);
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Structure Info")
+	TSubclassOf<AGhostPreviewStructure> GetGhostClass(const FGameplayTag& StructureTag);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Structure Info")
+	TSubclassOf<APlacedStructure> GetStructureActorClass(const FGameplayTag& StructureTag);
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Structure Info")
 	TSubclassOf<UPlacementStrategy> GetPlacementStrategyClass(const FGameplayTag& StructureTag);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Structure Info")
+	TMap<FGameplayTag, TSubclassOf<UPlacementStrategy>> GetAllPlacementStrategyClasses();
+	
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FStructureInfo> StructureInfo{};

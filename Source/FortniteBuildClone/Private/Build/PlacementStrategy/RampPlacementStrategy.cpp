@@ -4,17 +4,19 @@
 #include "Build/PlacementStrategy/RampPlacementStrategy.h"
 
 #include "FBCBlueprintLibrary.h"
-#include "GridWorldSubsystem.h"
+#include "Subsystem/GridWorldSubsystem.h"
 
 bool URampPlacementStrategy::GetTargetingLocation(
-	int RotationOffset, FTransform& OutResult)
+	APawn* Player, int RotationOffset, FTransform& OutResult)
 {
+	APlayerController* PC = Cast<APlayerController>(Player->GetController());
+
 	FCollisionObjectQueryParams ObjectQueryParams{};
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
 
-	FVector TargetLocation = GetViewLocation(ObjectQueryParams);
-	
+	FVector TargetLocation = GetViewLocation(PC, ObjectQueryParams);
+
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation));
 
 	const float Yaw = UFBCBlueprintLibrary::SnapAngleToGrid(PC->GetControlRotation().Yaw + (RotationOffset * 90.0f));

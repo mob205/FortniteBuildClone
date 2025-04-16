@@ -18,17 +18,14 @@ bool UPlacementStrategy::CanPlace(const FTransform& QueryTransform) const
 	{
 		if (APlacedStructure* AsPlacedStructure = Cast<APlacedStructure>(OverlappingActor))
 		{
-			// Valid support found - tell supporting neighbors?
 			OverlapQueryActor->SetActorEnableCollision(false);
 			return true;
 		}
 		if (UFBCBlueprintLibrary::IsGround(OverlappingActor))
 		{
-			// Grounded - remember it somehow?
 			OverlapQueryActor->SetActorEnableCollision(false);
 			return true;
 		}
-		
 	}
 	
 	OverlapQueryActor->SetActorEnableCollision(false);
@@ -36,16 +33,14 @@ bool UPlacementStrategy::CanPlace(const FTransform& QueryTransform) const
 	return false;
 }
 
-void UPlacementStrategy::InitializeStrategy(APawn* InPlayer, UGridWorldSubsystem* InGridSubsystem)
+void UPlacementStrategy::InitializeStrategy(UGridWorldSubsystem* InGridSubsystem)
 {
-	Player = InPlayer;
 	GridSubsystem = InGridSubsystem;
-	PC = Player->GetLocalViewingPlayerController();
-
-	OverlapQueryActor = InPlayer->GetWorld()->SpawnActor(OverlapQueryActorClass);
+	OverlapQueryActor = GetWorld()->SpawnActor(OverlapQueryActorClass);
+	OverlapQueryActor->SetActorEnableCollision(false);
 }
 
-FVector UPlacementStrategy::GetViewLocation(const FCollisionObjectQueryParams& ObjectQueryParams) const
+FVector UPlacementStrategy::GetViewLocation(APlayerController* PC, const FCollisionObjectQueryParams& ObjectQueryParams) const
 {
 	FVector ViewStart{};
 	FRotator ViewRot{};

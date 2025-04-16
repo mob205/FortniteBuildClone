@@ -3,7 +3,7 @@
 #include "Build/StructureTargetingActor.h"
 #include "FBCBlueprintLibrary.h"
 #include "Abilities/GameplayAbility.h"
-#include "GridWorldSubsystem.h"
+#include "Subsystem/GridWorldSubsystem.h"
 #include "Build/GhostPreviewStructure.h"
 #include "Build/PlacementStrategy/PlacementStrategy.h"
 
@@ -34,7 +34,9 @@ void AStructureTargetingActor::Tick(float DeltaTime)
 	
 	FTransform ResultTransform{};
 
-	bool bReceivedValidLocation = CurrentStrategy->GetTargetingLocation(CurrentRotationOffset, ResultTransform);
+	APawn* Player = Cast<APawn>(Avatar);
+
+	bool bReceivedValidLocation = CurrentStrategy->GetTargetingLocation(Player, CurrentRotationOffset, ResultTransform);
 	bool bIsOccupied{};
 	bool bHasEnoughMaterial{ true };
 	if (bReceivedValidLocation)

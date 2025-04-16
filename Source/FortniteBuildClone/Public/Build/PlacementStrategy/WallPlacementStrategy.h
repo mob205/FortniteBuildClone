@@ -15,6 +15,6 @@ class FORTNITEBUILDCLONE_API UWallPlacementStrategy : public UPlacementStrategy
 	GENERATED_BODY()
 
 public: 
-	virtual bool GetTargetingLocation(int RotationOffset, FTransform& OutResult) override;
+	virtual bool GetTargetingLocation(APawn* Player, int RotationOffset, FTransform& OutResult) override;
 
 };

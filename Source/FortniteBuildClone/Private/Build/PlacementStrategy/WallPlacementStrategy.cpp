@@ -4,14 +4,16 @@
 #include "Build/PlacementStrategy/WallPlacementStrategy.h"
 #include "FBCBlueprintLibrary.h"
 #include "GridSizes.h"
-#include "GridWorldSubsystem.h"
+#include "Subsystem/GridWorldSubsystem.h"
 
 bool UWallPlacementStrategy::GetTargetingLocation(
-	int RotationOffset, FTransform& OutResult)
+	APawn* Player, int RotationOffset, FTransform& OutResult)
 {
+	APlayerController* PC = Cast<APlayerController>(Player->GetController());
+
 	FCollisionObjectQueryParams ObjectQueryParams{};
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
-	FVector TargetLocation = GetViewLocation(ObjectQueryParams);
+	FVector TargetLocation = GetViewLocation(PC, ObjectQueryParams);
 	
 	int Yaw = UFBCBlueprintLibrary::SnapAngleToGridInt(PC->GetControlRotation().Yaw);
 
