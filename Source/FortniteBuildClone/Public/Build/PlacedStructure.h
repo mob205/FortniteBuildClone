@@ -29,6 +29,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void FinishStructureDestruction();
 
+	void SetGroundCache(bool bIsGrounded);
+	bool IsGroundCacheValid() const;
+	bool GetGroundCache() const { return bIsGroundedCached; }
+	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Ability System")
 	FGameplayTag StructureTag{};
@@ -48,5 +52,8 @@ private:
 	// Returns true if the structure has a path to a structure connected to the ground
 	bool IsGrounded();
 
-	
+	bool bIsGroundedCached{};
+	double GroundCacheTimestamp{};
+
+	void SetCacheOnStructures(TSet<APlacedStructure*> Structures, bool bIsGrounded);
 };

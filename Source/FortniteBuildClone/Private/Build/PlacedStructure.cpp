@@ -10,7 +10,7 @@
 
 APlacedStructure::APlacedStructure()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 }
 
 void APlacedStructure::StartStructureDestruction()
@@ -68,8 +68,23 @@ void APlacedStructure::FinishStructureDestruction()
 	Destroy();
 }
 
+void APlacedStructure::SetGroundCache(bool bIsGrounded)
+{
+	bIsGroundedCached = bIsGrounded;
+	GroundCacheTimestamp = GetWorld()->GetTimeSeconds();
+}
+bool APlacedStructure::IsGroundCacheValid() const
+{
+	return GroundCacheTimestamp == GetWorld()->GetTimeSeconds();
+}
+
 bool APlacedStructure::IsGrounded()
 {
+	if (IsGroundCacheValid())
+	{
+		return bIsGroundedCached;
+	}
+	
 	TSet<APlacedStructure*> SeenStructures{};
 	TArray<AActor*> OverlappingActors{};
 	TQueue<APlacedStructure*> Queue{};
@@ -86,15 +101,31 @@ bool APlacedStructure::IsGrounded()
 			if (APlacedStructure* AsStructure = Cast<APlacedStructure>(Actor))
 			{
 				if (SeenStructures.Contains(AsStructure)) { continue; }
+				if (AsStructure->IsGroundCacheValid())
+				{
+					bool bIsGrounded = AsStructure->GetGroundCache();
+					SetCacheOnStructures(SeenStructures, bIsGrounded);
+					return bIsGrounded;
+				}
 				SeenStructures.Add(AsStructure);
 				Queue.Enqueue(AsStructure);
 			}
 			else if (UFBCBlueprintLibrary::IsGround(Actor))
 			{
+				SetCacheOnStructures(SeenStructures, true);
 				return true;
 			}
 		}
 	}
+	SetCacheOnStructures(SeenStructures, false);
 	return false;
+}
+
+void APlacedStructure::SetCacheOnStructures(TSet<APlacedStructure*> Structures, bool bIsGrounded)
+{
+	for (const auto& Structure : Structures)
+	{
+		Structure->SetGroundCache(bIsGrounded);
+	}
 }
 
