@@ -53,6 +53,9 @@ void UGridWorldSubsystem::RegisterPlacedStructure(APlacedStructure* Structure)
 		Grid.Add(Info.GridLocation);
 	}
 
+	UE_LOG(LogFBC, Display, TEXT("GridSubsystem: Registering structure %s at %s with yaw %d"),
+			*Structure->GetActorNameOrLabel(), *Structure->GetActorLocation().ToCompactString(), GetWallDirection(Structure->GetActorRotation()));
+	
 	APlacedStructure** StructureLocation = FindStructureAtPosition(Info.GridLocation, Info.BuildingType, Structure->GetActorRotation());
 	
 	if (StructureLocation == nullptr)
@@ -62,7 +65,6 @@ void UGridWorldSubsystem::RegisterPlacedStructure(APlacedStructure* Structure)
 			TEXT("GridSubsystem: Attempted to register a structure at an invalid grid slot!"));
 		return;
 	}
-	
 	if (*StructureLocation != nullptr)
 	{
 		UE_LOG(LogFBC, Warning,
@@ -83,10 +85,17 @@ void UGridWorldSubsystem::UnregisterStructure(APlacedStructure* Structure)
 	FGridStructureInfo Info = GetGridStructureInfo(Structure);
 
 	APlacedStructure** StructureLocation = FindStructureAtPosition(Info.GridLocation, Info.BuildingType, Structure->GetActorRotation());
-	
-	if (StructureLocation == nullptr || *StructureLocation == nullptr)
+
+	if (Structure == nullptr)
 	{
-		UE_LOG(LogFBC, Warning, TEXT("GridSubsystem: Attempted to unregister a structure that wasn't registered."));
+		UE_LOG(LogFBC, Warning, TEXT("GridSubsystem: Attempted to unregister at an invalid grid slot! %s at %s with yaw %d"),
+			*Structure->GetActorNameOrLabel(), *Structure->GetActorLocation().ToCompactString(), GetWallDirection(Structure->GetActorRotation()));
+		return;
+	}
+	if (*StructureLocation == nullptr)
+	{
+		UE_LOG(LogFBC, Warning, TEXT("GridSubsystem: Attempted to unregister a structure that wasn't registered! %s at %s with yaw %d"),
+			*Structure->GetActorNameOrLabel(), *Structure->GetActorLocation().ToCompactString(), GetWallDirection(Structure->GetActorRotation()));
 		return;
 	}
 	
@@ -152,16 +161,16 @@ APlacedStructure** UGridWorldSubsystem::FindWallStructureAtPosition(const FIntVe
 	// Alternative representation is in adjacent grid slot
 	FIntVector AltGridPosition = GridPosition + Directions[WallDirectionInt];;
 
-	if (Grid.Contains(AltGridPosition))
+	int EquivalentWallDirection = (WallDirectionInt + 2) % 4;
+
+	if (Grid.Contains(AltGridPosition) && Grid[AltGridPosition].Walls[EquivalentWallDirection])
 	{
-		// Direction of wall is opposite relative to the adjacent grid
-		int EquivalentWallDirection = (WallDirectionInt + 2) % 4;
 		return &Grid[AltGridPosition].Walls[EquivalentWallDirection];
 	}
 
 	// No alternative grid slot. So, just return the one provided
 	// Do this one last since we want to return this one if both representations are nullptr
-	if (Grid.Contains(GridPosition))
+	if (Grid.Contains(GridPosition) && Grid[GridPosition].Walls[WallDirectionInt])
 	{
 		return &Grid[GridPosition].Walls[WallDirectionInt];
 	}
