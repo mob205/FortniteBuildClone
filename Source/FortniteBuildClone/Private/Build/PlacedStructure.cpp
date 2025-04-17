@@ -4,7 +4,6 @@
 #include "Build/PlacedStructure.h"
 
 #include "FBCBlueprintLibrary.h"
-#include "Traversal/TraversalComponent.h"
 #include "Components/SplineComponent.h"
 #include "Subsystem/GridWorldSubsystem.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
@@ -15,6 +14,7 @@ APlacedStructure::APlacedStructure()
 	PrimaryActorTick.bCanEverTick = false;
 
 	Root = CreateDefaultSubobject<USceneComponent>("Root");
+	Root->SetMobility(EComponentMobility::Static);
 	SetRootComponent(Root);
 	
 	ForwardLedge = CreateDefaultSubobject<USplineComponent>("Forward Ledge");

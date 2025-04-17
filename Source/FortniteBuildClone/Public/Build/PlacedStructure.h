@@ -8,7 +8,6 @@
 #include "Traversal/Traversable.h"
 #include "PlacedStructure.generated.h"
 
-class UTraversalComponent;
 class UGridWorldSubsystem;
 class USplineComponent;
 
