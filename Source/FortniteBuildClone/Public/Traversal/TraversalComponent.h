@@ -4,25 +4,32 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "TraversableComponent.generated.h"
+#include "TraversalComponent.generated.h"
 
 class USplineComponent;
+
 DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FIsValidLedgeSignature, USplineComponent*, Ledge);
 
 UCLASS( BlueprintType, Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class FORTNITEBUILDCLONE_API UTraversableComponent : public UActorComponent
+class FORTNITEBUILDCLONE_API UTraversalComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:	
-	UTraversableComponent();
+	UTraversalComponent();
 
 	UFUNCTION(BlueprintCallable)
 	void SetIsValidLedgeDelegate(FIsValidLedgeSignature IsValidLedgeDelegate) { CheckIsValidLedge = IsValidLedgeDelegate; }
 
+	UPROPERTY(BlueprintReadWrite)
+	TArray<USplineComponent*> Ledges{};
+
+	UPROPERTY(BlueprintReadWrite)
+	TMap<USplineComponent*, USplineComponent*> OppositeLedges{};
+	
 protected:
-	UFUNCTION(BlueprintCallable)
-	bool IsValidLedge(USplineComponent* Ledge) const;
+	// UFUNCTION(BlueprintCallable)
+	// bool IsValidLedge(USplineComponent* Ledge) const;
 
 private:
 	FIsValidLedgeSignature CheckIsValidLedge;

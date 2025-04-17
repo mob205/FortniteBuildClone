@@ -5,12 +5,15 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "GameFramework/Actor.h"
+#include "Traversal/Traversable.h"
 #include "PlacedStructure.generated.h"
 
+class UTraversalComponent;
 class UGridWorldSubsystem;
+class USplineComponent;
 
 UCLASS()
-class FORTNITEBUILDCLONE_API APlacedStructure : public AActor
+class FORTNITEBUILDCLONE_API APlacedStructure : public AActor, public ITraversable
 {
 	GENERATED_BODY()
 
@@ -32,6 +35,9 @@ public:
 	void SetGroundCache(bool bIsGrounded);
 	bool IsGroundCacheValid() const;
 	bool GetGroundCache() const { return bIsGroundedCached; }
+
+	virtual const TArray<USplineComponent*> GetLedges_Implementation() const override { return Ledges; }
+	virtual const TMap<USplineComponent*, USplineComponent*> GetOppositeLedges_Implementation() const override { return OppositeLedges; }
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Ability System")
@@ -46,6 +52,26 @@ protected:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+protected:
+	// Ledges
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USceneComponent> Root;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<USplineComponent> ForwardLedge;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<USplineComponent> BackLedge;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<USplineComponent> LeftLedge;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<USplineComponent> RightLedge;
+
+	TArray<USplineComponent*> Ledges;
+	TMap<USplineComponent*, USplineComponent*> OppositeLedges{};
 private:
 	FTimerHandle DestroyTimerHandle;
 	
