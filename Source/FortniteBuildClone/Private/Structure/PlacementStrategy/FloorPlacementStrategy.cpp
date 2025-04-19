@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Build/PlacementStrategy/FloorPlacementStrategy.h"
+#include "Structure/PlacementStrategy/FloorPlacementStrategy.h"
 
 #include "FBCBlueprintLibrary.h"
 #include "Subsystem/GridWorldSubsystem.h"

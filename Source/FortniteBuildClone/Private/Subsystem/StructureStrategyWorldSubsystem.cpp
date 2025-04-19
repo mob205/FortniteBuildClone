@@ -3,7 +3,7 @@
 
 #include "Subsystem/StructureStrategyWorldSubsystem.h"
 
-#include "Build/PlacementStrategy/PlacementStrategy.h"
+#include "Structure/PlacementStrategy/PlacementStrategy.h"
 #include "Data/StructureInfoDataAsset.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "Subsystem/GridWorldSubsystem.h"

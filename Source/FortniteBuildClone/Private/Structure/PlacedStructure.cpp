@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Build/PlacedStructure.h"
+#include "Structure/PlacedStructure.h"
 
 #include "FBCBlueprintLibrary.h"
 #include "Components/SplineComponent.h"

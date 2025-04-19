@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Build/StructureTargetingActor.h"
+#include "Structure/StructureTargetingActor.h"
 #include "FBCBlueprintLibrary.h"
 #include "Abilities/GameplayAbility.h"
 #include "Subsystem/GridWorldSubsystem.h"
-#include "Build/GhostPreviewStructure.h"
-#include "Build/PlacementStrategy/PlacementStrategy.h"
+#include "Structure/GhostPreviewStructure.h"
+#include "Structure/PlacementStrategy/PlacementStrategy.h"
 
 
 AStructureTargetingActor::AStructureTargetingActor()

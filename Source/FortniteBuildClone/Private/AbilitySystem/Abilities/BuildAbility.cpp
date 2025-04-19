@@ -1,17 +1,17 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Build/BuildAbility.h"
+#include "AbilitySystem/Abilities/BuildAbility.h"
 
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "Abilities/Tasks/AbilityTask_WaitTargetData.h"
-#include "Build/StructureTargetingActor.h"
-#include "Build/PlacedStructure.h"
+#include "Structure/StructureTargetingActor.h"
+#include "Structure/PlacedStructure.h"
 #include "Data/StructureInfoDataAsset.h"
 #include "Kismet/GameplayStatics.h"
 #include "Subsystem/GridWorldSubsystem.h"
 #include "FBCBlueprintLibrary.h"
 #include "GameplayTagContainer.h"
-#include "Build/PlacementStrategy/PlacementStrategy.h"
+#include "Structure/PlacementStrategy/PlacementStrategy.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 
 UBuildAbility::UBuildAbility()

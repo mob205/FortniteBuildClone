@@ -1,36 +1,29 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Build/PlacementStrategy/WallPlacementStrategy.h"
+#include "Structure/PlacementStrategy/RampPlacementStrategy.h"
+
 #include "FBCBlueprintLibrary.h"
-#include "GridSizes.h"
 #include "Subsystem/GridWorldSubsystem.h"
 
-bool UWallPlacementStrategy::GetTargetingLocation(
+bool URampPlacementStrategy::GetTargetingLocation(
 	APawn* Player, int RotationOffset, FTransform& OutResult)
 {
 	APlayerController* PC = Cast<APlayerController>(Player->GetController());
 
 	FCollisionObjectQueryParams ObjectQueryParams{};
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
-	FVector TargetLocation = GetViewLocation(PC, ObjectQueryParams);
-	
-	int Yaw = UFBCBlueprintLibrary::SnapAngleToGridInt(PC->GetControlRotation().Yaw);
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
 
-	// Walls interpret rotations as flips, rather than 90 degree turns
-	// Flip the wall
-	if (RotationOffset % 2 == 1)
-	{
-		// TODO: Simplify angle axis call with simple direction array
-		TargetLocation += GridSizeHorizontal * FVector::ForwardVector.RotateAngleAxis(Yaw, FVector::UpVector);
-		Yaw += 180;
-	}
-	
-	const FRotator TargetRotator = {0, UFBCBlueprintLibrary::SnapAngleToGrid(Yaw), 0};
-	
+	FVector TargetLocation = GetViewLocation(PC, ObjectQueryParams);
+
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation));
+
+	const float Yaw = UFBCBlueprintLibrary::SnapAngleToGrid(PC->GetControlRotation().Yaw + (RotationOffset * 90.0f));
+
+	FRotator TargetRotator = {0, Yaw, 0};
 	OutResult.SetRotation(TargetRotator.Quaternion());
-	
+
 	FTransform PrimaryTargetLocation = OutResult;
 	
 	if (CanPlace(OutResult))
@@ -42,13 +35,6 @@ bool UWallPlacementStrategy::GetTargetingLocation(
 	TargetLocation.Z = Player->GetActorLocation().Z;
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation));
 
-	if (CanPlace(OutResult) && !GridSubsystem->IsOccupied(OutResult, StructureTag))
-	{
-		return true;
-	}
-
-	// Try the player's current grid slot
-	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(Player->GetActorLocation()));
 	if (CanPlace(OutResult) && !GridSubsystem->IsOccupied(OutResult, StructureTag))
 	{
 		return true;

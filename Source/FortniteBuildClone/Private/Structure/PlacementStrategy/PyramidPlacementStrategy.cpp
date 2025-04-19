@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Build/PlacementStrategy/RampPlacementStrategy.h"
+#include "Structure/PlacementStrategy/PyramidPlacementStrategy.h"
 
 #include "FBCBlueprintLibrary.h"
 #include "Subsystem/GridWorldSubsystem.h"
 
-bool URampPlacementStrategy::GetTargetingLocation(
+bool UPyramidPlacementStrategy::GetTargetingLocation(
 	APawn* Player, int RotationOffset, FTransform& OutResult)
 {
 	APlayerController* PC = Cast<APlayerController>(Player->GetController());
@@ -16,12 +16,11 @@ bool URampPlacementStrategy::GetTargetingLocation(
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
 
 	FVector TargetLocation = GetViewLocation(PC, ObjectQueryParams);
-
-	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation));
-
-	const float Yaw = UFBCBlueprintLibrary::SnapAngleToGrid(PC->GetControlRotation().Yaw + (RotationOffset * 90.0f));
-
-	FRotator TargetRotator = {0, Yaw, 0};
+	
+	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_RoundZ(TargetLocation));
+	
+	const float Yaw = PC->GetControlRotation().Yaw;
+	const FRotator TargetRotator = {0, UFBCBlueprintLibrary::SnapAngleToGrid(Yaw + (RotationOffset * 90)), 0};
 	OutResult.SetRotation(TargetRotator.Quaternion());
 
 	FTransform PrimaryTargetLocation = OutResult;
@@ -33,8 +32,15 @@ bool URampPlacementStrategy::GetTargetingLocation(
 
 	// Try placing in same vertical block as player
 	TargetLocation.Z = Player->GetActorLocation().Z;
-	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation));
+	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_RoundZ(TargetLocation));
 
+	if (CanPlace(OutResult) && !GridSubsystem->IsOccupied(OutResult, StructureTag))
+	{
+		return true;
+	}
+
+	// Try the player's current grid slot
+	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(Player->GetActorLocation()));
 	if (CanPlace(OutResult) && !GridSubsystem->IsOccupied(OutResult, StructureTag))
 	{
 		return true;

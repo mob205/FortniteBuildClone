@@ -4,7 +4,7 @@
 #include "Subsystem/GridWorldSubsystem.h"
 
 #include "FBCBlueprintLibrary.h"
-#include "Build/PlacedStructure.h"
+#include "Structure/PlacedStructure.h"
 #include "GameplayTagContainer.h"
 #include "GridSizes.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"

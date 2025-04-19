@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Build/PlacementStrategy/PlacementStrategy.h"
+#include "Structure/PlacementStrategy/PlacementStrategy.h"
 
 #include "FBCBlueprintLibrary.h"
-#include "Build/PlacedStructure.h"
+#include "Structure/PlacedStructure.h"
 
 bool UPlacementStrategy::CanPlace(const FTransform& QueryTransform) const
 {

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Build/GhostPreviewStructure.h"
+#include "Structure/GhostPreviewStructure.h"
 
 AGhostPreviewStructure::AGhostPreviewStructure()
 {
