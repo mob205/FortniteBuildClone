@@ -31,10 +31,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void FinishStructureDestruction();
 
-	void SetGroundCache(bool bIsGrounded);
-	bool IsGroundCacheValid() const;
-	bool GetGroundCache() const { return bIsGroundedCached; }
-
+	// Sets the visibility of the structure's static mesh. Only applies locally - visibility does not replicate
+	UFUNCTION(BlueprintCallable)
+	void SetStructureMeshVisibility(bool bIsVisible);
+	
 	virtual const TArray<USplineComponent*> GetLedges_Implementation() const override { return Ledges; }
 	virtual const TMap<USplineComponent*, USplineComponent*> GetOppositeLedges_Implementation() const override { return OppositeLedges; }
 	
@@ -52,11 +52,13 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
-	// Ledges
-
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> Root;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UStaticMeshComponent> StaticMesh;
 	
+	// Ledges
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<USplineComponent> ForwardLedge;
 
@@ -81,4 +83,7 @@ private:
 	double GroundCacheTimestamp{};
 
 	void SetCacheOnStructures(TSet<APlacedStructure*> Structures, bool bIsGrounded);
+	void SetGroundCache(bool bIsGrounded);
+	bool IsGroundCacheValid() const;
+	bool GetGroundCache() const { return bIsGroundedCached; }
 };

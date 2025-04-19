@@ -16,6 +16,9 @@ APlacedStructure::APlacedStructure()
 	Root = CreateDefaultSubobject<USceneComponent>("Root");
 	Root->SetMobility(EComponentMobility::Static);
 	SetRootComponent(Root);
+
+	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>("Static Mesh");
+	StaticMesh->SetupAttachment(Root);
 	
 	ForwardLedge = CreateDefaultSubobject<USplineComponent>("Forward Ledge");
 	ForwardLedge->SetupAttachment(GetRootComponent());
@@ -93,6 +96,11 @@ void APlacedStructure::FinishStructureDestruction()
 	
 	GridWorldSubsystem->UnregisterStructure(this);
 	Destroy();
+}
+
+void APlacedStructure::SetStructureMeshVisibility(bool bIsVisible)
+{
+	StaticMesh->SetVisibility(bIsVisible);
 }
 
 void APlacedStructure::SetGroundCache(bool bIsGrounded)

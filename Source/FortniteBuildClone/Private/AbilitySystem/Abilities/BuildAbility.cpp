@@ -2,6 +2,8 @@
 
 #include "AbilitySystem/Abilities/BuildAbility.h"
 
+#include "AbilitySystemComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "Abilities/Tasks/AbilityTask_WaitTargetData.h"
 #include "Structure/StructureTargetingActor.h"
@@ -42,6 +44,8 @@ void UBuildAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 
 	GridWorldSubsystem = GetWorld()->GetSubsystem<UGridWorldSubsystem>();
 	StrategyWorldSubsystem = GetWorld()->GetSubsystem<UStructureStrategyWorldSubsystem>();
+
+	AddAbilityInputMappingContext();
 	
 	// Spawn targeting actor
 	TargetingActor = GetWorld()->SpawnActorDeferred<AStructureTargetingActor>(TargetingActorClass,
@@ -141,6 +145,7 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 
 void UBuildAbility::CallEndAbility(const FGameplayAbilityTargetDataHandle& Data)
 {
+	RemoveAbilityInputMappingContext();
 	EndAbility(GetCurrentAbilitySpecHandle(), CurrentActorInfo, GetCurrentActivationInfo(), true, false);
 }
 

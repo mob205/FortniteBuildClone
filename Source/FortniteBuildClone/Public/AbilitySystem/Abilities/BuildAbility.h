@@ -3,11 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FBCGameplayAbility.h"
 #include "Abilities/GameplayAbility.h"
 #include "GameplayTagContainer.h"
 #include "Subsystem/StructureStrategyWorldSubsystem.h"
 #include "BuildAbility.generated.h"
 
+class UEnhancedInputLocalPlayerSubsystem;
 class AStructureTargetingActor;
 class UStructureInfoDataAsset;
 class UGridWorldSubsystem;
@@ -16,7 +18,7 @@ class UGridWorldSubsystem;
  * 
  */
 UCLASS()
-class FORTNITEBUILDCLONE_API UBuildAbility : public UGameplayAbility
+class FORTNITEBUILDCLONE_API UBuildAbility : public UFBCGameplayAbility
 {
 	GENERATED_BODY()
 
@@ -41,7 +43,7 @@ private:
 	TObjectPtr<AStructureTargetingActor> TargetingActor{};
 	TObjectPtr<UGridWorldSubsystem> GridWorldSubsystem{};
 	TObjectPtr<UStructureStrategyWorldSubsystem> StrategyWorldSubsystem{};
-
+	
 	FGameplayTag SelectedStructureTag{};
 	FGameplayTag SelectedMaterialTag{};
 	
