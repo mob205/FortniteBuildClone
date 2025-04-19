@@ -32,7 +32,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable)
-	void OnBuildAction(class UInputAction* InputAction);
+	void OnBuildAction(UInputAction* InputAction);
 	
 private:
 	void InitAbilityActorInfo();
