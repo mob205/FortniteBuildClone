@@ -68,7 +68,7 @@ void APlacedStructure::BeginPlay()
 	Super::BeginPlay();
 
 	GridWorldSubsystem = GetWorld()->GetSubsystem<UGridWorldSubsystem>();
-	GridWorldSubsystem->RegisterPlacedStructure(this);
+	//GridWorldSubsystem->RegisterPlacedStructure(this);
 }
 
 void APlacedStructure::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -94,7 +94,7 @@ void APlacedStructure::FinishStructureDestruction()
 		}
 	}
 	
-	GridWorldSubsystem->UnregisterStructure(this);
+	//GridWorldSubsystem->UnregisterStructure(this);
 	Destroy();
 }
 

@@ -2,11 +2,10 @@
 
 #include "AbilitySystem/Abilities/BuildAbility.h"
 
+#include "AbilitySystem/Abilities/StructureTargetingActor.h"
 #include "AbilitySystemComponent.h"
-#include "EnhancedInputSubsystems.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "Abilities/Tasks/AbilityTask_WaitTargetData.h"
-#include "Structure/StructureTargetingActor.h"
 #include "Structure/PlacedStructure.h"
 #include "Data/StructureInfoDataAsset.h"
 #include "Kismet/GameplayStatics.h"
@@ -104,14 +103,7 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 	FTransform BuildingTransform = Data.Data[0]->GetEndPointTransform();
 	BuildingTransform = UFBCBlueprintLibrary::SnapTransformToGrid(BuildingTransform);
 
-	// Validate the requested build
-	// Could also check for range using placement strategy's TargetingRange
-	// (e.g. make sure player isn't trying to build across the map)
-	if (GridWorldSubsystem->IsOccupied(BuildingTransform, SelectedStructureTag))
-	{
-		UE_LOG(LogFBC, Warning, TEXT("BuildAbility: Request placement is in an occupied location."))
-		return;
-	}
+	
 
 	UPlacementStrategy* PlacementStrategy = StrategyWorldSubsystem->GetStrategy(SelectedStructureTag);
 	if (!IsValid(PlacementStrategy))
@@ -122,6 +114,15 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 	if (!PlacementStrategy->CanPlace(BuildingTransform))
 	{
 		UE_LOG(LogFBC, Warning, TEXT("BuildAbility: Requested placement is invalid (not supported by structures or ground)"));
+	}
+
+	// Validate the requested build
+	// Could also check for range using placement strategy's TargetingRange
+	// (e.g. make sure player isn't trying to build across the map)
+	if (PlacementStrategy->IsOccupied(BuildingTransform))
+	{
+		UE_LOG(LogFBC, Warning, TEXT("BuildAbility: Request placement is in an occupied location."))
+		return;
 	}
 	
 	// Build request validated

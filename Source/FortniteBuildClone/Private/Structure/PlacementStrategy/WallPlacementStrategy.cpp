@@ -4,6 +4,7 @@
 #include "Structure/PlacementStrategy/WallPlacementStrategy.h"
 #include "FBCBlueprintLibrary.h"
 #include "GridSizes.h"
+#include "Structure/PlacedStructure.h"
 #include "Subsystem/GridWorldSubsystem.h"
 
 bool UWallPlacementStrategy::GetTargetingLocation(
@@ -42,14 +43,14 @@ bool UWallPlacementStrategy::GetTargetingLocation(
 	TargetLocation.Z = Player->GetActorLocation().Z;
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation));
 
-	if (CanPlace(OutResult) && !GridSubsystem->IsOccupied(OutResult, StructureTag))
+	if (CanPlace(OutResult) && !IsOccupied(OutResult))
 	{
 		return true;
 	}
 
 	// Try the player's current grid slot
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(Player->GetActorLocation()));
-	if (CanPlace(OutResult) && !GridSubsystem->IsOccupied(OutResult, StructureTag))
+	if (CanPlace(OutResult) && !IsOccupied(OutResult))
 	{
 		return true;
 	}
@@ -57,4 +58,14 @@ bool UWallPlacementStrategy::GetTargetingLocation(
 	// Use cached target location to show invalid placement indicator
 	OutResult = PrimaryTargetLocation;
 	return false;
+}
+
+bool UWallPlacementStrategy::IsStructureOccupying(const FTransform& QueryTransform,
+	const APlacedStructure* Structure) const
+{
+	int QueryYaw = UFBCBlueprintLibrary::SnapAngleToGridInt(QueryTransform.Rotator().Yaw);
+	int StructureYaw = UFBCBlueprintLibrary::SnapAngleToGridInt(Structure->GetActorRotation().Yaw);
+	int FlippedQueryYaw = (QueryYaw + 180) % 360;
+
+	return QueryYaw == StructureYaw || FlippedQueryYaw == StructureYaw;
 }

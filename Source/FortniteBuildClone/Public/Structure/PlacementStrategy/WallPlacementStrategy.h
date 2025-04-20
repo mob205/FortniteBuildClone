@@ -17,4 +17,6 @@ class FORTNITEBUILDCLONE_API UWallPlacementStrategy : public UPlacementStrategy
 public: 
 	virtual bool GetTargetingLocation(APawn* Player, int RotationOffset, FTransform& OutResult) override;
 
+protected:
+	virtual bool IsStructureOccupying(const FTransform& QueryTransform, const APlacedStructure* Structure) const override;
 };

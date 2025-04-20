@@ -10,12 +10,14 @@ bool URampPlacementStrategy::GetTargetingLocation(
 	APawn* Player, int RotationOffset, FTransform& OutResult)
 {
 	APlayerController* PC = Cast<APlayerController>(Player->GetController());
-
+	
 	FCollisionObjectQueryParams ObjectQueryParams{};
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
 
 	FVector TargetLocation = GetViewLocation(PC, ObjectQueryParams);
+
+	DrawDebugSphere(GetWorld(), TargetLocation, 10.f, 10, FColor::Red);
 
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation));
 
@@ -30,16 +32,18 @@ bool URampPlacementStrategy::GetTargetingLocation(
 	{
 		return true;
 	}
+	
+
 
 	// Try placing in same vertical block as player
 	TargetLocation.Z = Player->GetActorLocation().Z;
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation));
 
-	if (CanPlace(OutResult) && !GridSubsystem->IsOccupied(OutResult, StructureTag))
+	if (CanPlace(OutResult) && !IsOccupied(OutResult))
 	{
 		return true;
 	}
-
+	
 	// Use cached target location to show invalid placement indicator
 	OutResult = PrimaryTargetLocation;
 	return false;

@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Structure/StructureTargetingActor.h"
+#include "AbilitySystem/Abilities/StructureTargetingActor.h"
 #include "FBCBlueprintLibrary.h"
 #include "Abilities/GameplayAbility.h"
 #include "Subsystem/GridWorldSubsystem.h"
@@ -41,7 +41,7 @@ void AStructureTargetingActor::Tick(float DeltaTime)
 	bool bHasEnoughMaterial{ true };
 	if (bReceivedValidLocation)
 	{
-		bIsOccupied = GridSubsystem->IsOccupied(ResultTransform, CurrentStructureTag);
+		bIsOccupied = CurrentStrategy->IsOccupied(ResultTransform);
 		bHasEnoughMaterial = OwningAbility->CheckCost(OwningAbility->GetCurrentAbilitySpecHandle(), OwningAbility->GetCurrentActorInfo());
 	}
 

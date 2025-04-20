@@ -8,29 +8,46 @@
 
 bool UPlacementStrategy::CanPlace(const FTransform& QueryTransform) const
 {
-	OverlapQueryActor->SetActorTransform(QueryTransform);
-	OverlapQueryActor->SetActorEnableCollision(true);
-	
 	TArray<AActor*> OverlappingActors{};
-	OverlapQueryActor->GetOverlappingActors(OverlappingActors);
+	GetNearbyActors(QueryTransform, OverlappingActors);
 
 	for (AActor* OverlappingActor : OverlappingActors)
 	{
 		if (APlacedStructure* AsPlacedStructure = Cast<APlacedStructure>(OverlappingActor))
 		{
-			OverlapQueryActor->SetActorEnableCollision(false);
 			return true;
 		}
 		if (UFBCBlueprintLibrary::IsGround(OverlappingActor))
 		{
-			OverlapQueryActor->SetActorEnableCollision(false);
 			return true;
 		}
 	}
-	
-	OverlapQueryActor->SetActorEnableCollision(false);
-	
 	return false;
+}
+
+bool UPlacementStrategy::IsOccupied(const FTransform& QueryTransform) const
+{
+	FTransform SnappedTransform = UFBCBlueprintLibrary::SnapTransformToGrid(QueryTransform);
+	TArray<AActor*> OverlappingActors{};
+	GetNearbyActors(SnappedTransform, OverlappingActors);
+
+	for (AActor* OverlappingActor : OverlappingActors)
+	{
+		if (APlacedStructure* AsPlacedStructure = Cast<APlacedStructure>(OverlappingActor))
+		{
+			if (IsStructureOccupying(SnappedTransform, AsPlacedStructure))
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool UPlacementStrategy::IsStructureOccupying(const FTransform& QueryTransform, const APlacedStructure* Structure) const
+{
+	return IncompatibleStructureTags.HasTagExact(Structure->GetStructureTag()) &&
+		UFBCBlueprintLibrary::GetGridCoordinateLocation(QueryTransform.GetLocation()) == UFBCBlueprintLibrary::GetGridCoordinateLocation(Structure->GetActorLocation());
 }
 
 void UPlacementStrategy::InitializeStrategy(UGridWorldSubsystem* InGridSubsystem)
@@ -40,7 +57,7 @@ void UPlacementStrategy::InitializeStrategy(UGridWorldSubsystem* InGridSubsystem
 	OverlapQueryActor->SetActorEnableCollision(false);
 }
 
-FVector UPlacementStrategy::GetViewLocation(APlayerController* PC, const FCollisionObjectQueryParams& ObjectQueryParams) const
+FVector UPlacementStrategy::GetViewLocation(const APlayerController* PC, const FCollisionObjectQueryParams& ObjectQueryParams) const
 {
 	FVector ViewStart{};
 	FRotator ViewRot{};
@@ -59,4 +76,14 @@ FVector UPlacementStrategy::GetViewLocation(APlayerController* PC, const FCollis
 	{
 		return ViewEnd;
 	}
+}
+
+void UPlacementStrategy::GetNearbyActors(const FTransform& QueryTransform, TArray<AActor*>& OutActors) const
+{
+	FTransform SnappedTransform = UFBCBlueprintLibrary::SnapTransformToGrid(QueryTransform);
+	OverlapQueryActor->SetActorTransform(SnappedTransform);
+	
+	OverlapQueryActor->SetActorEnableCollision(true);
+	OverlapQueryActor->GetOverlappingActors(OutActors);
+	OverlapQueryActor->SetActorEnableCollision(false);
 }
