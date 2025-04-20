@@ -5,7 +5,6 @@
 
 #include "FBCBlueprintLibrary.h"
 #include "Components/SplineComponent.h"
-#include "Subsystem/GridWorldSubsystem.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "Net/UnrealNetwork.h"
 
@@ -61,14 +60,6 @@ void APlacedStructure::StartStructureDestruction()
 		}),
 		DestructionDelay,
 		false);
-}
-
-void APlacedStructure::BeginPlay()
-{
-	Super::BeginPlay();
-
-	GridWorldSubsystem = GetWorld()->GetSubsystem<UGridWorldSubsystem>();
-	//GridWorldSubsystem->RegisterPlacedStructure(this);
 }
 
 void APlacedStructure::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

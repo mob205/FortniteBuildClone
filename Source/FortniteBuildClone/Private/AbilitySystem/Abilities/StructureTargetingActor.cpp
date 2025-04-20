@@ -3,7 +3,6 @@
 #include "AbilitySystem/Abilities/StructureTargetingActor.h"
 #include "FBCBlueprintLibrary.h"
 #include "Abilities/GameplayAbility.h"
-#include "Subsystem/GridWorldSubsystem.h"
 #include "Structure/GhostPreviewStructure.h"
 #include "Structure/PlacementStrategy/PlacementStrategy.h"
 
@@ -23,7 +22,6 @@ void AStructureTargetingActor::StartTargeting(UGameplayAbility* Ability)
 	Super::StartTargeting(Ability);
 
 	SetActorScale3D({1, 1, 1});
-	GridSubsystem = GetWorld()->GetSubsystem<UGridWorldSubsystem>();
 }
 
 void AStructureTargetingActor::Tick(float DeltaTime)

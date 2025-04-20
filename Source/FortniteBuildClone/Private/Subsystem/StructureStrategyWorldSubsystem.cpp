@@ -6,7 +6,6 @@
 #include "Structure/PlacementStrategy/PlacementStrategy.h"
 #include "Data/StructureInfoDataAsset.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
-#include "Subsystem/GridWorldSubsystem.h"
 
 UStructureStrategyWorldSubsystem::UStructureStrategyWorldSubsystem()
 {
@@ -36,11 +35,10 @@ void UStructureStrategyWorldSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
 
-	UGridWorldSubsystem* GridWorldSubsystem = GetWorld()->GetSubsystem<UGridWorldSubsystem>();
 	for (const auto& StrategyClass : StructureInfo->GetAllPlacementStrategyClasses())
 	{
 		UPlacementStrategy* Strategy = NewObject<UPlacementStrategy>(this, StrategyClass.Value);
-		Strategy->InitializeStrategy(GridWorldSubsystem);
+		Strategy->InitializeStrategy();
 		Strategies.Add(StrategyClass.Key, Strategy);
 	}
 }

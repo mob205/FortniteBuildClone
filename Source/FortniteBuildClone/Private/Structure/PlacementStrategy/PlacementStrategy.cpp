@@ -50,9 +50,8 @@ bool UPlacementStrategy::IsStructureOccupying(const FTransform& QueryTransform, 
 		UFBCBlueprintLibrary::GetGridCoordinateLocation(QueryTransform.GetLocation()) == UFBCBlueprintLibrary::GetGridCoordinateLocation(Structure->GetActorLocation());
 }
 
-void UPlacementStrategy::InitializeStrategy(UGridWorldSubsystem* InGridSubsystem)
+void UPlacementStrategy::InitializeStrategy()
 {
-	GridSubsystem = InGridSubsystem;
 	OverlapQueryActor = GetWorld()->SpawnActor(OverlapQueryActorClass);
 	OverlapQueryActor->SetActorEnableCollision(false);
 }

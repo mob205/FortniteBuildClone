@@ -4,7 +4,6 @@
 #include "Structure/PlacementStrategy/FloorPlacementStrategy.h"
 
 #include "FBCBlueprintLibrary.h"
-#include "Subsystem/GridWorldSubsystem.h"
 
 bool UFloorPlacementStrategy::GetTargetingLocation(
 	APawn* Player, int RotationOffset, FTransform& OutResult)

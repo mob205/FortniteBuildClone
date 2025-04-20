@@ -9,7 +9,6 @@
 #include "Structure/PlacedStructure.h"
 #include "Data/StructureInfoDataAsset.h"
 #include "Kismet/GameplayStatics.h"
-#include "Subsystem/GridWorldSubsystem.h"
 #include "FBCBlueprintLibrary.h"
 #include "GameplayTagContainer.h"
 #include "Structure/PlacementStrategy/PlacementStrategy.h"
@@ -41,7 +40,6 @@ void UBuildAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 
 	AActor* Avatar = GetAvatarActorFromActorInfo();
 
-	GridWorldSubsystem = GetWorld()->GetSubsystem<UGridWorldSubsystem>();
 	StrategyWorldSubsystem = GetWorld()->GetSubsystem<UStructureStrategyWorldSubsystem>();
 
 	AddAbilityInputMappingContext();

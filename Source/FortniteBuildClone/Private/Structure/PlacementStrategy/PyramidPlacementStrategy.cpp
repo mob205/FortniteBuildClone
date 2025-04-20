@@ -4,7 +4,6 @@
 #include "Structure/PlacementStrategy/PyramidPlacementStrategy.h"
 
 #include "FBCBlueprintLibrary.h"
-#include "Subsystem/GridWorldSubsystem.h"
 
 bool UPyramidPlacementStrategy::GetTargetingLocation(
 	APawn* Player, int RotationOffset, FTransform& OutResult)

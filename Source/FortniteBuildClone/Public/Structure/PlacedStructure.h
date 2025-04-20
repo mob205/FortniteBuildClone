@@ -8,7 +8,6 @@
 #include "Traversal/Traversable.h"
 #include "PlacedStructure.generated.h"
 
-class UGridWorldSubsystem;
 class USplineComponent;
 
 UCLASS()
@@ -45,10 +44,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	float DestructionDelay{.2f};
 	
-	TObjectPtr<UGridWorldSubsystem> GridWorldSubsystem;
-	
-	virtual void BeginPlay() override;
-
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:

@@ -4,7 +4,6 @@
 #include "Structure/PlacementStrategy/RampPlacementStrategy.h"
 
 #include "FBCBlueprintLibrary.h"
-#include "Subsystem/GridWorldSubsystem.h"
 
 bool URampPlacementStrategy::GetTargetingLocation(
 	APawn* Player, int RotationOffset, FTransform& OutResult)

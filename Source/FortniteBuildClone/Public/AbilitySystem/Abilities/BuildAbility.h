@@ -12,7 +12,6 @@
 class UEnhancedInputLocalPlayerSubsystem;
 class AStructureTargetingActor;
 class UStructureInfoDataAsset;
-class UGridWorldSubsystem;
 
 /**
  * 
@@ -41,7 +40,6 @@ protected:
 	
 private:
 	TObjectPtr<AStructureTargetingActor> TargetingActor{};
-	TObjectPtr<UGridWorldSubsystem> GridWorldSubsystem{};
 	TObjectPtr<UStructureStrategyWorldSubsystem> StrategyWorldSubsystem{};
 	
 	FGameplayTag SelectedStructureTag{};

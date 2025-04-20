@@ -5,7 +5,6 @@
 #include "FBCBlueprintLibrary.h"
 #include "GridSizes.h"
 #include "Structure/PlacedStructure.h"
-#include "Subsystem/GridWorldSubsystem.h"
 
 bool UWallPlacementStrategy::GetTargetingLocation(
 	APawn* Player, int RotationOffset, FTransform& OutResult)
@@ -67,5 +66,16 @@ bool UWallPlacementStrategy::IsStructureOccupying(const FTransform& QueryTransfo
 	int StructureYaw = UFBCBlueprintLibrary::SnapAngleToGridInt(Structure->GetActorRotation().Yaw);
 	int FlippedQueryYaw = (QueryYaw + 180) % 360;
 
-	return QueryYaw == StructureYaw || FlippedQueryYaw == StructureYaw;
+	FIntVector QueryCoordinateLocation = UFBCBlueprintLibrary::GetGridCoordinateLocation(QueryTransform.GetLocation());
+	FIntVector StructureCoordinateLocation = UFBCBlueprintLibrary::GetGridCoordinateLocation(Structure->GetActorLocation());
+
+	bool bIsSameWall = QueryYaw == StructureYaw
+						&& QueryCoordinateLocation == StructureCoordinateLocation
+						&& IncompatibleStructureTags.HasTagExact(Structure->GetStructureTag());
+	
+	bool bIsOppositeWall = FlippedQueryYaw == StructureYaw
+						&& QueryCoordinateLocation.Z == StructureCoordinateLocation.Z
+						&& IncompatibleStructureTags.HasTagExact(Structure->GetStructureTag());
+
+	return bIsSameWall || bIsOppositeWall;
 }

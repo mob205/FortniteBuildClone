@@ -8,7 +8,6 @@
 #include "PlacementStrategy.generated.h"
 
 class APlayerController;
-class UGridWorldSubsystem;
 class APlacedStructure;
 
 UCLASS(Blueprintable)
@@ -41,14 +40,13 @@ public:
 	 */
 	bool IsOccupied(const FTransform& QueryTransform) const;
 	
-	void InitializeStrategy(UGridWorldSubsystem* GridSubsystem);
+	void InitializeStrategy();
 
 	UPROPERTY(EditDefaultsOnly)
 	float TargetingRange{};
 
 protected:
 	TObjectPtr<AActor> OverlapQueryActor{};
-	TObjectPtr<UGridWorldSubsystem> GridSubsystem{};
 
 	FVector GetViewLocation(const APlayerController* PC, const FCollisionObjectQueryParams& ObjectQueryParams) const;
 

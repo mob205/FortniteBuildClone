@@ -7,7 +7,6 @@
 #include "StructureTargetingActor.generated.h"
 
 class AGhostPreviewStructure;
-class UGridWorldSubsystem;
 class APlayerController;
 class AGhostStructureActor;
 class UPlacementStrategy;
@@ -57,7 +56,6 @@ private:
 	FIntVector GridCoordinateLocation{};
 
 	TObjectPtr<UPlacementStrategy> CurrentStrategy;
-	TObjectPtr<UGridWorldSubsystem> GridSubsystem;
 	TObjectPtr<APawn> Avatar;
 	
 	FGameplayTag CurrentStructureTag{};
