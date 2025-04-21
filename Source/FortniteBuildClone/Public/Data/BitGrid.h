@@ -16,11 +16,11 @@ struct FBitGrid
 
 	bool operator==(const FBitGrid& Other) const
 	{
-		return Dimensions == Other.Dimensions && BitField == Other.BitField;
+		return BitField == Other.BitField;
 	}
 };
 
 FORCEINLINE uint32 GetTypeHash(const FBitGrid& BitGrid)
 {
-	return HashCombine(GetTypeHash(BitGrid.Dimensions), GetTypeHash(BitGrid.BitField));
+	return GetTypeHash(BitGrid.BitField);
 }

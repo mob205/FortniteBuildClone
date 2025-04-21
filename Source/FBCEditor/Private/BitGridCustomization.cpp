@@ -21,9 +21,9 @@ void FBitGridCustomization::CustomizeChildren(TSharedRef<IPropertyHandle> Proper
 	TSharedPtr<IPropertyHandle> DimensionsHandle = PropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FBitGrid, Dimensions));
 	TSharedPtr<IPropertyHandle> BitFieldHandle = PropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FBitGrid, BitField));
 
-	// Show dimensions normally
 	if (DimensionsHandle.IsValid())
 	{
+		// Show dimensions normally
 		ChildBuilder.AddProperty(DimensionsHandle.ToSharedRef());
 
 		// Automatically redraw the grid if dimensions is updated
@@ -36,6 +36,12 @@ void FBitGridCustomization::CustomizeChildren(TSharedRef<IPropertyHandle> Proper
 				CustomizationUtils.GetPropertyUtilities()->ForceRefresh();
 			})
 		);
+	}
+
+	if (BitFieldHandle.IsValid())
+	{
+		// Show read-only value of the bit field
+		ChildBuilder.AddProperty(BitFieldHandle.ToSharedRef()).IsEnabled(false);
 	}
 
 	int GridSize{};
