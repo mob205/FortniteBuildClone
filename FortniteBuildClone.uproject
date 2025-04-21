@@ -12,6 +12,11 @@
 				"GameplayAbilities",
 				"Engine"
 			]
+		},
+		{
+			"Name": "FBCEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
 		}
 	],
 	"Plugins": [

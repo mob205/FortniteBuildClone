@@ -16,7 +16,7 @@ bool URampPlacementStrategy::GetTargetingLocation(
 
 	FVector TargetLocation = GetViewLocation(PC, ObjectQueryParams);
 
-	DrawDebugSphere(GetWorld(), TargetLocation, 10.f, 10, FColor::Red);
+	// DrawDebugSphere(GetWorld(), TargetLocation, 10.f, 10, FColor::Red);
 
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation));
 
@@ -31,8 +31,6 @@ bool URampPlacementStrategy::GetTargetingLocation(
 	{
 		return true;
 	}
-	
-
 
 	// Try placing in same vertical block as player
 	TargetLocation.Z = Player->GetActorLocation().Z;
