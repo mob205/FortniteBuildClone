@@ -86,6 +86,13 @@ void UBuildAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	SelectStructureGameplayEvent->ReadyForActivation();
 }
 
+void UBuildAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+{
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+	RemoveAbilityInputMappingContext();
+}
+
 void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 {
 	// Only the server should place structures
@@ -144,7 +151,6 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 
 void UBuildAbility::CallEndAbility(const FGameplayAbilityTargetDataHandle& Data)
 {
-	RemoveAbilityInputMappingContext();
 	EndAbility(GetCurrentAbilitySpecHandle(), CurrentActorInfo, GetCurrentActivationInfo(), true, false);
 }
 
