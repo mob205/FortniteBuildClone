@@ -20,4 +20,7 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FBitGrid, int> EditMap{};
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UStaticMeshComponent> GhostMeshComponent;
 };

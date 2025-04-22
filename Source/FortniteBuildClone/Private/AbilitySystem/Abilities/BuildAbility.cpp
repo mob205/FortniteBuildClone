@@ -162,7 +162,7 @@ void UBuildAbility::OnSelectStructure(FGameplayEventData Payload)
 
 	if (IsValid(TargetingActor))
 	{
-		TargetingActor->SetGhostActorClass(StructureInfo->GetGhostClass(SelectedStructureTag));
+		TargetingActor->SetGhostMesh(StructureInfo->GetMesh(SelectedStructureTag));
 		TargetingActor->SetPlacementStrategy(StrategyWorldSubsystem->GetStrategy(SelectedStructureTag));
 		TargetingActor->SetStructureTag(SelectedStructureTag);
 	}

@@ -74,7 +74,7 @@ AEditTargetingActor* UEditAbility::SpawnTargetingActor() const
 		GetAvatarActorFromActorInfo(),
 		nullptr,
 		ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-
+ 
 	// TODO: Target actor initialization here
 
 	UGameplayStatics::FinishSpawningActor(SpawnedTargetingActor, SelectedStructure->GetActorTransform());

@@ -7,6 +7,11 @@
 AEditTargetingActor::AEditTargetingActor()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	GhostMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Ghost Mesh Component");
+	GhostMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GhostMeshComponent->SetGenerateOverlapEvents(false);
+	SetRootComponent(GhostMeshComponent);
 }
 
 

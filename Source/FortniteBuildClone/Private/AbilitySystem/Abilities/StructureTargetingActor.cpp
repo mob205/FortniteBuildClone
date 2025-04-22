@@ -11,8 +11,10 @@ AStructureTargetingActor::AStructureTargetingActor()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	GhostActorComponent = CreateDefaultSubobject<UChildActorComponent>("Ghost Actor");
-	RootComponent = GhostActorComponent;
+	GhostMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Ghost Mesh Component");
+	GhostMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GhostMeshComponent->SetGenerateOverlapEvents(false);
+	SetRootComponent(GhostMeshComponent);
 	
 	bDestroyOnConfirmation = false;
 }
@@ -88,10 +90,9 @@ void AStructureTargetingActor::ConfirmTargetingAndContinue()
 	TargetDataReadyDelegate.Broadcast(DataHandle);
 }
 
-void AStructureTargetingActor::SetGhostActorClass(const TSubclassOf<AGhostPreviewStructure>& InGhostActorClass)
+void AStructureTargetingActor::SetGhostMesh(UStaticMesh* InGhostMesh)
 {
-	GhostActorComponent->SetChildActorClass(InGhostActorClass);
-	GhostActor = Cast<AGhostPreviewStructure>(GhostActorComponent->GetChildActor());
+	GhostMeshComponent->SetStaticMesh(InGhostMesh);
 }
 
 void AStructureTargetingActor::SetPlacementStrategy(UPlacementStrategy* InStrategy)
@@ -101,19 +102,20 @@ void AStructureTargetingActor::SetPlacementStrategy(UPlacementStrategy* InStrate
 
 void AStructureTargetingActor::ValidateGhost() const
 {
-	GhostActor->SetActorHiddenInGame(false);
-	GhostActor->SetMaterial(ValidGhostMaterial);
+	GhostMeshComponent->SetVisibility(true);
+	GhostMeshComponent->SetMaterial(0, ValidGhostMaterial);
 }
 
 void AStructureTargetingActor::InvalidateGhost() const
 {
-	GhostActor->SetActorHiddenInGame(false);
-	GhostActor->SetMaterial(InvalidGhostMaterial);
+	GhostMeshComponent->SetVisibility(true);
+	GhostMeshComponent->SetMaterial(0, InvalidGhostMaterial);
+
 }
 
 void AStructureTargetingActor::HideGhost() const
 {
-	GhostActor->SetActorHiddenInGame(true);
+	GhostMeshComponent->SetVisibility(false);
 }
 
 

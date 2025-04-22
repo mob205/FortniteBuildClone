@@ -18,9 +18,6 @@ class FORTNITEBUILDCLONE_API UEditAbility : public UFBCGameplayAbility
 {
 	GENERATED_BODY()
 
-public:
-	UEditAbility();
-	
 protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 

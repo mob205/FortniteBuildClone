@@ -9,20 +9,7 @@
 
 class UInputAction;
 class APlacedStructure;
-class AGhostPreviewStructure;
 class UPlacementStrategy;
-
-USTRUCT(BlueprintType)
-struct FStructureClasses
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<AGhostPreviewStructure> TargetingActorClass{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<APlacedStructure> StructureActorClass{};
-};
 
 USTRUCT(BlueprintType)
 struct FStructureInfo
@@ -36,7 +23,10 @@ struct FStructureInfo
 	FGameplayTag GameplayTag{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FStructureClasses StructureClasses{};
+	TObjectPtr<UStaticMesh> Mesh{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<APlacedStructure> StructureClass{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<UPlacementStrategy> PlacementStrategyClass{};
@@ -51,12 +41,9 @@ class FORTNITEBUILDCLONE_API UStructureInfoDataAsset : public UDataAsset
 public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StructureInfo")
 	FGameplayTag GetTagFromInput(const UInputAction* InputAction) const;
-
+	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Structure Info")
-	bool GetStructureClasses(const FGameplayTag& StructureTag, FStructureClasses& Classes);
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Structure Info")
-	TSubclassOf<AGhostPreviewStructure> GetGhostClass(const FGameplayTag& StructureTag);
+	UStaticMesh* GetMesh(const FGameplayTag& StructureTag);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Structure Info")
 	TSubclassOf<APlacedStructure> GetStructureActorClass(const FGameplayTag& StructureTag);
@@ -68,12 +55,19 @@ public:
 	TMap<FGameplayTag, TSubclassOf<UPlacementStrategy>> GetAllPlacementStrategyClasses();
 	
 protected:
+	virtual void PostLoad() override;
+	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FStructureInfo> StructureInfo{};
 
-	bool bHasInitializedMaps{};
-	
-	TMap<FGameplayTag, FStructureClasses> StructureClasses{};
+private:
+
+	UPROPERTY(Transient)
+	TMap<FGameplayTag, TSubclassOf<APlacedStructure>> StructureClasses{};
+	UPROPERTY(Transient)
+	TMap<FGameplayTag, UStaticMesh*> Meshes{};
+	UPROPERTY(Transient)
 	TMap<FGameplayTag, TSubclassOf<UPlacementStrategy>> StrategyClasses{};
+	
 	void InitializeMaps();
 };

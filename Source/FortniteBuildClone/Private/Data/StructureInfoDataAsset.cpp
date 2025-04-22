@@ -17,43 +17,27 @@ FGameplayTag UStructureInfoDataAsset::GetTagFromInput(const UInputAction* InputA
 	return {};
 }
 
-TSubclassOf<AGhostPreviewStructure> UStructureInfoDataAsset::GetGhostClass(const FGameplayTag& StructureTag)
+UStaticMesh* UStructureInfoDataAsset::GetMesh(const FGameplayTag& StructureTag)
 {
-	FStructureClasses Classes;
-	if (GetStructureClasses(StructureTag, Classes))
-	{
-		return Classes.TargetingActorClass;
-	}
-	return {};
+	checkf(Meshes.Contains(StructureTag),
+		TEXT("Attempted to find mesh of invalid structure tag %s."),
+		*StructureTag.GetTagName().ToString());
+	
+	return Meshes[StructureTag];
 }
 
 TSubclassOf<APlacedStructure> UStructureInfoDataAsset::GetStructureActorClass(const FGameplayTag& StructureTag)
 {
-	FStructureClasses Classes;
-	if (GetStructureClasses(StructureTag, Classes))
-	{
-		return Classes.StructureActorClass;
-	}
-	return {};
-}
-
-bool UStructureInfoDataAsset::GetStructureClasses(const FGameplayTag& StructureTag, FStructureClasses& Classes)
-{
-	if (!bHasInitializedMaps) { InitializeMaps(); }
-
-	if (!StructureClasses.Contains(StructureTag))
-	{
-		Classes = {};
-		return false;
-	}
-
-	Classes = StructureClasses[StructureTag];
-	return true;
+	
+	checkf(StructureClasses.Contains(StructureTag),
+		TEXT("Attempted to find structure class of invalid structure tag %s."),
+		*StructureTag.GetTagName().ToString());
+	
+	return StructureClasses[StructureTag];
 }
 
 TSubclassOf<UPlacementStrategy> UStructureInfoDataAsset::GetPlacementStrategyClass(const FGameplayTag& StructureTag)
 {
-	if (!bHasInitializedMaps) { InitializeMaps(); }
 
 	checkf(StrategyClasses.Contains(StructureTag),
 		TEXT("Attempted to find placement strategy of invalid structure tag %s."),
@@ -64,16 +48,22 @@ TSubclassOf<UPlacementStrategy> UStructureInfoDataAsset::GetPlacementStrategyCla
 
 TMap<FGameplayTag, TSubclassOf<UPlacementStrategy>> UStructureInfoDataAsset::GetAllPlacementStrategyClasses()
 {
-	if (!bHasInitializedMaps) { InitializeMaps(); }
 	return StrategyClasses;
+}
+
+void UStructureInfoDataAsset::PostLoad()
+{
+	Super::PostLoad();
+
+	InitializeMaps();
 }
 
 void UStructureInfoDataAsset::InitializeMaps()
 {
 	for (const auto& Structure : StructureInfo)
 	{
-		StructureClasses.Add(Structure.GameplayTag, Structure.StructureClasses);
 		StrategyClasses.Add(Structure.GameplayTag, Structure.PlacementStrategyClass);
+		StructureClasses.Add(Structure.GameplayTag, Structure.StructureClass);
+		Meshes.Add(Structure.GameplayTag, Structure.Mesh);
 	}
-	bHasInitializedMaps = true;
 }

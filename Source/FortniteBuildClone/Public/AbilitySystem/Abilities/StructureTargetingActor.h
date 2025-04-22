@@ -26,7 +26,7 @@ public:
 
 	// Sets the type of structure for the targeting actor to use. Used for building preview and location selection 
 	UFUNCTION(BlueprintCallable)
-	void SetGhostActorClass(const TSubclassOf<AGhostPreviewStructure>& InGhostActorClass);
+	void SetGhostMesh(UStaticMesh* InGhostMesh);
 
 	// Adds a rotation offset. Each call adds a 90-degree turn around Z-axis.
 	UFUNCTION(BlueprintCallable)
@@ -39,7 +39,7 @@ public:
 	void SetStructureTag(FGameplayTag InStructureTag) { CurrentStructureTag = InStructureTag; }
 protected:
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UChildActorComponent> GhostActorComponent;
+	TObjectPtr<UStaticMeshComponent> GhostMeshComponent;
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UMaterialInstance> ValidGhostMaterial{};
@@ -59,8 +59,6 @@ private:
 	TObjectPtr<APawn> Avatar;
 	
 	FGameplayTag CurrentStructureTag{};
-
-	TObjectPtr<AGhostPreviewStructure> GhostActor{};
 
 	void ValidateGhost() const;
 	void InvalidateGhost() const;
