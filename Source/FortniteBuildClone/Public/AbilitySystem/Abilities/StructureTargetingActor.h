@@ -38,7 +38,7 @@ public:
 
 	void SetStructureTag(FGameplayTag InStructureTag) { CurrentStructureTag = InStructureTag; }
 protected:
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	TObjectPtr<UStaticMeshComponent> GhostMeshComponent;
 
 	UPROPERTY(EditDefaultsOnly)

@@ -8,6 +8,12 @@ struct FBitGrid
 {
 	GENERATED_BODY()
 
+	FBitGrid() = default;
+	
+	FBitGrid(int32 InBitField)
+		: BitField(InBitField)
+	{}
+	
 	UPROPERTY(EditAnywhere)
 	int Dimensions{3};
 

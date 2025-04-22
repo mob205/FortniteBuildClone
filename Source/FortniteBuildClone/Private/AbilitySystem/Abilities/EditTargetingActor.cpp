@@ -6,7 +6,7 @@
 
 AEditTargetingActor::AEditTargetingActor()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	GhostMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Ghost Mesh Component");
 	GhostMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -14,9 +14,31 @@ AEditTargetingActor::AEditTargetingActor()
 	SetRootComponent(GhostMeshComponent);
 }
 
-
-void AEditTargetingActor::Tick(float DeltaTime)
+void AEditTargetingActor::BeginPlay()
 {
-	Super::Tick(DeltaTime);
+	Super::BeginPlay();
+	GhostMeshComponent->SetMaterial(0, GhostMaterial);
+}
+
+void AEditTargetingActor::SetSelectedEdit(int32 InBitfield)
+{
+	if (InBitfield == SelectedEdit) { return; }
+
+	SelectedEdit = InBitfield;
+
+	if (EditMap.Contains(SelectedEdit))
+	{
+		GhostMeshComponent->SetStaticMesh(EditMap[SelectedEdit].EditPreviewMesh);
+	}
+}
+
+bool AEditTargetingActor::GetSelectedEdit(TSubclassOf<APlacedStructure>& OutStructureClass) const
+{
+	if (EditMap.Contains(SelectedEdit))
+	{
+		OutStructureClass = EditMap[SelectedEdit].StructureClass;
+		return true;
+	}
+	return false;
 }
 

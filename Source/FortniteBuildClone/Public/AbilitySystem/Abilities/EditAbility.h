@@ -22,7 +22,7 @@ protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
-	
+
 	// Abilities with this tag are cancelled when this ability is executed and a structure is successfully selected
 	UPROPERTY(EditDefaultsOnly, Category = "Tags", meta=(DisplayName="Cancel Abilities with Tag After Selected Structure"))
 	FGameplayTagContainer SuccessfulActivationCancelTags{};
@@ -43,19 +43,18 @@ private:
 	APlacedStructure* GetSelectedStructure() const;
 	TObjectPtr<APlacedStructure> SelectedStructure;
 
-	// Tracks whether the caster has the selection input held down
-	// Selecting is used to select/deselect edit actor tiles
-	bool bIsSelecting{};
-
 	AEditTargetingActor* SpawnTargetingActor() const;
 	TObjectPtr<AEditTargetingActor> TargetingActor;
-	
+
 	UFUNCTION()
 	void OnConfirm();
-
+	
 	UFUNCTION()
 	void StartSelection(FGameplayEventData Payload);
 
 	UFUNCTION()
 	void EndSelection(FGameplayEventData Payload);
+	
+	UFUNCTION()
+	void OnSelectedStructureDestroyed(AActor* DestroyedActor);
 };

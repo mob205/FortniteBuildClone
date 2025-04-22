@@ -33,6 +33,9 @@ public:
 	// Sets the visibility of the structure's static mesh. Only applies locally - visibility does not replicate
 	UFUNCTION(BlueprintCallable)
 	void SetStructureMeshVisibility(bool bIsVisible);
+
+	UFUNCTION(BlueprintCallable)
+	int32 GetEditBitfield() const { return EditBitfield; }
 	
 	virtual const TArray<USplineComponent*> GetLedges_Implementation() const override { return Ledges; }
 	virtual const TMap<USplineComponent*, USplineComponent*> GetOppositeLedges_Implementation() const override { return OppositeLedges; }
@@ -47,6 +50,9 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Editing")
+	int32 EditBitfield{};
+	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> Root;
 
@@ -54,19 +60,22 @@ protected:
 	TObjectPtr<UStaticMeshComponent> StaticMesh;
 	
 	// Ledges
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Traversal")
 	TObjectPtr<USplineComponent> ForwardLedge;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Traversal")
 	TObjectPtr<USplineComponent> BackLedge;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Traversal")
 	TObjectPtr<USplineComponent> LeftLedge;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Traversal")
 	TObjectPtr<USplineComponent> RightLedge;
 
+	UPROPERTY()
 	TArray<USplineComponent*> Ledges;
+
+	UPROPERTY()
 	TMap<USplineComponent*, USplineComponent*> OppositeLedges{};
 private:
 	FTimerHandle DestroyTimerHandle;
