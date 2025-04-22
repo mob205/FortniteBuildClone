@@ -66,3 +66,15 @@ bool UFBCBlueprintLibrary::IsGround(AActor* Actor)
 	}
 	return false;
 }
+
+bool UFBCBlueprintLibrary::TraceControllerLook(AController* PC, float Range, FHitResult& OutHit)
+{
+	FVector ViewStart{};
+	FRotator ViewRot{};
+	PC->GetPlayerViewPoint(ViewStart, ViewRot);
+
+	FVector ViewEnd = ViewStart + (ViewRot.Vector() * Range);
+	
+	return PC->GetWorld()->LineTraceSingleByChannel(OutHit, ViewStart, ViewEnd, ECollisionChannel::ECC_Visibility);
+
+}

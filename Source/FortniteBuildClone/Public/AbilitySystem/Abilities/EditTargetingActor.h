@@ -34,7 +34,7 @@ public:
 
 	bool GetSelectedEdit(TSubclassOf<APlacedStructure>& OutStructureClass) const;
 
-	void SetAvatarController(APlayerController* PC) { AvatarPC = PC; }
+	void InitializeEditTargeting(APlayerController* PC, float Range);
 
 	void SetSelection(bool bNewSelecting) { bIsSelecting = bNewSelecting; }
 protected:
@@ -49,9 +49,16 @@ protected:
 
 	TObjectPtr<APlayerController> AvatarPC;
 
+	virtual void StartSelecting();
+	virtual void ContinueSelecting();
+	virtual void EndSelecting();
+
 	virtual void BeginPlay() override;
 
+	virtual void Tick(float DeltaSeconds) override;
 private:
-	bool bIsSelecting{}; 
+	float TargetingRange{};
+	bool bIsSelecting{};
+	bool bLastSelecting{};
 	int32 SelectedEdit{};
 };

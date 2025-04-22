@@ -38,4 +38,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ground Detection")
 	static bool IsGround(AActor* Actor);
+
+	UFUNCTION(BlueprintCallable, Category = "Trace")
+	static bool TraceControllerLook(AController* PC, float Range, FHitResult& OutHit);
 };

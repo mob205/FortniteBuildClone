@@ -4,6 +4,7 @@
 #include "AbilitySystem/Abilities/EditAbility.h"
 
 #include "AbilitySystemComponent.h"
+#include "FBCBlueprintLibrary.h"
 #include "Abilities/Tasks/AbilityTask_WaitConfirmCancel.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "AbilitySystem/Abilities/EditTargetingActor.h"
@@ -71,7 +72,7 @@ AEditTargetingActor* UEditAbility::SpawnTargetingActor() const
 	SpawnedTargetingActor->SetSelectedEdit(SelectedStructure->GetEditBitfield());
 
 	APlayerController* AvatarPC = Cast<APlayerController>(Cast<APawn>(GetAvatarActorFromActorInfo())->GetController());
-	SpawnedTargetingActor->SetAvatarController(AvatarPC);
+	SpawnedTargetingActor->InitializeEditTargeting(AvatarPC, Range);
 
 	UGameplayStatics::FinishSpawningActor(SpawnedTargetingActor, SelectedStructure->GetActorTransform());
 
@@ -99,9 +100,15 @@ void UEditAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGa
 	if (IsValid(SelectedStructure))
 	{
 		SelectedStructure->SetStructureMeshVisibility(true);
+		SelectedStructure->OnDestroyed.RemoveAll(this);
 	}
 	RemoveAbilityInputMappingContext();
-	TargetingActor->Destroy();
+
+	if (IsValid(TargetingActor))
+	{
+		TargetingActor->Destroy();
+	}
+	
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
@@ -126,14 +133,8 @@ APlacedStructure* UEditAbility::GetSelectedStructure() const
 	
 	check(AvatarPawn); // Currently, avatars are always pawns
 
-	FVector ViewStart{};
-	FRotator ViewRot{};
-	AvatarPawn->GetController()->GetPlayerViewPoint(ViewStart, ViewRot);
-
-	FVector ViewEnd = ViewStart + (ViewRot.Vector() * Range);
-	
 	FHitResult HitResult{};
-	if (!GetWorld()->LineTraceSingleByChannel(HitResult, ViewStart, ViewEnd, ECollisionChannel::ECC_Visibility))
+	if (!UFBCBlueprintLibrary::TraceControllerLook(AvatarPawn->GetController(), Range, HitResult))
 	{
 		return nullptr;
 	}
