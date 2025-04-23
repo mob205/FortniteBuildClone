@@ -96,7 +96,7 @@ void UBuildAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FG
 void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 {
 	// Only the server should place structures
-	if (!UKismetSystemLibrary::IsServer(this)) { return; }
+	if (!HasAuthority(&CurrentActivationInfo)) { return; }
 
 	if (!CommitAbility(GetCurrentAbilitySpecHandle(), CurrentActorInfo, GetCurrentActivationInfo()))
 	{
@@ -145,7 +145,6 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 
 	// Spawn and initialize structure
 	APlacedStructure* PlacedStructure = GetWorld()->SpawnActorDeferred<APlacedStructure>(StructureActorClass, BuildingTransform);
-	PlacedStructure->SetStructureTag(SelectedStructureTag);
 	UGameplayStatics::FinishSpawningActor(PlacedStructure, BuildingTransform);
 }
 

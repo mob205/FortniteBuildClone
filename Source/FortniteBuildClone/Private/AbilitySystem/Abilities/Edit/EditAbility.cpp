@@ -5,8 +5,9 @@
 
 #include "AbilitySystemComponent.h"
 #include "FBCBlueprintLibrary.h"
-#include "Abilities/Tasks/AbilityTask_WaitConfirmCancel.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
+#include "Abilities/Tasks/AbilityTask_WaitTargetData.h"
+#include "AbilitySystem/Abilities/Edit/EditTargetData.h"
 #include "AbilitySystem/Abilities/Edit/EditTargetingActor.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "Kismet/GameplayStatics.h"
@@ -20,23 +21,32 @@ void UEditAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 	SelectedStructure = GetSelectedStructure();
 	if (!IsValid(SelectedStructure))
 	{
-		CancelAbility(Handle, ActorInfo, ActivationInfo, false);
+		CancelAbility(Handle, ActorInfo, ActivationInfo, true);
 		return;
 	}
+
+	// End the ability if the structure is destroyed mid-edit
+	SelectedStructure->OnDestroyed.AddDynamic(this, &UEditAbility::OnSelectedStructureDestroyed);
 	
+	TargetingActor = SpawnTargetingActor();
+
+	// Listen for edit data
+	UAbilityTask_WaitTargetData* WaitTargetData = UAbilityTask_WaitTargetData::WaitTargetDataUsingActor(
+		this,
+		"Wait Edit Target Data",
+		EGameplayTargetingConfirmation::Custom,
+		TargetingActor);
+	WaitTargetData->ValidData.AddDynamic(this, &UEditAbility::OnEditDataReceived);
+	WaitTargetData->ReadyForActivation();
+
 	GetAbilitySystemComponentFromActorInfo()->CancelAbilities(&SuccessfulActivationCancelTags);
+
+	// Rest of execution is specific to local client
+	if (!IsLocallyControlled()) { return; }
+	
 	AddAbilityInputMappingContext();
 	
 	SelectedStructure->SetStructureMeshVisibility(false);
-	SelectedStructure->OnDestroyed.AddDynamic(this, &UEditAbility::OnSelectedStructureDestroyed);
-
-	TargetingActor = SpawnTargetingActor();
-	if (!TargetingActor) { return; }
-	
-	// Listen for target actor confirmation
-	UAbilityTask_WaitConfirmCancel* WaitConfirmTask = UAbilityTask_WaitConfirmCancel::WaitConfirmCancel(this);
-	WaitConfirmTask->OnConfirm.AddDynamic(this, &UEditAbility::OnConfirm);
-	WaitConfirmTask->ReadyForActivation();
 
 	// Listen for input to start selecting edit tiles
 	UAbilityTask_WaitGameplayEvent* StartSelectionEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
@@ -79,37 +89,41 @@ AEditTargetingActor* UEditAbility::SpawnTargetingActor() const
 	return SpawnedTargetingActor;
 }
 
-void UEditAbility::OnConfirm()
-{
-	TSubclassOf<APlacedStructure> StructureClass{};
-	if (TargetingActor->GetSelectedEdit(StructureClass))
-	{
-		UE_LOG(LogFBC, Warning, TEXT("UEditAbility: Got valid edit!"));
-	}
-	else
-	{
-		UE_LOG(LogFBC, Warning, TEXT("UEditAbility: Invalid edit! :("));
-	}
-
-	EndAbility(GetCurrentAbilitySpecHandle(), CurrentActorInfo, GetCurrentActivationInfo(), false, false);
-}
-
 void UEditAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+{
+	if (IsLocallyControlled())
+	{
+		RemoveAbilityInputMappingContext();
+		if (IsValid(TargetingActor))
+		{
+			TargetingActor->Destroy();
+		}
+	}
+	
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+
+void UEditAbility::OnEditDataReceived(const FGameplayAbilityTargetDataHandle& Data)
 {
 	if (IsValid(SelectedStructure))
 	{
 		SelectedStructure->SetStructureMeshVisibility(true);
 		SelectedStructure->OnDestroyed.RemoveAll(this);
 	}
-	RemoveAbilityInputMappingContext();
-
-	if (IsValid(TargetingActor))
+	
+	// Local only
+	if (IsLocallyControlled())
 	{
-		TargetingActor->Destroy();
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
+		return;
 	}
 	
-	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+	const FEditTargetData* EditData = static_cast<const FEditTargetData*>(Data.Get(0));
+
+	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, FString::Printf(TEXT("Server received edit data! %d"), EditData->EditBitfield));
+
+	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
 }
 
 void UEditAbility::StartSelection(FGameplayEventData Payload)

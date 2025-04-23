@@ -38,7 +38,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Costs")
 	TMap<FGameplayTag, TSubclassOf<UGameplayEffect>> MaterialCostEffects{};
 
-	void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 private:
 	TObjectPtr<AStructureTargetingActor> TargetingActor{};
 	TObjectPtr<UStructureStrategyWorldSubsystem> StrategyWorldSubsystem{};

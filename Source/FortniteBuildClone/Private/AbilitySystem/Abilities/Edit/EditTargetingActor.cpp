@@ -5,8 +5,7 @@
 
 #include "AbilitySystem/Abilities/Edit/EditSelectionTile.h"
 #include "FBCBlueprintLibrary.h"
-#include "FortniteBuildClone/FortniteBuildClone.h"
-
+#include "AbilitySystem/Abilities/Edit/EditTargetData.h"
 
 AEditTargetingActor::AEditTargetingActor()
 {
@@ -28,6 +27,12 @@ void AEditTargetingActor::InitializeEditTargeting(APlayerController* PC, float R
 {
 	AvatarPC = PC;
 	TargetingRange = Range;
+}
+
+void AEditTargetingActor::ConfirmTargetingAndContinue()
+{
+	FGameplayAbilityTargetDataHandle Handle{new FEditTargetData{CurrentEdit}};
+	TargetDataReadyDelegate.Broadcast(Handle);
 }
 
 void AEditTargetingActor::UpdateSelectionTiles()
@@ -85,12 +90,12 @@ void AEditTargetingActor::EndSelecting()
 {
 	bIsSelecting = false;
 	EncounteredTiles.Reset();
-	UpdateSelectionTiles();
+	SetSelectedEdit(CurrentEdit);
 }
 
-void AEditTargetingActor::BeginPlay()
+void AEditTargetingActor::StartTargeting(UGameplayAbility* Ability)
 {
-	Super::BeginPlay();
+	Super::StartTargeting(Ability);
 	GhostMeshComponent->SetMaterial(0, GhostMaterial);
 }
 
@@ -111,6 +116,8 @@ void AEditTargetingActor::Tick(float DeltaSeconds)
 
 void AEditTargetingActor::SetSelectedEdit(int32 InBitfield)
 {
+	UpdateSelectionTiles();
+
 	if (InBitfield == CurrentEdit) { return; }
 
 	CurrentEdit = InBitfield;
@@ -119,17 +126,5 @@ void AEditTargetingActor::SetSelectedEdit(int32 InBitfield)
 	{
 		GhostMeshComponent->SetStaticMesh(EditMap[CurrentEdit].EditPreviewMesh);
 	}
-
-	UpdateSelectionTiles();
-}
-
-bool AEditTargetingActor::GetSelectedEdit(TSubclassOf<APlacedStructure>& OutStructureClass) const
-{
-	if (EditMap.Contains(CurrentEdit))
-	{
-		OutStructureClass = EditMap[CurrentEdit].StructureClass;
-		return true;
-	}
-	return false;
 }
 

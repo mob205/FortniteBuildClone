@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Abilities/GameplayAbilityTargetActor.h"
 #include "Data/BitGrid.h"
 #include "EditTargetingActor.generated.h"
 
@@ -23,7 +24,7 @@ struct FStructureEditInfo
 };
 
 UCLASS()
-class FORTNITEBUILDCLONE_API AEditTargetingActor : public AActor
+class FORTNITEBUILDCLONE_API AEditTargetingActor : public AGameplayAbilityTargetActor
 {
 	GENERATED_BODY()
 
@@ -35,11 +36,11 @@ public:
 	
 	void SetSelectedEdit(int32 InBitfield);
 
-	bool GetSelectedEdit(TSubclassOf<APlacedStructure>& OutStructureClass) const;
-
 	void InitializeEditTargeting(APlayerController* PC, float Range);
 
 	void SetSelection(bool bNewSelecting) { bIsSelecting = bNewSelecting; }
+
+	virtual void ConfirmTargetingAndContinue() override;
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FBitGrid, FStructureEditInfo> EditMap{};
@@ -57,7 +58,7 @@ protected:
 	virtual void ProcessSelecting();
 	virtual void EndSelecting();
 
-	virtual void BeginPlay() override;
+	virtual void StartTargeting(UGameplayAbility* Ability) override;
 
 	virtual void Tick(float DeltaSeconds) override;
 private:

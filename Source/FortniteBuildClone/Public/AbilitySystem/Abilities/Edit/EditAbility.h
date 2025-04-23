@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/FBCGameplayAbility.h"
 #include "Abilities/GameplayAbility.h"
+#include "Abilities/GameplayAbilityTargetTypes.h"
 #include "EditAbility.generated.h"
 
 class APlacedStructure;
@@ -38,7 +39,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Targeting")
 	FGameplayTag EndSelectionTag{};
-	
+
 private:
 	APlacedStructure* GetSelectedStructure() const;
 	TObjectPtr<APlacedStructure> SelectedStructure;
@@ -47,7 +48,7 @@ private:
 	TObjectPtr<AEditTargetingActor> TargetingActor;
 
 	UFUNCTION()
-	void OnConfirm();
+	void OnEditDataReceived(const FGameplayAbilityTargetDataHandle& Data);
 	
 	UFUNCTION()
 	void StartSelection(FGameplayEventData Payload);
