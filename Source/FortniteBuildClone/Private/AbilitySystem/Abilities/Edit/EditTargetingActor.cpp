@@ -97,6 +97,7 @@ void AEditTargetingActor::StartTargeting(UGameplayAbility* Ability)
 {
 	Super::StartTargeting(Ability);
 	GhostMeshComponent->SetMaterial(0, GhostMaterial);
+	UpdateSelectionTiles();
 }
 
 void AEditTargetingActor::Tick(float DeltaSeconds)
