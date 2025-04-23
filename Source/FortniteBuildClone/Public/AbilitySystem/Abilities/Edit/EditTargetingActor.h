@@ -54,8 +54,7 @@ protected:
 
 	TSet<AEditSelectionTile*> SelectionTiles{};
 
-	virtual void StartSelecting();
-	virtual void ContinueSelecting();
+	virtual void ProcessSelecting();
 	virtual void EndSelecting();
 
 	virtual void BeginPlay() override;

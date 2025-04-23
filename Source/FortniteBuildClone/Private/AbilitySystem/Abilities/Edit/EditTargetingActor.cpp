@@ -57,14 +57,7 @@ AEditSelectionTile* AEditTargetingActor::GetCurrentTile() const
 	return nullptr;
 }
 
-void AEditTargetingActor::StartSelecting()
-{
-	UE_LOG(LogFBC, Display, TEXT("Start selecting."));
-
-	bIsSelecting = true;
-}
-
-void AEditTargetingActor::ContinueSelecting()
+void AEditTargetingActor::ProcessSelecting()
 {
 	if (AEditSelectionTile* Tile = GetCurrentTile())
 	{
@@ -91,7 +84,6 @@ void AEditTargetingActor::ContinueSelecting()
 void AEditTargetingActor::EndSelecting()
 {
 	bIsSelecting = false;
-	bHasEncounteredFirstTile = false;
 	EncounteredTiles.Reset();
 	UpdateSelectionTiles();
 }
@@ -106,17 +98,13 @@ void AEditTargetingActor::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (bIsSelecting && !bLastSelecting)
+	if (bIsSelecting)
 	{
-		StartSelecting();
+		ProcessSelecting();
 	}
 	if (!bIsSelecting && bLastSelecting)
 	{
 		EndSelecting();
-	}
-	if (bIsSelecting && bLastSelecting)
-	{
-		ContinueSelecting();
 	}
 	bLastSelecting = bIsSelecting;
 }
