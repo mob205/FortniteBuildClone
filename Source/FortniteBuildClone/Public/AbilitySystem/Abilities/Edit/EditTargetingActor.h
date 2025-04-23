@@ -3,10 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Abilities/GameplayAbilityTargetActor.h"
 #include "Data/BitGrid.h"
 #include "EditTargetingActor.generated.h"
 
+class AEditSelectionTile;
 class APlacedStructure;
 class UMaterialInstance;
 
@@ -30,6 +30,9 @@ class FORTNITEBUILDCLONE_API AEditTargetingActor : public AActor
 public:
 	AEditTargetingActor();
 
+	UFUNCTION(BlueprintCallable)
+	void RegisterSelectionTile(AEditSelectionTile* SelectionTile, int BitIndex);
+	
 	void SetSelectedEdit(int32 InBitfield);
 
 	bool GetSelectedEdit(TSubclassOf<APlacedStructure>& OutStructureClass) const;
@@ -44,10 +47,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UMaterialInstance> GhostMaterial{};
 	
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> GhostMeshComponent;
 
 	TObjectPtr<APlayerController> AvatarPC;
+
+	TSet<AEditSelectionTile*> SelectionTiles{};
 
 	virtual void StartSelecting();
 	virtual void ContinueSelecting();
@@ -58,7 +63,15 @@ protected:
 	virtual void Tick(float DeltaSeconds) override;
 private:
 	float TargetingRange{};
+	
 	bool bIsSelecting{};
 	bool bLastSelecting{};
-	int32 SelectedEdit{};
+	bool bFirstTileInitialStatus{};
+	TSet<AEditSelectionTile*> EncounteredTiles{};
+	
+	int32 CurrentEdit{};
+
+	void UpdateSelectionTiles();
+
+	AEditSelectionTile* GetCurrentTile() const;
 };

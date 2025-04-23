@@ -24,6 +24,11 @@ struct FBitGrid
 	{
 		return BitField == Other.BitField;
 	}
+
+	operator int32() const
+	{
+		return BitField;
+	}
 };
 
 FORCEINLINE uint32 GetTypeHash(const FBitGrid& BitGrid)

@@ -1,9 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "AbilitySystem/Abilities/StructureTargetingActor.h"
+#include "AbilitySystem/Abilities/Build/StructureTargetingActor.h"
 #include "FBCBlueprintLibrary.h"
 #include "Abilities/GameplayAbility.h"
-#include "Structure/GhostPreviewStructure.h"
 #include "Structure/PlacementStrategy/PlacementStrategy.h"
 
 

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "Data/BitGrid.h"
 #include "GameFramework/Actor.h"
 #include "Traversal/Traversable.h"
 #include "PlacedStructure.generated.h"
@@ -51,7 +52,7 @@ protected:
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Editing")
-	int32 EditBitfield{};
+	FBitGrid EditBitfield{};
 	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> Root;

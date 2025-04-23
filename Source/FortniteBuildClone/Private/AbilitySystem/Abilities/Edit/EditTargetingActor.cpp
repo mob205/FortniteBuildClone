@@ -1,0 +1,147 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "AbilitySystem/Abilities/Edit/EditTargetingActor.h"
+
+#include "AbilitySystem/Abilities/Edit/EditSelectionTile.h"
+#include "FBCBlueprintLibrary.h"
+#include "FortniteBuildClone/FortniteBuildClone.h"
+
+
+AEditTargetingActor::AEditTargetingActor()
+{
+	PrimaryActorTick.bCanEverTick = true;
+
+	GhostMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Ghost Mesh Component");
+	GhostMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GhostMeshComponent->SetGenerateOverlapEvents(false);
+	SetRootComponent(GhostMeshComponent);
+}
+
+void AEditTargetingActor::RegisterSelectionTile(AEditSelectionTile* SelectionTile, int BitIndex)
+{
+	SelectionTile->SetEditBitfieldIndex(BitIndex);
+	SelectionTiles.Add(SelectionTile);
+}
+
+void AEditTargetingActor::InitializeEditTargeting(APlayerController* PC, float Range)
+{
+	AvatarPC = PC;
+	TargetingRange = Range;
+}
+
+void AEditTargetingActor::UpdateSelectionTiles()
+{
+	bool bIsValidEdit = EditMap.Contains(CurrentEdit);
+	for (const auto Tile : SelectionTiles)
+	{
+		int BitIdx = Tile->GetEditBitfieldIndex();
+
+		Tile->SetValidity(bIsValidEdit);
+		Tile->SetSelection(CurrentEdit & (1 << BitIdx));
+	}
+}
+
+AEditSelectionTile* AEditTargetingActor::GetCurrentTile() const
+{
+	FHitResult HitResult{};
+
+	if (UFBCBlueprintLibrary::TraceControllerLook(AvatarPC, TargetingRange, HitResult))
+	{
+		AEditSelectionTile* AsSelectionTile = Cast<AEditSelectionTile>(HitResult.GetActor());
+		if (IsValid(AsSelectionTile) && SelectionTiles.Contains(AsSelectionTile))
+		{
+			return AsSelectionTile;
+		}
+	}
+	return nullptr;
+}
+
+void AEditTargetingActor::StartSelecting()
+{
+	UE_LOG(LogFBC, Display, TEXT("Start selecting."));
+
+	bIsSelecting = true;
+}
+
+void AEditTargetingActor::ContinueSelecting()
+{
+	if (AEditSelectionTile* Tile = GetCurrentTile())
+	{
+		if (EncounteredTiles.Contains(Tile)) { return; }
+		
+		int Bitmask = 1 << Tile->GetEditBitfieldIndex();
+
+		bool bIsTileSelected = CurrentEdit & Bitmask;
+		
+		if (EncounteredTiles.IsEmpty())
+		{
+			bFirstTileInitialStatus = bIsTileSelected;
+		}
+		// While holding to select, tiles we flip should have the same starting state as the first one we encounter
+		if (bFirstTileInitialStatus == bIsTileSelected)
+		{
+			CurrentEdit ^= (Bitmask);
+			Tile->SetSelection(!bIsTileSelected);
+		}
+		EncounteredTiles.Add(Tile);
+	}
+}
+
+void AEditTargetingActor::EndSelecting()
+{
+	bIsSelecting = false;
+	bHasEncounteredFirstTile = false;
+	EncounteredTiles.Reset();
+	UpdateSelectionTiles();
+}
+
+void AEditTargetingActor::BeginPlay()
+{
+	Super::BeginPlay();
+	GhostMeshComponent->SetMaterial(0, GhostMaterial);
+}
+
+void AEditTargetingActor::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (bIsSelecting && !bLastSelecting)
+	{
+		StartSelecting();
+	}
+	if (!bIsSelecting && bLastSelecting)
+	{
+		EndSelecting();
+	}
+	if (bIsSelecting && bLastSelecting)
+	{
+		ContinueSelecting();
+	}
+	bLastSelecting = bIsSelecting;
+}
+
+void AEditTargetingActor::SetSelectedEdit(int32 InBitfield)
+{
+	if (InBitfield == CurrentEdit) { return; }
+
+	CurrentEdit = InBitfield;
+	
+	if (EditMap.Contains(CurrentEdit))
+	{
+		GhostMeshComponent->SetStaticMesh(EditMap[CurrentEdit].EditPreviewMesh);
+	}
+
+	UpdateSelectionTiles();
+}
+
+bool AEditTargetingActor::GetSelectedEdit(TSubclassOf<APlacedStructure>& OutStructureClass) const
+{
+	if (EditMap.Contains(CurrentEdit))
+	{
+		OutStructureClass = EditMap[CurrentEdit].StructureClass;
+		return true;
+	}
+	return false;
+}
+

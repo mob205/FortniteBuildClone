@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "AbilitySystem/Abilities/BuildAbility.h"
+#include "AbilitySystem/Abilities/Build/BuildAbility.h"
 
-#include "AbilitySystem/Abilities/StructureTargetingActor.h"
+#include "AbilitySystem/Abilities/Build/StructureTargetingActor.h"
 #include "AbilitySystemComponent.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "Abilities/Tasks/AbilityTask_WaitTargetData.h"

@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AbilitySystem/Abilities/EditAbility.h"
+#include "AbilitySystem/Abilities/Edit/EditAbility.h"
 
 #include "AbilitySystemComponent.h"
 #include "FBCBlueprintLibrary.h"
 #include "Abilities/Tasks/AbilityTask_WaitConfirmCancel.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
-#include "AbilitySystem/Abilities/EditTargetingActor.h"
+#include "AbilitySystem/Abilities/Edit/EditTargetingActor.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "Kismet/GameplayStatics.h"
 #include "Structure/PlacedStructure.h"
