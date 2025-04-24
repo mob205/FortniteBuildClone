@@ -79,10 +79,12 @@ AEditTargetingActor* UEditAbility::SpawnTargetingActor() const
 		nullptr,
 		ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 
-	SpawnedTargetingActor->SetSelectedEdit(SelectedStructure->GetEditBitfield());
 
 	APlayerController* AvatarPC = Cast<APlayerController>(Cast<APawn>(GetAvatarActorFromActorInfo())->GetController());
-	SpawnedTargetingActor->InitializeEditTargeting(AvatarPC, Range);
+	const UEditMapDataAsset* EditMapAsset = StructureInfo->GetEditMap(SelectedStructure->GetStructureTag());
+	SpawnedTargetingActor->InitializeEditTargeting(AvatarPC, Range, EditMapAsset);
+
+	SpawnedTargetingActor->SetSelectedEdit(SelectedStructure->GetEditBitfield());
 
 	UGameplayStatics::FinishSpawningActor(SpawnedTargetingActor, SelectedStructure->GetActorTransform());
 
@@ -120,7 +122,16 @@ void UEditAbility::OnEditDataReceived(const FGameplayAbilityTargetDataHandle& Da
 	}
 	
 	const FEditTargetData* EditData = static_cast<const FEditTargetData*>(Data.Get(0));
+	int32 EditBitfield = EditData->EditBitfield;
 
+	FTransform SnappedTransform = SelectedStructure->GetTransform();
+	
+	// Only update the structure if there was an actual change
+	if (!SelectedStructure->GetEditBitfield() == EditBitfield)
+	{
+		SelectedStructure->Destroy();
+
+	}
 	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, FString::Printf(TEXT("Server received edit data! %d"), EditData->EditBitfield));
 
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);

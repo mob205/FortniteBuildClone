@@ -6,6 +6,7 @@
 #include "AbilitySystem/Abilities/FBCGameplayAbility.h"
 #include "Abilities/GameplayAbility.h"
 #include "Abilities/GameplayAbilityTargetTypes.h"
+#include "Data/StructureInfoDataAsset.h"
 #include "EditAbility.generated.h"
 
 class APlacedStructure;
@@ -28,6 +29,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Tags", meta=(DisplayName="Cancel Abilities with Tag After Selected Structure"))
 	FGameplayTagContainer SuccessfulActivationCancelTags{};
 
+	UPROPERTY(EditDefaultsOnly, Category = "Editing")
+	TObjectPtr<UStructureInfoDataAsset> StructureInfo{};
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Targeting")
 	TMap<FGameplayTag, TSubclassOf<AEditTargetingActor>> TargetingActors{};
 

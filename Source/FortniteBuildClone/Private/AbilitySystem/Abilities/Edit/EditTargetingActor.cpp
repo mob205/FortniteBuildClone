@@ -6,6 +6,7 @@
 #include "AbilitySystem/Abilities/Edit/EditSelectionTile.h"
 #include "FBCBlueprintLibrary.h"
 #include "AbilitySystem/Abilities/Edit/EditTargetData.h"
+#include "Data/EditMapDataAsset.h"
 
 AEditTargetingActor::AEditTargetingActor()
 {
@@ -23,10 +24,11 @@ void AEditTargetingActor::RegisterSelectionTile(AEditSelectionTile* SelectionTil
 	SelectionTiles.Add(SelectionTile);
 }
 
-void AEditTargetingActor::InitializeEditTargeting(APlayerController* PC, float Range)
+void AEditTargetingActor::InitializeEditTargeting(APlayerController* PC, float Range, const UEditMapDataAsset* InEditMap)
 {
 	AvatarPC = PC;
 	TargetingRange = Range;
+	EditMap = &InEditMap->GetEditMap();
 }
 
 void AEditTargetingActor::ConfirmTargetingAndContinue()
@@ -37,7 +39,7 @@ void AEditTargetingActor::ConfirmTargetingAndContinue()
 
 void AEditTargetingActor::UpdateSelectionTiles()
 {
-	bool bIsValidEdit = EditMap.Contains(CurrentEdit);
+	bool bIsValidEdit = EditMap->Contains(CurrentEdit);
 	for (const auto Tile : SelectionTiles)
 	{
 		int BitIdx = Tile->GetEditBitfieldIndex();
@@ -121,9 +123,9 @@ void AEditTargetingActor::SetSelectedEdit(int32 InBitfield)
 
 	CurrentEdit = InBitfield;
 	
-	if (EditMap.Contains(CurrentEdit))
+	if (EditMap->Contains(CurrentEdit))
 	{
-		GhostMeshComponent->SetStaticMesh(EditMap[CurrentEdit].EditPreviewMesh);
+		GhostMeshComponent->SetStaticMesh(EditMap->Find(CurrentEdit)->EditPreviewMesh);
 	}
 }
 

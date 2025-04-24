@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EditMapDataAsset.h"
 #include "Engine/DataAsset.h"
 #include "GameplayTagContainer.h"
 #include "StructureInfoDataAsset.generated.h"
@@ -53,13 +54,17 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Structure Info")
 	TMap<FGameplayTag, TSubclassOf<UPlacementStrategy>> GetAllPlacementStrategyClasses();
-	
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Edit Info")
+	const UEditMapDataAsset* GetEditMap(const FGameplayTag& StructureTag);
 protected:
 	virtual void PostLoad() override;
 	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FStructureInfo> StructureInfo{};
 
+	UPROPERTY(EditDefaultsOnly)
+	TMap<FGameplayTag, UEditMapDataAsset*> EditMaps{};
 private:
 
 	UPROPERTY(Transient)

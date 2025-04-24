@@ -4,24 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbilityTargetActor.h"
-#include "Data/BitGrid.h"
+#include "Data/EditMapDataAsset.h"
 #include "EditTargetingActor.generated.h"
 
+class UEditMapDataAsset;
 class AEditSelectionTile;
-class APlacedStructure;
 class UMaterialInstance;
-
-USTRUCT(BlueprintType)
-struct FStructureEditInfo
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UStaticMesh* EditPreviewMesh{};
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<APlacedStructure> StructureClass{};
-};
 
 UCLASS()
 class FORTNITEBUILDCLONE_API AEditTargetingActor : public AGameplayAbilityTargetActor
@@ -36,15 +24,12 @@ public:
 	
 	void SetSelectedEdit(int32 InBitfield);
 
-	void InitializeEditTargeting(APlayerController* PC, float Range);
+	void InitializeEditTargeting(APlayerController* PC, float Range, const UEditMapDataAsset* InEditMap);
 
 	void SetSelection(bool bNewSelecting) { bIsSelecting = bNewSelecting; }
 
 	virtual void ConfirmTargetingAndContinue() override;
 protected:
-	UPROPERTY(EditDefaultsOnly)
-	TMap<FBitGrid, FStructureEditInfo> EditMap{};
-
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UMaterialInstance> GhostMaterial{};
 	
@@ -52,6 +37,8 @@ protected:
 	TObjectPtr<UStaticMeshComponent> GhostMeshComponent;
 
 	TObjectPtr<APlayerController> AvatarPC;
+
+	const FEditMap* EditMap;
 
 	TSet<AEditSelectionTile*> SelectionTiles{};
 
