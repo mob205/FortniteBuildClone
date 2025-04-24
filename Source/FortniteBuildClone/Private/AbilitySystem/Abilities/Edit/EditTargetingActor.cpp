@@ -119,8 +119,6 @@ void AEditTargetingActor::SetSelectedEdit(int32 InBitfield)
 {
 	UpdateSelectionTiles();
 
-	if (InBitfield == CurrentEdit) { return; }
-
 	CurrentEdit = InBitfield;
 	
 	if (EditMap.Contains(CurrentEdit))
