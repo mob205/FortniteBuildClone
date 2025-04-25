@@ -126,13 +126,14 @@ void UEditAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGa
 		SelectedStructure->OnDestroyed.RemoveAll(this);
 	}
 
+	if (IsValid(TargetingActor))
+	{
+		TargetingActor->Destroy();
+	}
+
 	if (IsLocallyControlled())
 	{
 		RemoveAbilityInputMappingContext();
-		if (IsValid(TargetingActor))
-		{
-			TargetingActor->Destroy();
-		}
 	}
 	
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
@@ -140,22 +141,26 @@ void UEditAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGa
 
 void UEditAbility::OnEditDataReceived(const FGameplayAbilityTargetDataHandle& Data)
 {
-	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
+	if (HasAuthority(&CurrentActivationInfo))
+	{
+		const FEditTargetData* EditData = static_cast<const FEditTargetData*>(Data.Get(0));
+		int32 EditBitfield = EditData->EditBitfield;
 
-	// Server only after this
-	if (IsLocallyControlled()) { return;}
+		EditStructure(EditBitfield);
+	}
 	
-	const FEditTargetData* EditData = static_cast<const FEditTargetData*>(Data.Get(0));
-	int32 EditBitfield = EditData->EditBitfield;
+	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
+}
 
+void UEditAbility::EditStructure(int32 EditBitfield) const
+{
 	// Invalid edit
 	if (!CurrentEditMap->Contains(EditBitfield)) { return;}
 
 	// No change needed
 	if (SelectedStructure->GetEditBitfield() == EditBitfield) { return;}
 
-	// Valid edit that changes the structure
-
+	// We have a valid edit!
 	// Store relevant info about current structure
 	FTransform StructureTransform = SelectedStructure->GetTransform();
 	TSet<AActor*> NearbyStructures{};
@@ -193,18 +198,5 @@ void UEditAbility::OnSelectedStructureDestroyed(AActor* DestroyedActor)
 
 void UEditAbility::OnEditReset(FGameplayEventData Payload)
 {
-	APawn* AvatarPawn = Cast<APawn>(GetAvatarActorFromActorInfo());
-	
-	check(AvatarPawn); // Currently, avatars are always pawns
-
-	FHitResult HitResult{};
-	if (!UFBCBlueprintLibrary::TraceControllerLook(AvatarPawn->GetController(), Range, HitResult))
-	{
-		return nullptr;
-	}
-	if (APlacedStructure* AsStructure = Cast<APlacedStructure>(HitResult.GetActor()))
-	{
-		return AsStructure;
-	}
-	return nullptr;
+	TargetingActor->ResetEdit();
 }
