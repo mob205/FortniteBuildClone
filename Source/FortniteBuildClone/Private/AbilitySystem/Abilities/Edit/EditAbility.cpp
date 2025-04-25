@@ -95,6 +95,12 @@ AEditTargetingActor* UEditAbility::SpawnTargetingActor() const
 void UEditAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
+	if (IsValid(SelectedStructure))
+	{
+		SelectedStructure->SetStructureMeshVisibility(true);
+		SelectedStructure->OnDestroyed.RemoveAll(this);
+	}
+
 	if (IsLocallyControlled())
 	{
 		RemoveAbilityInputMappingContext();
@@ -111,12 +117,6 @@ void UEditAbility::OnEditDataReceived(const FGameplayAbilityTargetDataHandle& Da
 {
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
 
-	if (IsValid(SelectedStructure))
-	{
-		SelectedStructure->SetStructureMeshVisibility(true);
-		SelectedStructure->OnDestroyed.RemoveAll(this);
-	}
-
 	// Server only after this
 	if (IsLocallyControlled()) { return;}
 	
@@ -130,11 +130,23 @@ void UEditAbility::OnEditDataReceived(const FGameplayAbilityTargetDataHandle& Da
 	if (SelectedStructure->GetEditBitfield() == EditBitfield) { return;}
 
 	// Valid edit that changes the structure
+
+	// Store relevant info about current structure
 	FTransform StructureTransform = SelectedStructure->GetTransform();
+	TSet<AActor*> NearbyStructures{};
+	SelectedStructure->GetOverlappingActors(NearbyStructures, APlacedStructure::StaticClass());
+
 	SelectedStructure->Destroy();
 
 	TSubclassOf<APlacedStructure> EditStructureClass = CurrentEditMap->FindChecked(EditBitfield).StructureClass;
-	GetWorld()->SpawnActor(EditStructureClass, &StructureTransform);
+	APlacedStructure* SpawnedStructure = Cast<APlacedStructure>(GetWorld()->SpawnActor(EditStructureClass, &StructureTransform));
+
+	// Editing may remove support from nearby structures or leave the new structure unsupported
+	SpawnedStructure->NotifyGroundUpdate();
+	for (const auto& Structure : NearbyStructures)
+	{
+		Cast<APlacedStructure>(Structure)->NotifyGroundUpdate();
+	}
 }
 
 void UEditAbility::StartSelection(FGameplayEventData Payload)

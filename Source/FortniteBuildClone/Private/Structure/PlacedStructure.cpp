@@ -42,7 +42,7 @@ APlacedStructure::APlacedStructure()
 	OppositeLedges.Add(ForwardLedge, BackLedge);
 }
 
-void APlacedStructure::StartStructureDestruction()
+void APlacedStructure::NotifyGroundUpdate()
 {
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 	if (TimerManager.TimerExists(DestroyTimerHandle) &&
@@ -81,11 +81,9 @@ void APlacedStructure::FinishStructureDestruction()
 	{
 		if (APlacedStructure* AsStructure = Cast<APlacedStructure>(Actor))
 		{
-			AsStructure->StartStructureDestruction();
+			AsStructure->NotifyGroundUpdate();
 		}
 	}
-	
-	//GridWorldSubsystem->UnregisterStructure(this);
 	Destroy();
 }
 

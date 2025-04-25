@@ -24,7 +24,7 @@ public:
 
 	// Initiates destroying the structure after a delay
 	UFUNCTION(BlueprintCallable)
-	void StartStructureDestruction();
+	void NotifyGroundUpdate();
 
 	// Destroys and unregisters the structure without checking for groundedness
 	// Prompts nearby structures to start destroying if not grounded
