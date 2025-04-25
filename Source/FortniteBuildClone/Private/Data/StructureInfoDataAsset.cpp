@@ -51,7 +51,7 @@ TMap<FGameplayTag, TSubclassOf<UPlacementStrategy>> UStructureInfoDataAsset::Get
 	return StrategyClasses;
 }
 
-const UEditMapDataAsset* UStructureInfoDataAsset::GetEditMap(const FGameplayTag& StructureTag)
+const UEditMapDataAsset* UStructureInfoDataAsset::GetEditMapAsset(const FGameplayTag& StructureTag)
 {
 	if (EditMaps.Contains(StructureTag))
 	{

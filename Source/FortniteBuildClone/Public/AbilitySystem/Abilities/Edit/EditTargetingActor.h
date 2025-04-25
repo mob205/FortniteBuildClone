@@ -7,7 +7,6 @@
 #include "Data/EditMapDataAsset.h"
 #include "EditTargetingActor.generated.h"
 
-class UEditMapDataAsset;
 class AEditSelectionTile;
 class UMaterialInstance;
 
@@ -24,7 +23,7 @@ public:
 	
 	void SetSelectedEdit(int32 InBitfield);
 
-	void InitializeEditTargeting(APlayerController* PC, float Range, const UEditMapDataAsset* InEditMap);
+	void InitializeEditTargeting(APlayerController* PC, float Range, const FEditMap* InEditMap);
 
 	void SetSelection(bool bNewSelecting) { bIsSelecting = bNewSelecting; }
 

@@ -37,6 +37,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	int32 GetEditBitfield() const { return EditBitfield; }
+
+	UFUNCTION(BlueprintCallable)
+	void SetEditBitfield(int32 InEditBitfield) { EditBitfield = InEditBitfield; }
 	
 	virtual const TArray<USplineComponent*> GetLedges_Implementation() const override { return Ledges; }
 	virtual const TMap<USplineComponent*, USplineComponent*> GetOppositeLedges_Implementation() const override { return OppositeLedges; }
@@ -51,7 +54,7 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Editing")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Editing")
 	FBitGrid EditBitfield{};
 	
 	UPROPERTY(VisibleAnywhere)

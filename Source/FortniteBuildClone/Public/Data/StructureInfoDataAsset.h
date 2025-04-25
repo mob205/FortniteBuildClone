@@ -56,7 +56,7 @@ public:
 	TMap<FGameplayTag, TSubclassOf<UPlacementStrategy>> GetAllPlacementStrategyClasses();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Edit Info")
-	const UEditMapDataAsset* GetEditMap(const FGameplayTag& StructureTag);
+	const UEditMapDataAsset* GetEditMapAsset(const FGameplayTag& StructureTag);
 protected:
 	virtual void PostLoad() override;
 	

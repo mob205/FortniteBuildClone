@@ -24,11 +24,11 @@ void AEditTargetingActor::RegisterSelectionTile(AEditSelectionTile* SelectionTil
 	SelectionTiles.Add(SelectionTile);
 }
 
-void AEditTargetingActor::InitializeEditTargeting(APlayerController* PC, float Range, const UEditMapDataAsset* InEditMap)
+void AEditTargetingActor::InitializeEditTargeting(APlayerController* PC, float Range, const FEditMap* InEditMap)
 {
 	AvatarPC = PC;
 	TargetingRange = Range;
-	EditMap = &InEditMap->GetEditMap();
+	EditMap = InEditMap;
 }
 
 void AEditTargetingActor::ConfirmTargetingAndContinue()
@@ -119,9 +119,9 @@ void AEditTargetingActor::Tick(float DeltaSeconds)
 
 void AEditTargetingActor::SetSelectedEdit(int32 InBitfield)
 {
-	UpdateSelectionTiles();
-
 	CurrentEdit = InBitfield;
+
+	UpdateSelectionTiles();
 	
 	if (EditMap->Contains(CurrentEdit))
 	{

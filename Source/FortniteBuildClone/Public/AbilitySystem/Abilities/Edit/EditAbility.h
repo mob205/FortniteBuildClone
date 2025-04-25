@@ -48,6 +48,8 @@ private:
 	APlacedStructure* GetSelectedStructure() const;
 	TObjectPtr<APlacedStructure> SelectedStructure;
 
+	const FEditMap* CurrentEditMap{};
+	
 	AEditTargetingActor* SpawnTargetingActor() const;
 	TObjectPtr<AEditTargetingActor> TargetingActor;
 

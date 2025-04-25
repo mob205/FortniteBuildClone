@@ -25,6 +25,8 @@ void UEditAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 		return;
 	}
 
+	CurrentEditMap = &StructureInfo->GetEditMapAsset(SelectedStructure->GetStructureTag())->GetEditMap();
+
 	// End the ability if the structure is destroyed mid-edit
 	SelectedStructure->OnDestroyed.AddDynamic(this, &UEditAbility::OnSelectedStructureDestroyed);
 	
@@ -81,8 +83,7 @@ AEditTargetingActor* UEditAbility::SpawnTargetingActor() const
 
 
 	APlayerController* AvatarPC = Cast<APlayerController>(Cast<APawn>(GetAvatarActorFromActorInfo())->GetController());
-	const UEditMapDataAsset* EditMapAsset = StructureInfo->GetEditMap(SelectedStructure->GetStructureTag());
-	SpawnedTargetingActor->InitializeEditTargeting(AvatarPC, Range, EditMapAsset);
+	SpawnedTargetingActor->InitializeEditTargeting(AvatarPC, Range, CurrentEditMap);
 
 	SpawnedTargetingActor->SetSelectedEdit(SelectedStructure->GetEditBitfield());
 
@@ -108,33 +109,32 @@ void UEditAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGa
 
 void UEditAbility::OnEditDataReceived(const FGameplayAbilityTargetDataHandle& Data)
 {
+	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
+
 	if (IsValid(SelectedStructure))
 	{
 		SelectedStructure->SetStructureMeshVisibility(true);
 		SelectedStructure->OnDestroyed.RemoveAll(this);
 	}
-	
-	// Local only
-	if (IsLocallyControlled())
-	{
-		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
-		return;
-	}
+
+	// Server only after this
+	if (IsLocallyControlled()) { return;}
 	
 	const FEditTargetData* EditData = static_cast<const FEditTargetData*>(Data.Get(0));
 	int32 EditBitfield = EditData->EditBitfield;
 
-	FTransform SnappedTransform = SelectedStructure->GetTransform();
-	
-	// Only update the structure if there was an actual change
-	if (!SelectedStructure->GetEditBitfield() == EditBitfield)
-	{
-		SelectedStructure->Destroy();
+	// Invalid edit
+	if (!CurrentEditMap->Contains(EditBitfield)) { return;}
 
-	}
-	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, FString::Printf(TEXT("Server received edit data! %d"), EditData->EditBitfield));
+	// No change needed
+	if (SelectedStructure->GetEditBitfield() == EditBitfield) { return;}
 
-	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
+	// Valid edit that changes the structure
+	FTransform StructureTransform = SelectedStructure->GetTransform();
+	SelectedStructure->Destroy();
+
+	TSubclassOf<APlacedStructure> EditStructureClass = CurrentEditMap->FindChecked(EditBitfield).StructureClass;
+	GetWorld()->SpawnActor(EditStructureClass, &StructureTransform);
 }
 
 void UEditAbility::StartSelection(FGameplayEventData Payload)
