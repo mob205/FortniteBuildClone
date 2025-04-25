@@ -63,6 +63,31 @@ void UEditAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 
 	EndSelectionEvent->EventReceived.AddDynamic(this, &UEditAbility::EndSelection);
 	EndSelectionEvent->ReadyForActivation();
+
+	// Listen for input to reset the edit
+	UAbilityTask_WaitGameplayEvent* ResetEditEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+		this, ResetEditTag, nullptr, false, true);
+
+	ResetEditEvent->EventReceived.AddDynamic(this, &UEditAbility::OnEditReset);
+	ResetEditEvent->ReadyForActivation();
+}
+
+APlacedStructure* UEditAbility::GetSelectedStructure() const
+{
+	APawn* AvatarPawn = Cast<APawn>(GetAvatarActorFromActorInfo());
+	
+	check(AvatarPawn); // Currently, avatars are always pawns
+
+	FHitResult HitResult{};
+	if (!UFBCBlueprintLibrary::TraceControllerLook(AvatarPawn->GetController(), Range, HitResult))
+	{
+		return nullptr;
+	}
+	if (APlacedStructure* AsStructure = Cast<APlacedStructure>(HitResult.GetActor()))
+	{
+		return AsStructure;
+	}
+	return nullptr;
 }
 
 AEditTargetingActor* UEditAbility::SpawnTargetingActor() const
@@ -136,6 +161,7 @@ void UEditAbility::OnEditDataReceived(const FGameplayAbilityTargetDataHandle& Da
 	TSet<AActor*> NearbyStructures{};
 	SelectedStructure->GetOverlappingActors(NearbyStructures, APlacedStructure::StaticClass());
 
+	// Replace old structure with new structure
 	SelectedStructure->Destroy();
 
 	TSubclassOf<APlacedStructure> EditStructureClass = CurrentEditMap->FindChecked(EditBitfield).StructureClass;
@@ -148,6 +174,7 @@ void UEditAbility::OnEditDataReceived(const FGameplayAbilityTargetDataHandle& Da
 		Cast<APlacedStructure>(Structure)->NotifyGroundUpdate();
 	}
 }
+
 
 void UEditAbility::StartSelection(FGameplayEventData Payload)
 {
@@ -164,7 +191,7 @@ void UEditAbility::OnSelectedStructureDestroyed(AActor* DestroyedActor)
 	EndAbility(GetCurrentAbilitySpecHandle(), CurrentActorInfo, GetCurrentActivationInfo(), false, false);
 }
 
-APlacedStructure* UEditAbility::GetSelectedStructure() const
+void UEditAbility::OnEditReset(FGameplayEventData Payload)
 {
 	APawn* AvatarPawn = Cast<APawn>(GetAvatarActorFromActorInfo());
 	

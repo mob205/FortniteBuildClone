@@ -37,6 +37,11 @@ void AEditTargetingActor::ConfirmTargetingAndContinue()
 	TargetDataReadyDelegate.Broadcast(Handle);
 }
 
+void AEditTargetingActor::ResetEdit()
+{
+	SetSelectedEdit(ResetState);
+}
+
 void AEditTargetingActor::UpdateSelectionTiles()
 {
 	bool bIsValidEdit = EditMap->Contains(CurrentEdit);

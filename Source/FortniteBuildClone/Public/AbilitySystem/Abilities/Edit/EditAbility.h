@@ -44,6 +44,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Targeting")
 	FGameplayTag EndSelectionTag{};
 
+	UPROPERTY(EditDefaultsOnly, Category = "Targeting")
+	FGameplayTag ResetEditTag{};
+
 private:
 	APlacedStructure* GetSelectedStructure() const;
 	TObjectPtr<APlacedStructure> SelectedStructure;
@@ -64,4 +67,7 @@ private:
 	
 	UFUNCTION()
 	void OnSelectedStructureDestroyed(AActor* DestroyedActor);
+	
+	UFUNCTION()
+	void OnEditReset(FGameplayEventData Payload);
 };

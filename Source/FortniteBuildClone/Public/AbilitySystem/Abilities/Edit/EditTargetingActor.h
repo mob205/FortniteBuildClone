@@ -28,9 +28,16 @@ public:
 	void SetSelection(bool bNewSelecting) { bIsSelecting = bNewSelecting; }
 
 	virtual void ConfirmTargetingAndContinue() override;
+
+	UFUNCTION(BlueprintCallable)
+	void ResetEdit();
+
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UMaterialInstance> GhostMaterial{};
+
+	UPROPERTY(EditDefaultsOnly)
+	FBitGrid ResetState{};
 	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> GhostMeshComponent;
