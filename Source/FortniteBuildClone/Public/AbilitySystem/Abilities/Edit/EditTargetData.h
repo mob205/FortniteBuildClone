@@ -11,8 +11,12 @@ struct FEditTargetData : public FGameplayAbilityTargetData
 	UPROPERTY()
 	int32 EditBitfield{};
 
+	// Yaw as number of 90-degree clockwise turns
+	UPROPERTY()
+	int8 YawCWTurns{};
+
 	FEditTargetData() {}
-	FEditTargetData(int32 InEditData) : EditBitfield(InEditData) {}
+	FEditTargetData(int32 InEditData, int8 InYaw) : EditBitfield(InEditData), YawCWTurns(InYaw) {}
 
 	virtual UScriptStruct* GetScriptStruct() const override
 	{
@@ -27,6 +31,7 @@ struct FEditTargetData : public FGameplayAbilityTargetData
 	bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess)
 	{
 		Ar << EditBitfield;
+		Ar << YawCWTurns;
 	
 		bOutSuccess = true;
 		return true;
@@ -34,7 +39,7 @@ struct FEditTargetData : public FGameplayAbilityTargetData
 
 	bool operator==(const FEditTargetData& Other) const
 	{
-		return EditBitfield == Other.EditBitfield;
+		return EditBitfield == Other.EditBitfield && YawCWTurns == Other.YawCWTurns;
 	}
 };
 

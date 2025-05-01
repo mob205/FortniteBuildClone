@@ -56,7 +56,7 @@ private:
 	AEditTargetingActor* SpawnTargetingActor() const;
 	TObjectPtr<AEditTargetingActor> TargetingActor;
 	
-	void EditStructure(int32 EditBitfield) const;
+	void EditStructure(int32 EditBitfield, int Yaw) const;
 
 	UFUNCTION()
 	void OnEditDataReceived(const FGameplayAbilityTargetDataHandle& Data);

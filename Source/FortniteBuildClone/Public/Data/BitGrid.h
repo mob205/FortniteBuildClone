@@ -29,6 +29,19 @@ struct FBitGrid
 	{
 		return BitField;
 	}
+
+	bool Get(int Index) const
+	{
+		return BitField & (1 << Index);	
+	}
+	void Set(int Index)
+	{
+		BitField |= (1 << Index);
+	}
+	void Reset(int Index)
+	{
+		BitField &= ~(1 << Index);
+	}
 };
 
 FORCEINLINE uint32 GetTypeHash(const FBitGrid& BitGrid)

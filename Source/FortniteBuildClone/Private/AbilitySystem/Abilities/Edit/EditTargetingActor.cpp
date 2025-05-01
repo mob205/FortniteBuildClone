@@ -33,7 +33,8 @@ void AEditTargetingActor::InitializeEditTargeting(APlayerController* PC, float R
 
 void AEditTargetingActor::ConfirmTargetingAndContinue()
 {
-	FGameplayAbilityTargetDataHandle Handle{new FEditTargetData{CurrentEdit}};
+	int8 YawCWTurns = UFBCBlueprintLibrary::SnapAngleToGridInt(GetActorRotation().Yaw) / 90;
+	FGameplayAbilityTargetDataHandle Handle{new FEditTargetData{CurrentEdit, YawCWTurns }};
 	TargetDataReadyDelegate.Broadcast(Handle);
 }
 
@@ -95,7 +96,6 @@ void AEditTargetingActor::ProcessSelecting()
 
 void AEditTargetingActor::EndSelecting()
 {
-	bIsSelecting = false;
 	EncounteredTiles.Reset();
 	SetSelectedEdit(CurrentEdit);
 }
@@ -113,10 +113,17 @@ void AEditTargetingActor::Tick(float DeltaSeconds)
 
 	if (bIsSelecting)
 	{
+		// First frame selecting
+		if (!bLastSelecting)
+		{
+			StartSelecting();
+		}
+		// Mid-selection
 		ProcessSelecting();
 	}
 	if (!bIsSelecting && bLastSelecting)
 	{
+		// Just stopped selecting
 		EndSelecting();
 	}
 	bLastSelecting = bIsSelecting;

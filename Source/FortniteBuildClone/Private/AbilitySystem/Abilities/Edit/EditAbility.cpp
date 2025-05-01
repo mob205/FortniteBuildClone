@@ -145,32 +145,44 @@ void UEditAbility::OnEditDataReceived(const FGameplayAbilityTargetDataHandle& Da
 	{
 		const FEditTargetData* EditData = static_cast<const FEditTargetData*>(Data.Get(0));
 		int32 EditBitfield = EditData->EditBitfield;
-
-		EditStructure(EditBitfield);
+		EditStructure(EditBitfield, 90 * EditData->YawCWTurns);
 	}
 	
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
 }
 
-void UEditAbility::EditStructure(int32 EditBitfield) const
+void UEditAbility::EditStructure(int32 EditBitfield, int Yaw) const
 {
 	// Invalid edit
-	if (!CurrentEditMap->Contains(EditBitfield)) { return;}
+	if (!CurrentEditMap->Contains(EditBitfield)) { return; }
 
+	FVector StructureLocation = SelectedStructure->GetActorLocation();
+	FRotator StructureRotation = SelectedStructure->GetActorRotation();
+
+	bool bIsSameRotation{ true };
+	if (TargetingActor->IsEditRotatingAllowed())
+	{
+		int StructureYaw = UFBCBlueprintLibrary::SnapAngleToGridInt(StructureRotation.Yaw);
+		
+		// No edit changes
+		bIsSameRotation = StructureYaw == Yaw;
+		StructureRotation.Yaw = Yaw;
+	}
 	// No change needed
-	if (SelectedStructure->GetEditBitfield() == EditBitfield) { return;}
+	if (SelectedStructure->GetEditBitfield() == EditBitfield && bIsSameRotation) { return; }
 
 	// We have a valid edit!
-	// Store relevant info about current structure
-	FTransform StructureTransform = SelectedStructure->GetTransform();
 	TSet<AActor*> NearbyStructures{};
 	SelectedStructure->GetOverlappingActors(NearbyStructures, APlacedStructure::StaticClass());
 
 	// Replace old structure with new structure
 	SelectedStructure->Destroy();
-
+	
 	TSubclassOf<APlacedStructure> EditStructureClass = CurrentEditMap->FindChecked(EditBitfield).StructureClass;
-	APlacedStructure* SpawnedStructure = Cast<APlacedStructure>(GetWorld()->SpawnActor(EditStructureClass, &StructureTransform));
+	APlacedStructure* SpawnedStructure = GetWorld()->SpawnActor<APlacedStructure>(
+		EditStructureClass,
+		StructureLocation,
+		StructureRotation);
 
 	// Editing may remove support from nearby structures or leave the new structure unsupported
 	SpawnedStructure->NotifyGroundUpdate();
