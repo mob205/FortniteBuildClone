@@ -5,6 +5,15 @@
 
 #include "AbilitySystem/Abilities/Edit/EditSelectionTile.h"
 
+// "Perimeter" neighbors of each bit index when representing the bitfield as a 3x3 grid:
+// 0 1 2
+// 3 4 5
+// 6 7 8
+									 // 0  1  2  3   4  5  6  7  8
+static constexpr int LeftNeighbors[]  { 3, 0, 1, 6, -1, 2, 7, 8, 5 };
+static constexpr int RightNeighbors[] { 1, 2, 5, 0, -1, 8, 3, 6, 7 };
+
+
 void ARampEditTargetingActor::StartSelecting()
 {
 	SelectedTiles = 0;
@@ -41,9 +50,7 @@ void ARampEditTargetingActor::ProcessSelecting()
 	// First tile was a centerpiece and any other tile was selected
 	else if (FirstTileIndex % 2 == 1)
 	{
-											 // 0  1  2  3   4  5  6  7  8
-		static constexpr int LeftNeighbors[]  { 3, 0, 1, 6, -1, 2, 7, 8, 5 };
-		static constexpr int RightNeighbors[] { 1, 2, 5, 0, -1, 8, 3, 6, 7 };
+
 		
 		// Cannot select tiles immediately adjacent to the selected center
 		if (LeftNeighbors[FirstTileIndex] == TileBitIndex || RightNeighbors[FirstTileIndex] == TileBitIndex) { return; }
@@ -55,7 +62,7 @@ void ARampEditTargetingActor::ProcessSelecting()
 
 		// Rotate the ramp to match new direction
 		static constexpr int CWTurns[]{2, 1, 3, 0};
-		
+
 		float Yaw = 90 * CWTurns[(FirstTileIndex - 1) / 2];
 		AddActorLocalRotation({0, Yaw, 0});
 	}
