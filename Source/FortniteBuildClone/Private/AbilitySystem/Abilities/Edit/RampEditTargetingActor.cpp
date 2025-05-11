@@ -50,8 +50,6 @@ void ARampEditTargetingActor::ProcessSelecting()
 	// First tile was a centerpiece and any other tile was selected
 	else if (FirstTileIndex % 2 == 1)
 	{
-
-		
 		// Cannot select tiles immediately adjacent to the selected center
 		if (LeftNeighbors[FirstTileIndex] == TileBitIndex || RightNeighbors[FirstTileIndex] == TileBitIndex) { return; }
 
