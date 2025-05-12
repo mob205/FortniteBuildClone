@@ -27,8 +27,13 @@ protected:
 
 	virtual void UpdateSelectionTiles() override;
 private:
+	void InternalUpdateEdit(int32 InBitfield);
+
+	void RotateToCenter(int CenterIndex);
+	
 	bool bIsFirstTileSet{};
 	int FirstTileIndex{};
-
+	int LastSelectedCornerIndex{};
+	
 	FBitGrid SelectedTiles{};
 };
