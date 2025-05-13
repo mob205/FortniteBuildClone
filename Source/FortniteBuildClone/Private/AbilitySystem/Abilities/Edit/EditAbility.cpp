@@ -156,6 +156,13 @@ void UEditAbility::EditStructure(int32 EditBitfield, int Yaw) const
 	// Invalid edit
 	if (!CurrentEditMap->Contains(EditBitfield)) { return; }
 
+	const FStructureEditInfo& CurrentStructureInfo = CurrentEditMap->FindChecked(EditBitfield);
+	if (!IsValid(CurrentStructureInfo.StructureClass))
+	{
+		UE_LOG(LogFBC, Error, TEXT("EditAbility: Edit is in the edit map but does not have associated structure class!"));
+		return;
+	}
+
 	FVector StructureLocation = SelectedStructure->GetActorLocation();
 	FRotator StructureRotation = SelectedStructure->GetActorRotation();
 
@@ -170,7 +177,7 @@ void UEditAbility::EditStructure(int32 EditBitfield, int Yaw) const
 	}
 	// No change needed
 	if (SelectedStructure->GetEditBitfield() == EditBitfield && bIsSameRotation) { return; }
-
+	
 	// We have a valid edit!
 	TSet<AActor*> NearbyStructures{};
 	SelectedStructure->GetOverlappingActors(NearbyStructures, APlacedStructure::StaticClass());
@@ -178,7 +185,7 @@ void UEditAbility::EditStructure(int32 EditBitfield, int Yaw) const
 	// Replace old structure with new structure
 	SelectedStructure->Destroy();
 	
-	TSubclassOf<APlacedStructure> EditStructureClass = CurrentEditMap->FindChecked(EditBitfield).StructureClass;
+	TSubclassOf<APlacedStructure> EditStructureClass = CurrentStructureInfo.StructureClass;
 	APlacedStructure* SpawnedStructure = GetWorld()->SpawnActor<APlacedStructure>(
 		EditStructureClass,
 		StructureLocation,

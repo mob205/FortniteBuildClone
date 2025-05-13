@@ -10,8 +10,18 @@
 // 3 4 5
 // 6 7 8
 												 // 0  1  2  3   4  5  6  7  8
-static constexpr int CounterClockwiseNeighbors[]  { 3, 0, 1, 6, -1, 2, 7, 8, 5 };
-static constexpr int ClockwiseNeighbors[]		  { 1, 2, 5, 0, -1, 8, 3, 6, 7 };
+constexpr int CounterClockwiseNeighbors[]  { 3, 0, 1, 6, -1, 2, 7, 8, 5 };
+constexpr int ClockwiseNeighbors[]		  { 1, 2, 5, 0, -1, 8, 3, 6, 7 };
+
+
+// URamp selection: 0, 1, 2, 3, 5, 6, 8
+//  X  X  X
+//  X     X
+//  X     X
+constexpr int32 URamp = 367;
+
+// Full ramp is every bit selected
+constexpr int32 FullRamp = (1 << 9) - 1;
 
 
 void ARampEditTargetingActor::StartSelecting()
@@ -25,34 +35,34 @@ void ARampEditTargetingActor::ProcessSelecting()
 	AEditSelectionTile* Tile = GetCurrentTile();
 	if (!Tile) { return; }
 
-	int TileBitIndex = Tile->GetEditBitfieldIndex();
+	int CurSelectionIndex = Tile->GetEditBitfieldIndex();
 
 	// Tile is already selected
-	if (SelectedTiles.Get(TileBitIndex)) { return; }
+	if (SelectedTiles.Get(CurSelectionIndex)) { return; }
 
 	// First tile selected
 	if (!bIsFirstTileSet)
 	{
-		FirstTileIndex = TileBitIndex;
-		LastSelectedCornerIndex = TileBitIndex;
+		FirstTileIndex = CurSelectionIndex;
+		LastSelectedCornerIndex = CurSelectionIndex;
 		bIsFirstTileSet = true;
-		SelectedTiles.Set(TileBitIndex);
+		SelectedTiles.Set(CurSelectionIndex);
 		UpdateSelectionTiles();
 		return;
 	}
 	
 	// Selected a corner
-	// If the first selected tile is a corner, subsequent tiles can only be corners
-	if (FirstTileIndex % 2 == 0 && TileBitIndex % 2 == 0)
+	// If the first selected tile is a corner, we only care about other corners
+	if (FirstTileIndex % 2 == 0 && CurSelectionIndex % 2 == 0)
 	{
 		// Get the direction (cw or ccw) from the newly selected corner to the previously selected corner
 		const int* Direction = nullptr;
 
-		if (LastSelectedCornerIndex == CounterClockwiseNeighbors[CounterClockwiseNeighbors[TileBitIndex]])
+		if (LastSelectedCornerIndex == CounterClockwiseNeighbors[CounterClockwiseNeighbors[CurSelectionIndex]])
 		{
 			Direction = CounterClockwiseNeighbors;
 		}
-		else if (LastSelectedCornerIndex == ClockwiseNeighbors[ClockwiseNeighbors[TileBitIndex]])
+		else if (LastSelectedCornerIndex == ClockwiseNeighbors[ClockwiseNeighbors[CurSelectionIndex]])
 		{
 			Direction = ClockwiseNeighbors;
 		}
@@ -63,31 +73,36 @@ void ARampEditTargetingActor::ProcessSelecting()
 		}
 
 		// Select that side
-		SelectedTiles.Set(Direction[TileBitIndex]);
-		SelectedTiles.Set(TileBitIndex);
+		SelectedTiles.Set(Direction[CurSelectionIndex]);
+		SelectedTiles.Set(CurSelectionIndex);
 
 		int OldLastSelected = LastSelectedCornerIndex;
-		LastSelectedCornerIndex = TileBitIndex;
+		LastSelectedCornerIndex = CurSelectionIndex;
 		
 		if (OldLastSelected == FirstTileIndex)
 		{
-			// This is the second corner selected, which determines the direction of the ramp
-			// The first corner selected is always the lowest point, so it should be rotated to be on the "bottom" edge
+			// This is the second corner selected, which determines the direction of the ramp.
+			// The first corner selected is always the lowest point, so it should be rotated to be on the "bottom" edge.
 			// Centerpiece to align to is the centerpiece that should be on the bottom edge, which is adjacent to first corner
 			RotateToCenter(Direction[OldLastSelected]);
 		}
+
+		// There are two different spiral ramps/u-ramps with the same selection that differ only by order of selection
+		// To differentiate, unselect the first corner selected (the lowest point)
+		FBitGrid EditGrid = SelectedTiles;
+		if (EditGrid == URamp)
+		{
+			EditGrid.Reset(FirstTileIndex);
+		}
 		
+		InternalUpdateEdit(EditGrid);
 		UpdateSelectionTiles();
-		
 	}
 	// First tile was a centerpiece and any other tile was selected
 	else if (FirstTileIndex % 2 == 1)
 	{
 		// Cannot select tiles immediately adjacent to the selected center
-		if (CounterClockwiseNeighbors[FirstTileIndex] == TileBitIndex || ClockwiseNeighbors[FirstTileIndex] == TileBitIndex) { return; }
-
-		// Fully set all of the bits - full ramp
-		int32 FullRamp = (1 << 9) - 1;
+		if (CounterClockwiseNeighbors[FirstTileIndex] == CurSelectionIndex || ClockwiseNeighbors[FirstTileIndex] == CurSelectionIndex) { return; }
 
 		InternalUpdateEdit(FullRamp);
 		

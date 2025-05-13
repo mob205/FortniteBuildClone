@@ -24,6 +24,10 @@ struct FBitGrid
 	{
 		return BitField == Other.BitField;
 	}
+	bool operator==(int32 Other) const
+	{
+		return BitField == Other;
+	}
 
 	operator int32() const
 	{
