@@ -117,7 +117,6 @@ void ARampEditTargetingActor::ProcessSelecting()
 void ARampEditTargetingActor::EndSelecting()
 {
 	bIsFirstTileSet = false;
-	SetSelectedEdit(CurrentEdit);
 }
 
 void ARampEditTargetingActor::SetSelectedEdit(int32 InBitfield)
