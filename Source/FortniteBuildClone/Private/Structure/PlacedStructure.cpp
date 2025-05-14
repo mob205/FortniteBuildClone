@@ -18,28 +18,6 @@ APlacedStructure::APlacedStructure()
 
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>("Static Mesh");
 	StaticMesh->SetupAttachment(Root);
-	
-	ForwardLedge = CreateDefaultSubobject<USplineComponent>("Forward Ledge");
-	ForwardLedge->SetupAttachment(GetRootComponent());
-
-	BackLedge = CreateDefaultSubobject<USplineComponent>("Back Ledge");
-	BackLedge->SetupAttachment(GetRootComponent());
-	
-	LeftLedge = CreateDefaultSubobject<USplineComponent>("Left Ledge");
-	LeftLedge->SetupAttachment(GetRootComponent());
-
-	RightLedge = CreateDefaultSubobject<USplineComponent>("Right Ledge");
-	RightLedge->SetupAttachment(GetRootComponent());
-	
-	Ledges.Add(ForwardLedge);
-	Ledges.Add(BackLedge);
-	Ledges.Add(LeftLedge);
-	Ledges.Add(RightLedge);
-
-	OppositeLedges.Add(ForwardLedge, BackLedge);
-	OppositeLedges.Add(BackLedge, ForwardLedge);
-	OppositeLedges.Add(RightLedge, LeftLedge);
-	OppositeLedges.Add(ForwardLedge, BackLedge);
 }
 
 void APlacedStructure::NotifyGroundUpdate()

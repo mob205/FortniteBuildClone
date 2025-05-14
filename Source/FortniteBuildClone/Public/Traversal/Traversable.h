@@ -28,4 +28,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool IsValidLedge(USplineComponent* Ledge) const;
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	void SetupLedges();
 };

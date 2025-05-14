@@ -62,24 +62,11 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> StaticMesh;
-	
-	// Ledges
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Traversal")
-	TObjectPtr<USplineComponent> ForwardLedge;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Traversal")
-	TObjectPtr<USplineComponent> BackLedge;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Traversal")
-	TObjectPtr<USplineComponent> LeftLedge;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Traversal")
-	TObjectPtr<USplineComponent> RightLedge;
-
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	TArray<USplineComponent*> Ledges;
-
-	UPROPERTY()
+	
+	UPROPERTY(BlueprintReadWrite)
 	TMap<USplineComponent*, USplineComponent*> OppositeLedges{};
 private:
 	FTimerHandle DestroyTimerHandle;
