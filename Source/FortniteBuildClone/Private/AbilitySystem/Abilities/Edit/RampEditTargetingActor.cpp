@@ -117,6 +117,14 @@ void ARampEditTargetingActor::ProcessSelecting()
 void ARampEditTargetingActor::EndSelecting()
 {
 	bIsFirstTileSet = false;
+
+	// If only one tile is selected, clear the selection
+	// Ramp edits should only maintain highlights for valid edits
+	if (SelectedTiles > 0 && (SelectedTiles & (SelectedTiles - 1)) == 0)
+	{
+		SelectedTiles = 0;
+		UpdateSelectionTiles();
+	}
 }
 
 void ARampEditTargetingActor::SetSelectedEdit(int32 InBitfield)
