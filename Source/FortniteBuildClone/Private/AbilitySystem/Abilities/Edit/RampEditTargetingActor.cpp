@@ -19,6 +19,8 @@ constexpr int ClockwiseNeighbors[]		  { 1, 2, 5, 0, -1, 8, 3, 6, 7 };
 //  X     X
 //  X     X
 constexpr int32 URamp = 367;
+constexpr int32 URampLeft = 303;
+constexpr int32 URampRight = 111;
 
 // Full ramp is every bit selected
 constexpr int32 FullRamp = (1 << 9) - 1;
@@ -129,7 +131,13 @@ void ARampEditTargetingActor::EndSelecting()
 
 void ARampEditTargetingActor::SetSelectedEdit(int32 InBitfield)
 {
+	if(InBitfield == URampLeft || InBitfield == URampRight)
+	{
+		InBitfield = URamp;
+	}
 	SelectedTiles = InBitfield;
+
+	
 	UpdateSelectionTiles();
 
 	InternalUpdateEdit(InBitfield);
