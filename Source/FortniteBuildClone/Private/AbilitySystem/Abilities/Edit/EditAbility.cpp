@@ -21,6 +21,7 @@ void UEditAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 	SelectedStructure = GetSelectedStructure();
 	if (!IsValid(SelectedStructure))
 	{
+		TargetingActor = nullptr;
 		CancelAbility(Handle, ActorInfo, ActivationInfo, true);
 		return;
 	}
@@ -192,6 +193,7 @@ void UEditAbility::EditStructure(int32 EditBitfield, int Yaw) const
 		StructureRotation);
 
 	// Editing may remove support from nearby structures or leave the new structure unsupported
+	SpawnedStructure->SetEditBitfield(EditBitfield);
 	SpawnedStructure->NotifyGroundUpdate();
 	for (const auto& Structure : NearbyStructures)
 	{
