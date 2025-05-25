@@ -168,6 +168,11 @@ void UEditAbility::EditStructure(int32 EditBitfield, int Yaw) const
 	FRotator StructureRotation = SelectedStructure->GetActorRotation();
 
 	bool bIsSameRotation{ true };
+
+	if (!TargetingActor)
+	{
+		UE_LOG(LogFBC, Error, TEXT("EditAbility: Edit received but no targeting actor!"));
+	}
 	if (TargetingActor->IsEditRotatingAllowed())
 	{
 		int StructureYaw = UFBCBlueprintLibrary::SnapAngleToGridInt(StructureRotation.Yaw);

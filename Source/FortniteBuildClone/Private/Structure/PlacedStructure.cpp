@@ -45,6 +45,7 @@ void APlacedStructure::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION(APlacedStructure, StructureTag, COND_None);
+	DOREPLIFETIME_CONDITION(APlacedStructure, EditBitfield, COND_None);
 
 }
 
