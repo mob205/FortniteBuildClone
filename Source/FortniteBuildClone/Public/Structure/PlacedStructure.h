@@ -54,7 +54,7 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Editing")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated, Category = "Editing")
 	FBitGrid EditBitfield{};
 	
 	UPROPERTY(VisibleAnywhere)
