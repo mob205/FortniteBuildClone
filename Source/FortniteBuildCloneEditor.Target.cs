@@ -10,12 +10,6 @@ public class FortniteBuildCloneEditorTarget : TargetRules
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V5;
 
-		ExtraModuleNames.AddRange( new string[] { "FortniteBuildClone" } );
-		RegisterModulesCreatedByRider();
-	}
-
-	private void RegisterModulesCreatedByRider()
-	{
-		ExtraModuleNames.AddRange(new string[] { "FBCEditor" });
+		ExtraModuleNames.AddRange( new string[] { "FortniteBuildClone", "FBCEditor" } );
 	}
 }

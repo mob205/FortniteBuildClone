@@ -2,8 +2,6 @@
 
 #include "FBCBlueprintLibrary.h"
 #include "GridSizes.h"
-#include "LandscapeComponent.h"
-
 
 FTransform UFBCBlueprintLibrary::SnapTransformToGrid(const FTransform& InTransform)
 {
