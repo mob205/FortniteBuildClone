@@ -11,7 +11,8 @@
 APlacedStructure::APlacedStructure()
 {
 	PrimaryActorTick.bCanEverTick = false;
-
+	UpdateOverlapsMethodDuringLevelStreaming = EActorUpdateOverlapsMethod::AlwaysUpdate;
+	
 	Root = CreateDefaultSubobject<USceneComponent>("Root");
 	Root->SetMobility(EComponentMobility::Static);
 	SetRootComponent(Root);
