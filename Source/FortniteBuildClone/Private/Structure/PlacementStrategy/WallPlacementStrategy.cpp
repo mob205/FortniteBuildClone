@@ -46,6 +46,13 @@ bool UWallPlacementStrategy::GetTargetingLocation(
 	{
 		return true;
 	}
+	
+	// Try placing in one below the player's vertical block
+	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation) - FVector{0, 0, GridSizeVertical });
+	if (CanPlace(OutResult) && !IsOccupied(OutResult))
+	{
+		return true;
+	}
 
 	// Try the player's current grid slot
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(Player->GetActorLocation()));

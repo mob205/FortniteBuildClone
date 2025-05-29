@@ -4,6 +4,7 @@
 #include "Structure/PlacementStrategy/RampPlacementStrategy.h"
 
 #include "FBCBlueprintLibrary.h"
+#include "GridSizes.h"
 
 bool URampPlacementStrategy::GetTargetingLocation(
 	APawn* Player, int RotationOffset, FTransform& OutResult)
@@ -36,6 +37,13 @@ bool URampPlacementStrategy::GetTargetingLocation(
 	TargetLocation.Z = Player->GetActorLocation().Z;
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation));
 
+	if (CanPlace(OutResult) && !IsOccupied(OutResult))
+	{
+		return true;
+	}
+
+	// Try placing in one below the player's vertical block
+	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation) - FVector{0, 0, GridSizeVertical });
 	if (CanPlace(OutResult) && !IsOccupied(OutResult))
 	{
 		return true;
