@@ -8,6 +8,7 @@
 #include "GameplayTagContainer.h"
 #include "StructureInfoDataAsset.generated.h"
 
+class AEditTargetingActor;
 class UInputAction;
 class APlacedStructure;
 class UPlacementStrategy;
@@ -57,6 +58,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Edit Info")
 	const UEditMapDataAsset* GetEditMapAsset(const FGameplayTag& StructureTag);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Edit Info")
+	TSubclassOf<AEditTargetingActor> GetEditTargetingClass(const FGameplayTag& StructureTag);
 protected:
 	virtual void PostLoad() override;
 	
@@ -65,6 +69,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FGameplayTag, UEditMapDataAsset*> EditMaps{};
+
+	UPROPERTY(EditDefaultsOnly)
+	TMap<FGameplayTag, TSubclassOf<AEditTargetingActor>> EditTargetingActors{};
 private:
 
 	UPROPERTY(Transient)

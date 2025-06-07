@@ -31,9 +31,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Editing")
 	TObjectPtr<UStructureInfoDataAsset> StructureInfo{};
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Targeting")
-	TMap<FGameplayTag, TSubclassOf<AEditTargetingActor>> TargetingActors{};
 
 	UPROPERTY(EditDefaultsOnly, Category = "Targeting")
 	float Range{};

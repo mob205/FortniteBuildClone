@@ -93,12 +93,12 @@ APlacedStructure* UEditAbility::GetSelectedStructure() const
 
 AEditTargetingActor* UEditAbility::SpawnTargetingActor() const
 {
-	if (!TargetingActors.Contains(SelectedStructure->GetStructureTag()))
+	TSubclassOf<AEditTargetingActor> TargetingActorClass = StructureInfo->GetEditTargetingClass(SelectedStructure->GetStructureTag());
+	if (!TargetingActorClass)
 	{
 		UE_LOG(LogFBC, Warning, TEXT("UEditAbility: No edit targeting actor found for structure tag %s"), *SelectedStructure->GetStructureTag().ToString());
 		return nullptr;
 	}
-	TSubclassOf<AEditTargetingActor> TargetingActorClass = TargetingActors[SelectedStructure->GetStructureTag()];
 	
 	AEditTargetingActor* SpawnedTargetingActor = GetWorld()->SpawnActorDeferred<AEditTargetingActor>(
 		TargetingActorClass,
