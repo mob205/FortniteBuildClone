@@ -58,4 +58,6 @@ private:
 	void ServerOnBuildAction(FGameplayTag StructureTag);
 	
 	void HandleBuildAction(const FGameplayTag StructureTag) const;
+
+	APlayerController* PC;
 };

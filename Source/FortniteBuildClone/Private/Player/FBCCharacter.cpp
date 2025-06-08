@@ -31,6 +31,8 @@ void AFBCCharacter::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 
 	InitAbilityActorInfo();
+
+	PC = Cast<APlayerController>(GetController());
 }
 
 void AFBCCharacter::BeginPlay()
@@ -82,7 +84,7 @@ void AFBCCharacter::OnBuildAction(UInputAction* InputAction)
 	// Alert the ability of switching structure locally
 	HandleBuildAction(StructureTag);
 
-	// Alert server of build action
+	// Alert server of initially selected structure
 	if (GetLocalRole() != ROLE_Authority)
 	{
 		ServerOnBuildAction(StructureTag);
@@ -98,5 +100,6 @@ void AFBCCharacter::HandleBuildAction(const FGameplayTag StructureTag) const
 
 void AFBCCharacter::ServerOnBuildAction_Implementation(FGameplayTag StructureTag)
 {
-	HandleBuildAction(StructureTag);
+	FGameplayEventData Payload{};
+	ASC->HandleGameplayEvent(StructureTag, &Payload);
 }
