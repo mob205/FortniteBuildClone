@@ -19,21 +19,17 @@ void AFBCPlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	TScriptInterface<IInteractable> CurrentInteractable = GetInteractable();
-	
-	// We're still interacting with the same object
-	if (bIsInteracting && CurrentInteractable.GetObject() && CurrentInteractable == SelectedInteractable)
-	{
-		IInteractable::Execute_ContinueInteract(SelectedInteractable.GetObject(), this);
-	}
+	AActor* CurrentInteractable = GetInteractable();
 	
 	// We're still interacting, but we looked away to something else
-	else if (bIsInteracting && SelectedInteractable.GetObject() != nullptr)
+	if (bIsInteracting && SelectedInteractable && CurrentInteractable != SelectedInteractable)
 	{
-		IInteractable::Execute_StopInteract(SelectedInteractable.GetObject(), this);
+		StopInteraction(SelectedInteractable);
+		
 		SelectedInteractable = nullptr;
 	}
 
+	// Only change selections when we're not actively interacting
 	if (!bIsInteracting)
 	{
 		SelectedInteractable = CurrentInteractable;
@@ -44,22 +40,21 @@ void AFBCPlayerController::SetInteracting(bool bInIsInteracting)
 {
 	bIsInteracting = bInIsInteracting;
 
-	if (!SelectedInteractable.GetObject()) { return; }
+	if (!SelectedInteractable) { return; }
 
 	// Started interacting with an interactable selected
 	if (bIsInteracting)
 	{
-		IInteractable::Execute_StartInteract(SelectedInteractable.GetObject(), this);
+		StartInteraction(SelectedInteractable);
 	}
-
 	// Stopped interacting with an interactable selected
 	else
 	{
-		IInteractable::Execute_StopInteract(SelectedInteractable.GetObject(), this);
+		StopInteraction(SelectedInteractable);
 	}
 }
 
-TScriptInterface<IInteractable> AFBCPlayerController::GetInteractable() const
+AActor* AFBCPlayerController::GetInteractable() const
 {
 	FVector StartLocation{};
 	FRotator Rotation{};
@@ -74,10 +69,41 @@ TScriptInterface<IInteractable> AFBCPlayerController::GetInteractable() const
 		AActor* HitActor = Hit.GetActor();
 		if (HitActor->Implements<UInteractable>())
 		{
-			TScriptInterface<IInteractable> Interactable{};
-			Interactable.SetObject(HitActor);
-			return Interactable;
+			return HitActor;
 		}
 	}
 	return nullptr;
+}
+
+void AFBCPlayerController::ServerStartInteract_Implementation(AActor* Interactable)
+{
+	IInteractable::Execute_StartInteract(Interactable, GetPawn());
+}
+void AFBCPlayerController::ServerStopInteract_Implementation(AActor* Interactable)
+{
+	IInteractable::Execute_StopInteract(Interactable, GetPawn());
+}
+
+void AFBCPlayerController::StartInteraction(AActor* Interactable)
+{
+	if (HasAuthority())
+	{
+		IInteractable::Execute_StartInteract(Interactable, GetPawn());
+	}
+	else
+	{
+		ServerStartInteract(Interactable);
+	}
+}
+
+void AFBCPlayerController::StopInteraction(AActor* Interactable)
+{
+	if (HasAuthority())
+	{
+		IInteractable::Execute_StopInteract(Interactable, GetPawn());
+	}
+	else
+	{
+		ServerStopInteract(Interactable);
+	}
 }

@@ -28,11 +28,25 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputMappingContext> InputContext;
 
+
+	// Interaction 
 	UPROPERTY(EditDefaultsOnly, Category = "Interact")
 	float InteractRange{768.f};
 
-	TScriptInterface<IInteractable> SelectedInteractable;
+	UPROPERTY()
+	TObjectPtr<AActor> SelectedInteractable;
+
+	UFUNCTION(Server, Reliable)
+	void ServerStartInteract(AActor* Interactable);
+
+	UFUNCTION(Server, Reliable)
+	void ServerStopInteract(AActor* Interactable);
+	
 	bool bIsInteracting{};
 
-	TScriptInterface<IInteractable> GetInteractable() const;
+	AActor* GetInteractable() const;
+
+	void StartInteraction(AActor* Interactable);
+	void StopInteraction(AActor* Interactable);
+	// End interaction
 };

@@ -22,12 +22,9 @@ class FORTNITEBUILDCLONE_API IInteractable
 	GENERATED_BODY()
 	
 public:
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly)
 	void StartInteract(AActor* Interactor);
 
-	UFUNCTION(BlueprintNativeEvent)
-	void ContinueInteract(AActor* Interactor);
-	
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly)
 	void StopInteract(AActor* Interactor);
 };
