@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "FBCPlayerController.generated.h"
 
+class IInteractable;
 class UInputMappingContext;
 /**
  * 
@@ -17,8 +18,21 @@ class FORTNITEBUILDCLONE_API AFBCPlayerController : public APlayerController
 
 protected:
 	virtual void SetupInputComponent() override;
+
+	virtual void Tick(float DeltaSeconds) override;
+
+	UFUNCTION(BlueprintCallable)
+	void SetInteracting(bool bInIsInteracting);
 	
 private:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputMappingContext> InputContext;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Interact")
+	float InteractRange{768.f};
+
+	TScriptInterface<IInteractable> SelectedInteractable;
+	bool bIsInteracting{};
+
+	TScriptInterface<IInteractable> GetInteractable() const;
 };

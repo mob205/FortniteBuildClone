@@ -8,6 +8,7 @@
 #include "Data/StructureInfoDataAsset.h"
 #include "InputAction.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
+#include "Player/FBCPlayerController.h"
 #include "Player/FBCPlayerState.h"
 
 UAbilitySystemComponent* AFBCCharacter::GetAbilitySystemComponent() const
@@ -31,8 +32,6 @@ void AFBCCharacter::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 
 	InitAbilityActorInfo();
-
-	PC = Cast<APlayerController>(GetController());
 }
 
 void AFBCCharacter::BeginPlay()
@@ -51,6 +50,8 @@ void AFBCCharacter::InitAbilityActorInfo()
 	ASC->InitAbilityActorInfo(PS, this);
 
 	AS = PS->GetAttributeSet();
+	
+	PlayerController = Cast<AFBCPlayerController>(GetController());
 }
 
 void AFBCCharacter::GrantInitialAbilities()

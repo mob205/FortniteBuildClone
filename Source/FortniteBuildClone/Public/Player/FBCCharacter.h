@@ -10,6 +10,7 @@
 
 class UFBCAttributeSet;
 class UFBCAbilitySystemComponent;
+class AFBCPlayerController;
 class UGameplayAbility;
 class UGameplayEffect;
 class UStructureInfoDataAsset;
@@ -33,7 +34,10 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void OnBuildAction(UInputAction* InputAction);
-	
+
+	UPROPERTY(BlueprintReadOnly)
+	AFBCPlayerController* PlayerController;
+
 private:
 	void InitAbilityActorInfo();
 
@@ -51,13 +55,11 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UFBCAttributeSet> AS;
-
+	
 	FGameplayTag BuildAbilityTag;
 
 	UFUNCTION(Server, Reliable)
 	void ServerOnBuildAction(FGameplayTag StructureTag);
 	
 	void HandleBuildAction(const FGameplayTag StructureTag) const;
-
-	APlayerController* PC;
 };

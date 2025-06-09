@@ -24,6 +24,9 @@ class FORTNITEBUILDCLONE_API IInteractable
 public:
 	UFUNCTION(BlueprintNativeEvent)
 	void StartInteract(AActor* Interactor);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void ContinueInteract(AActor* Interactor);
 	
 	UFUNCTION(BlueprintNativeEvent)
 	void StopInteract(AActor* Interactor);
