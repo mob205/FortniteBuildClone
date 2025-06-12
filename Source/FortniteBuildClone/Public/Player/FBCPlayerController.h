@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "FBCPlayerController.generated.h"
 
+class UFBCHUDWidget;
 class IInteractable;
 class UInputMappingContext;
 /**
@@ -17,6 +18,10 @@ class FORTNITEBUILDCLONE_API AFBCPlayerController : public APlayerController
 	GENERATED_BODY()
 
 protected:
+	virtual void OnRep_PlayerState() override;
+
+	virtual void OnPossess(APawn* InPawn) override;
+	
 	virtual void SetupInputComponent() override;
 
 	virtual void Tick(float DeltaSeconds) override;
@@ -28,6 +33,8 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputMappingContext> InputContext;
 
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UFBCHUDWidget> HUDWidgetClass{};
 
 	// Interaction 
 	UPROPERTY(EditDefaultsOnly, Category = "Interact")
@@ -49,4 +56,6 @@ private:
 	void StartInteraction(AActor* Interactable);
 	void StopInteraction(AActor* Interactable);
 	// End interaction
+
+	void InitializeHUD();
 };

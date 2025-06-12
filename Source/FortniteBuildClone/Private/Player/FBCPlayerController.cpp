@@ -2,7 +2,39 @@
 
 #include "Player/FBCPlayerController.h"
 #include "EnhancedInputSubsystems.h"
+#include "Blueprint/UserWidget.h"
 #include "Interface/Interactable.h"
+#include "Player/FBCPlayerState.h"
+#include "UI/FBCHUDWidget.h"
+
+void AFBCPlayerController::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	InitializeHUD();
+}
+
+void AFBCPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	InitializeHUD();
+}
+
+
+void AFBCPlayerController::InitializeHUD()
+{
+	if (IsLocalController() && HUDWidgetClass)
+	{
+		AFBCPlayerState* PS = Cast<AFBCPlayerState>(PlayerState);
+		check(PS);
+		
+		UFBCHUDWidget* HUD = CreateWidget<UFBCHUDWidget>(this, HUDWidgetClass);
+		HUD->InitializeHUD(PS, PS->GetAbilitySystemComponent());
+		HUD->AddToViewport();
+	}
+}
+
 
 void AFBCPlayerController::SetupInputComponent()
 {
