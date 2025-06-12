@@ -24,6 +24,7 @@ void AFBCCharacter::PossessedBy(AController* NewController)
 	InitAbilityActorInfo();
 	GrantInitialAbilities();
 	InitializeAttributes();
+	AddInitialEffects();
 }
 
 // Called on clients only
@@ -58,8 +59,13 @@ void AFBCCharacter::GrantInitialAbilities()
 {
 	for (const auto& Ability : InitialAbilities)
 	{
-		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec{Ability, 1};
+		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec{Ability.Ability, 1};
 		ASC->GiveAbility(AbilitySpec);
+
+		if (Ability.bActivateImmediately)
+		{
+			ASC->TryActivateAbility(AbilitySpec.Handle);
+		}
 	}
 }
 
@@ -70,6 +76,16 @@ void AFBCCharacter::InitializeAttributes()
 	FGameplayEffectContextHandle Context = ASC->MakeEffectContext();
 	FGameplayEffectSpecHandle Effect = ASC->MakeOutgoingSpec(InitialAttributesEffect, 1, Context);
 	ASC->ApplyGameplayEffectSpecToSelf(*Effect.Data);
+}
+
+void AFBCCharacter::AddInitialEffects()
+{
+	for (const auto& Effect : InitialEffects)
+	{
+		FGameplayEffectContextHandle Context = ASC->MakeEffectContext();
+		FGameplayEffectSpecHandle Spec = ASC->MakeOutgoingSpec(Effect, 1, Context);
+		ASC->ApplyGameplayEffectSpecToSelf(*Spec.Data);
+	}
 }
 
 void AFBCCharacter::OnBuildAction(UInputAction* InputAction)

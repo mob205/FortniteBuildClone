@@ -16,6 +16,21 @@ class UGameplayEffect;
 class UStructureInfoDataAsset;
 class UInputAction;
 
+
+USTRUCT(BlueprintType)
+struct FInitialAbility
+{
+	GENERATED_BODY()
+
+	// The class of the gameplay ability to grant
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UGameplayAbility> Ability;
+
+	// If true, this ability is activated immediately after granting it
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bActivateImmediately;
+};
+
 UCLASS()
 class FORTNITEBUILDCLONE_API AFBCCharacter : public ACharacter, public IAbilitySystemInterface
 {
@@ -38,20 +53,24 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	AFBCPlayerController* PlayerController;
 
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<UFBCAbilitySystemComponent> ASC;
+
 private:
 	void InitAbilityActorInfo();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Ability System")
-	TArray<TSubclassOf<UGameplayAbility>> InitialAbilities;
+	TArray<FInitialAbility> InitialAbilities;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Ability System")
 	TSubclassOf<UGameplayEffect> InitialAttributesEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Ability System")
+	TArray<TSubclassOf<UGameplayEffect>> InitialEffects;
 	
 	void GrantInitialAbilities();
 	void InitializeAttributes();
-
-	UPROPERTY()
-	TObjectPtr<UFBCAbilitySystemComponent> ASC;
+	void AddInitialEffects();
 
 	UPROPERTY()
 	TObjectPtr<UFBCAttributeSet> AS;
