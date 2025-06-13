@@ -39,7 +39,29 @@ class FORTNITEBUILDCLONE_API UFBCAttributeSet : public UAttributeSet
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Wood, Category = "Material Count") FGameplayAttributeData Wood; ATTRIBUTE_ACCESSORS(UFBCAttributeSet, Wood); UFUNCTION() void OnRep_Wood(const FGameplayAttributeData& OldValue) const { GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, Wood, OldValue); };
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Brick, Category = "Material Count") FGameplayAttributeData Brick; ATTRIBUTE_ACCESSORS(UFBCAttributeSet, Brick); UFUNCTION() void OnRep_Brick(const FGameplayAttributeData& OldValue) const { GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, Brick, OldValue); };
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Metal, Category = "Material Count") FGameplayAttributeData Metal; ATTRIBUTE_ACCESSORS(UFBCAttributeSet, Metal); UFUNCTION() void OnRep_Metal(const FGameplayAttributeData& OldValue) const { GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, Metal, OldValue); };
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Wood, Category = "Material Count")
+	FGameplayAttributeData Wood;
+	ATTRIBUTE_ACCESSORS(UFBCAttributeSet, Wood);
+	UFUNCTION()
+	void OnRep_Wood(const FGameplayAttributeData& OldValue) const
+	{
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, Wood, OldValue);
+	};
+	
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Brick, Category = "Material Count")
+	FGameplayAttributeData Brick;
+	ATTRIBUTE_ACCESSORS(UFBCAttributeSet, Brick);
+	UFUNCTION()
+	void OnRep_Brick(const FGameplayAttributeData& OldValue) const
+	{
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, Brick, OldValue);
+	};
+	
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Metal, Category = "Material Count") FGameplayAttributeData Metal;
+	ATTRIBUTE_ACCESSORS(UFBCAttributeSet, Metal);
+	UFUNCTION()
+	void OnRep_Metal(const FGameplayAttributeData& OldValue) const
+	{
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, Metal, OldValue);
+	};
 };
