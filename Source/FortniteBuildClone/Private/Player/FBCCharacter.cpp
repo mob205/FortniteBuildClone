@@ -100,23 +100,11 @@ void AFBCCharacter::OnBuildAction(UInputAction* InputAction)
 
 	// Alert the ability of switching structure locally
 	HandleBuildAction(StructureTag);
-
-	// Alert server of initially selected structure
-	if (GetLocalRole() != ROLE_Authority)
-	{
-		ServerOnBuildAction(StructureTag);
-	}
 }
 
 void AFBCCharacter::HandleBuildAction(const FGameplayTag StructureTag) const
 {
 	ASC->TryActivateAbilitiesByTag(BuildAbilityTag.GetSingleTagContainer());
-	FGameplayEventData Payload{};
-	ASC->HandleGameplayEvent(StructureTag, &Payload);
-}
-
-void AFBCCharacter::ServerOnBuildAction_Implementation(FGameplayTag StructureTag)
-{
 	FGameplayEventData Payload{};
 	ASC->HandleGameplayEvent(StructureTag, &Payload);
 }

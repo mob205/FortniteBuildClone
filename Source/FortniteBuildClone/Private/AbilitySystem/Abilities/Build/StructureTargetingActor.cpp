@@ -3,6 +3,7 @@
 #include "AbilitySystem/Abilities/Build/StructureTargetingActor.h"
 #include "FBCBlueprintLibrary.h"
 #include "Abilities/GameplayAbility.h"
+#include "AbilitySystem/Abilities/Build/BuildTargetData.h"
 #include "Structure/PlacementStrategy/PlacementStrategy.h"
 
 
@@ -76,17 +77,16 @@ void AStructureTargetingActor::ConfirmTargetingAndContinue()
 		return;
 	}
 	
-	FGameplayAbilityTargetData_LocationInfo LocationInfo{};
-
-	LocationInfo.SourceLocation.LocationType = EGameplayAbilityTargetingLocationType::ActorTransform;
-	LocationInfo.SourceLocation.SourceActor = GetOwner();
-
-	LocationInfo.TargetLocation.LocationType = EGameplayAbilityTargetingLocationType::LiteralTransform;
-	LocationInfo.TargetLocation.LiteralTransform = GetActorTransform();
-
-	const FGameplayAbilityTargetDataHandle DataHandle{new FGameplayAbilityTargetData_LocationInfo{LocationInfo}};
-
-	TargetDataReadyDelegate.Broadcast(DataHandle);
+	FGameplayAbilityTargetDataHandle Handle{
+		new FBuildTargetData{
+			CurrentStructureTag,
+			EFBCMaterialType::FBCMat_Wood,
+			GetActorLocation(),
+			GetActorRotation()
+		}
+	};
+	
+	TargetDataReadyDelegate.Broadcast(Handle);
 }
 
 void AStructureTargetingActor::SetGhostMesh(UStaticMesh* InGhostMesh)

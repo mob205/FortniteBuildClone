@@ -43,7 +43,6 @@ private:
 	TObjectPtr<AStructureTargetingActor> TargetingActor{};
 	TObjectPtr<UStructureStrategyWorldSubsystem> StrategyWorldSubsystem{};
 	
-	FGameplayTag SelectedStructureTag{};
 	FGameplayTag SelectedMaterialTag{};
 	
 	// Places a structure after target data is received

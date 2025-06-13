@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "FBCBlueprintLibrary.h"
 #include "GameplayTagContainer.h"
+#include "AbilitySystem/Abilities/Build/BuildTargetData.h"
 #include "Structure/PlacementStrategy/PlacementStrategy.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 
@@ -103,14 +104,13 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 		UE_LOG(LogFBC, Warning, TEXT("BuildAbility: Insufficient materials"));
 		return;
 	}
-
 	
-	FTransform BuildingTransform = Data.Data[0]->GetEndPointTransform();
+	const FBuildTargetData* BuildData = static_cast<const FBuildTargetData*>(Data.Get(0));
+
+	FTransform BuildingTransform{BuildData->Rotation.Quaternion(), BuildData->Location};
 	BuildingTransform = UFBCBlueprintLibrary::SnapTransformToGrid(BuildingTransform);
 
-	
-
-	UPlacementStrategy* PlacementStrategy = StrategyWorldSubsystem->GetStrategy(SelectedStructureTag);
+	UPlacementStrategy* PlacementStrategy = StrategyWorldSubsystem->GetStrategy(BuildData->StructureTag);
 	if (!IsValid(PlacementStrategy))
 	{
 		UE_LOG(LogFBC, Error, TEXT("BuildAbility: No valid placement strategy found."));
@@ -133,13 +133,13 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 	// Build request validated
 	
 	// Get class of actor to spawn
-	TSubclassOf<APlacedStructure> StructureActorClass = StructureInfo->GetStructureActorClass(SelectedStructureTag);
+	TSubclassOf<APlacedStructure> StructureActorClass = StructureInfo->GetStructureActorClass(BuildData->StructureTag);
 
 	if (!IsValid(StructureActorClass))
 	{
 		UE_LOG(LogFBC, Error,
 			TEXT("BuildAbility: No valid structure classes found for structure tag %s. Could not spawn structure."),
-			*SelectedStructureTag.GetTagName().ToString());
+			*BuildData->StructureTag.GetTagName().ToString());
 		return;
 	}
 
@@ -163,12 +163,12 @@ void UBuildAbility::RotateTargetingActor(FGameplayEventData Payload)
 
 void UBuildAbility::OnSelectStructure(FGameplayEventData Payload)
 {
-	SelectedStructureTag = Payload.EventTag;
+	FGameplayTag Tag = Payload.EventTag;
 
 	if (IsValid(TargetingActor))
 	{
-		TargetingActor->SetGhostMesh(StructureInfo->GetMesh(SelectedStructureTag));
-		TargetingActor->SetPlacementStrategy(StrategyWorldSubsystem->GetStrategy(SelectedStructureTag));
-		TargetingActor->SetStructureTag(SelectedStructureTag);
+		TargetingActor->SetGhostMesh(StructureInfo->GetMesh(Tag));
+		TargetingActor->SetPlacementStrategy(StrategyWorldSubsystem->GetStrategy(Tag));
+		TargetingActor->SetStructureTag(Tag);
 	}
 }

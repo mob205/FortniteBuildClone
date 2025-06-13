@@ -76,9 +76,6 @@ private:
 	TObjectPtr<UFBCAttributeSet> AS;
 	
 	FGameplayTag BuildAbilityTag;
-
-	UFUNCTION(Server, Reliable)
-	void ServerOnBuildAction(FGameplayTag StructureTag);
 	
 	void HandleBuildAction(const FGameplayTag StructureTag) const;
 };
