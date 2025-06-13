@@ -6,6 +6,7 @@
 #include "AbilitySystem/Abilities/FBCGameplayAbility.h"
 #include "Abilities/GameplayAbility.h"
 #include "GameplayTagContainer.h"
+#include "Data/StructureMaterialTypes.h"
 #include "Subsystem/StructureStrategyWorldSubsystem.h"
 #include "BuildAbility.generated.h"
 
@@ -36,14 +37,14 @@ protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Costs")
-	TMap<FGameplayTag, TSubclassOf<UGameplayEffect>> MaterialCostEffects{};
+	TMap<EFBCMaterialType, TSubclassOf<UGameplayEffect>> MaterialCostEffects{};
 
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 private:
 	TObjectPtr<AStructureTargetingActor> TargetingActor{};
 	TObjectPtr<UStructureStrategyWorldSubsystem> StrategyWorldSubsystem{};
-	
-	FGameplayTag SelectedMaterialTag{};
+
+	EFBCMaterialType CurrentMaterialType{};
 	
 	// Places a structure after target data is received
 	UFUNCTION()

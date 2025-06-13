@@ -14,19 +14,18 @@
 #include "AbilitySystem/Abilities/Build/BuildTargetData.h"
 #include "Structure/PlacementStrategy/PlacementStrategy.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
+#include "Interface/MaterialSwitchable.h"
 
 UBuildAbility::UBuildAbility()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
-
-	SelectedMaterialTag = FGameplayTag::RequestGameplayTag("Material.Wood");
 }
 
 UGameplayEffect* UBuildAbility::GetCostGameplayEffect() const
 {
-	if (MaterialCostEffects.Contains(SelectedMaterialTag))
+	if (MaterialCostEffects.Contains(CurrentMaterialType))
 	{
-		return MaterialCostEffects[SelectedMaterialTag]->GetDefaultObject<UGameplayEffect>();
+		return MaterialCostEffects[CurrentMaterialType]->GetDefaultObject<UGameplayEffect>();
 	}
 	else
 	{
@@ -85,6 +84,13 @@ void UBuildAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	
 	SelectStructureGameplayEvent->EventReceived.AddDynamic(this, &UBuildAbility::OnSelectStructure);
 	SelectStructureGameplayEvent->ReadyForActivation();
+
+	// Listen for changing the currently selected material
+	if (Avatar->Implements<UMaterialSwitchable>())
+	{
+		 CurrentMaterialType = IMaterialSwitchable::Execute_GetCurrentMaterial(Avatar);
+		// subscribe here
+	}
 }
 
 void UBuildAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
