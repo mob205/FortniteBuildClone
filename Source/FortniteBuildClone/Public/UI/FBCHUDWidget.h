@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Data/StructureMaterialTypes.h"
+#include "Interface/MaterialSwitchable.h"
 #include "FBCHUDWidget.generated.h"
 
 class UFBCAttributeSet;
@@ -12,7 +13,7 @@ class UFBCAbilitySystemComponent;
 class AFBCPlayerState;
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMaterialCountChanged, EFBCMaterialType, ChangedMaterialType, float, NewValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMaterialCountChangedSignature, EFBCMaterialType, ChangedMaterialType, float, NewValue);
 /**
  * 
  */
@@ -26,13 +27,22 @@ public:
 
 protected:
 	UPROPERTY(BlueprintAssignable, Category = "Ability System")
-	FOnMaterialCountChanged OnMaterialCountChanged;
+	FOnMaterialCountChangedSignature OnMaterialCountChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Material")
+	FOnMaterialTypeChangedMulticastSignature OnMaterialTypeChanged;
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Ability System")
 	UFBCAbilitySystemComponent* AbilitySystemComponent;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Ability System")
+	AActor* Avatar;
 
 	UFUNCTION(BlueprintCallable)
 	void BroadcastInitialValues();
 private:
 	UFBCAttributeSet* AS;
+
+	UFUNCTION()
+	void BroadcastMaterialTypeChanged(EFBCMaterialType NewMaterialType);
 };

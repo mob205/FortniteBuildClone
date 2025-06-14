@@ -25,11 +25,11 @@ struct FInitialAbility
 
 	// The class of the gameplay ability to grant
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<UGameplayAbility> Ability;
+	TSubclassOf<UGameplayAbility> Ability{};
 
 	// If true, this ability is activated immediately after granting it
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool bActivateImmediately;
+	bool bActivateImmediately{};
 };
 
 UCLASS()

@@ -13,6 +13,8 @@ void UFBCHUDWidget::InitializeHUD(AFBCPlayerState* PS, UFBCAbilitySystemComponen
 
 	AS = PS->GetAttributeSet();
 
+	Avatar = ASC->GetAvatarActor();
+	
 	// Subscribe to material changes
 
 	// Wood
@@ -41,6 +43,13 @@ void UFBCHUDWidget::InitializeHUD(AFBCPlayerState* PS, UFBCAbilitySystemComponen
 				OnMaterialCountChanged.Broadcast(EFBCMaterialType::FBCMat_Metal, Data.NewValue);
 			}
 	);
+
+	if (Avatar && Avatar->Implements<UMaterialSwitchable>())
+	{
+		FOnMaterialTypeChangedSignature OnMaterialTypeChangedDelegate{};
+		OnMaterialTypeChangedDelegate.BindDynamic(this, &UFBCHUDWidget::BroadcastMaterialTypeChanged);
+		IMaterialSwitchable::Execute_BindOnMaterialTypeChanged(Avatar, OnMaterialTypeChangedDelegate);
+	}
 }
 
 void UFBCHUDWidget::BroadcastInitialValues()
@@ -50,4 +59,14 @@ void UFBCHUDWidget::BroadcastInitialValues()
 	OnMaterialCountChanged.Broadcast(EFBCMaterialType::FBCMat_Brick, AbilitySystemComponent->GetNumericAttribute(AS->GetBrickAttribute()));
 
 	OnMaterialCountChanged.Broadcast(EFBCMaterialType::FBCMat_Metal, AbilitySystemComponent->GetNumericAttribute(AS->GetMetalAttribute()));
+
+	if (Avatar && Avatar->Implements<UMaterialSwitchable>())
+	{
+		OnMaterialTypeChanged.Broadcast(IMaterialSwitchable::Execute_GetCurrentMaterial(Avatar));
+	}
+}
+
+void UFBCHUDWidget::BroadcastMaterialTypeChanged(EFBCMaterialType NewMaterialType)
+{
+	OnMaterialTypeChanged.Broadcast(NewMaterialType);
 }

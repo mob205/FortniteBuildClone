@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/FBCGameplayAbility.h"
 #include "Abilities/GameplayAbility.h"
-#include "GameplayTagContainer.h"
 #include "Data/StructureMaterialTypes.h"
 #include "Subsystem/StructureStrategyWorldSubsystem.h"
 #include "BuildAbility.generated.h"

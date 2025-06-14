@@ -41,6 +41,11 @@ void APlacedStructure::NotifyGroundUpdate()
 		false);
 }
 
+void APlacedStructure::SetMeshMaterial_Implementation(UMaterialInterface* NewMaterial)
+{
+	StaticMesh->SetMaterial(0, NewMaterial);
+}
+
 void APlacedStructure::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);

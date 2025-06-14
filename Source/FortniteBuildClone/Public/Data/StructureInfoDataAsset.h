@@ -6,6 +6,7 @@
 #include "EditMapDataAsset.h"
 #include "Engine/DataAsset.h"
 #include "GameplayTagContainer.h"
+#include "StructureMaterialTypes.h"
 #include "StructureInfoDataAsset.generated.h"
 
 class AEditTargetingActor;
@@ -72,6 +73,10 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FGameplayTag, TSubclassOf<AEditTargetingActor>> EditTargetingActors{};
+
+	UPROPERTY(EditDefaultsOnly)
+	TMap<EFBCMaterialType, UMaterialInstance*> StructureMaterialMap{};
+	
 private:
 
 	UPROPERTY(Transient)

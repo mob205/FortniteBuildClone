@@ -14,7 +14,6 @@
 #include "AbilitySystem/Abilities/Build/BuildTargetData.h"
 #include "Structure/PlacementStrategy/PlacementStrategy.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
-#include "Interface/MaterialSwitchable.h"
 
 UBuildAbility::UBuildAbility()
 {
@@ -84,13 +83,6 @@ void UBuildAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	
 	SelectStructureGameplayEvent->EventReceived.AddDynamic(this, &UBuildAbility::OnSelectStructure);
 	SelectStructureGameplayEvent->ReadyForActivation();
-
-	// Listen for changing the currently selected material
-	if (Avatar->Implements<UMaterialSwitchable>())
-	{
-		 CurrentMaterialType = IMaterialSwitchable::Execute_GetCurrentMaterial(Avatar);
-		// subscribe here
-	}
 }
 
 void UBuildAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
@@ -105,14 +97,15 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 	// Only the server should place structures
 	if (!HasAuthority(&CurrentActivationInfo)) { return; }
 
+	const FBuildTargetData* BuildData = static_cast<const FBuildTargetData*>(Data.Get(0));
+
+	CurrentMaterialType = BuildData->MaterialType;
 	if (!CommitAbility(GetCurrentAbilitySpecHandle(), CurrentActorInfo, GetCurrentActivationInfo()))
 	{
 		UE_LOG(LogFBC, Warning, TEXT("BuildAbility: Insufficient materials"));
 		return;
 	}
 	
-	const FBuildTargetData* BuildData = static_cast<const FBuildTargetData*>(Data.Get(0));
-
 	FTransform BuildingTransform{BuildData->Rotation.Quaternion(), BuildData->Location};
 	BuildingTransform = UFBCBlueprintLibrary::SnapTransformToGrid(BuildingTransform);
 
@@ -151,6 +144,9 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 
 	// Spawn and initialize structure
 	APlacedStructure* PlacedStructure = GetWorld()->SpawnActorDeferred<APlacedStructure>(StructureActorClass, BuildingTransform);
+
+	
+	
 	UGameplayStatics::FinishSpawningActor(PlacedStructure, BuildingTransform);
 }
 

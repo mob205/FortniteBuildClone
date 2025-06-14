@@ -43,7 +43,9 @@ public:
 	
 	virtual const TArray<USplineComponent*> GetLedges_Implementation() const override { return Ledges; }
 	virtual const TMap<USplineComponent*, USplineComponent*> GetOppositeLedges_Implementation() const override { return OppositeLedges; }
-	
+
+	UFUNCTION(BlueprintNativeEvent)
+	void SetMeshMaterial(UMaterialInterface* NewMaterial);
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Ability System")
 	FGameplayTag StructureTag{};
