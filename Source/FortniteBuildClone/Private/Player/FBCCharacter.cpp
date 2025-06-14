@@ -42,15 +42,6 @@ void AFBCCharacter::BeginPlay()
 	BuildAbilityTag = FGameplayTag::RequestGameplayTag("Abilities.Build");
 }
 
-void AFBCCharacter::SwitchMaterials_Implementation()
-{
-	int8 CurrentIntMaterial = static_cast<int8>(CurrentSelectedMaterial);
-	int8 NextIntMaterial = (CurrentIntMaterial + 1) % static_cast<int8>(EFBCMaterialType::FBCMat_Max);
-	CurrentSelectedMaterial = static_cast<EFBCMaterialType>(NextIntMaterial);
-
-	OnMaterialTypeChanged.Broadcast(CurrentSelectedMaterial);
-}
-
 void AFBCCharacter::InitAbilityActorInfo()
 {
 	AFBCPlayerState* PS = GetPlayerState<AFBCPlayerState>();

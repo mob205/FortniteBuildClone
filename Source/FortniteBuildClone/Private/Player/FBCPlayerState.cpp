@@ -5,6 +5,7 @@
 
 #include "AbilitySystem/FBCAbilitySystemComponent.h"
 #include "AbilitySystem/FBCAttributeSet.h"
+#include "Component/BuildResourceComponent.h"
 
 AFBCPlayerState::AFBCPlayerState()
 {
@@ -15,5 +16,6 @@ AFBCPlayerState::AFBCPlayerState()
 	ASC->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 	
 	AS = CreateDefaultSubobject<UFBCAttributeSet>("AttributeSet");
-	
+
+	BuildResourceComp = CreateDefaultSubobject<UBuildResourceComponent>("BuildResourceComponent");
 }

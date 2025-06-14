@@ -6,6 +6,7 @@
 #include "Abilities/GameplayAbilityTargetActor.h"
 #include "StructureTargetingActor.generated.h"
 
+class UBuildResourceComponent;
 class AGhostPreviewStructure;
 class APlayerController;
 class AGhostStructureActor;
@@ -36,6 +37,8 @@ public:
 
 	void SetAvatar(APawn* InAvatar) { Avatar = InAvatar; }
 
+	void SetResourceComponent(UBuildResourceComponent* InResourceComponent) { ResourceComponent = InResourceComponent; }
+
 	void SetStructureTag(FGameplayTag InStructureTag) { CurrentStructureTag = InStructureTag; }
 protected:
 	UPROPERTY()
@@ -57,6 +60,7 @@ private:
 
 	TObjectPtr<UPlacementStrategy> CurrentStrategy;
 	TObjectPtr<APawn> Avatar;
+	TObjectPtr<UBuildResourceComponent> ResourceComponent;
 	
 	FGameplayTag CurrentStructureTag{};
 

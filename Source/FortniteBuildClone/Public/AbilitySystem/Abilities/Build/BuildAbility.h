@@ -12,6 +12,7 @@
 class UEnhancedInputLocalPlayerSubsystem;
 class AStructureTargetingActor;
 class UStructureInfoDataAsset;
+class UBuildResourceComponent;
 
 /**
  * 
@@ -63,5 +64,8 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<AActor> Avatar;
+
+	UPROPERTY()
+	TObjectPtr<UBuildResourceComponent> ResourceComponent;
 };
 

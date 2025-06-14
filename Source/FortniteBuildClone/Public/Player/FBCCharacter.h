@@ -6,7 +6,6 @@
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
 #include "GameplayTagContainer.h"
-#include "Interface/MaterialSwitchable.h"
 #include "FBCCharacter.generated.h"
 
 class UFBCAttributeSet;
@@ -33,7 +32,7 @@ struct FInitialAbility
 };
 
 UCLASS()
-class FORTNITEBUILDCLONE_API AFBCCharacter : public ACharacter, public IAbilitySystemInterface, public IMaterialSwitchable
+class FORTNITEBUILDCLONE_API AFBCCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -56,19 +55,6 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<UFBCAbilitySystemComponent> ASC;
-
-protected:
-	// Currently this is local only. If needed, can send this information to server via RPC
-	UPROPERTY(BlueprintReadOnly)
-	EFBCMaterialType CurrentSelectedMaterial{};
-
-	FOnMaterialTypeChangedMulticastSignature OnMaterialTypeChanged;
-	
-	virtual void SwitchMaterials_Implementation() override;
-	virtual EFBCMaterialType GetCurrentMaterial_Implementation() override { return CurrentSelectedMaterial; }
-
-	virtual void BindOnMaterialTypeChanged_Implementation(const FOnMaterialTypeChangedSignature& Event) override { OnMaterialTypeChanged.Add(Event); }
-	virtual void UnbindOnMaterialTypeChanged_Implementation(const FOnMaterialTypeChangedSignature& Event) override { OnMaterialTypeChanged.Remove(Event); }
 
 private:
 	void InitAbilityActorInfo();

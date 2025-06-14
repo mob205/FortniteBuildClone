@@ -12,9 +12,9 @@
 #include "FBCBlueprintLibrary.h"
 #include "GameplayTagContainer.h"
 #include "AbilitySystem/Abilities/Build/BuildTargetData.h"
+#include "Component/BuildResourceComponent.h"
 #include "Structure/PlacementStrategy/PlacementStrategy.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
-#include "Interface/MaterialSwitchable.h"
 
 UBuildAbility::UBuildAbility()
 {
@@ -29,10 +29,10 @@ UGameplayEffect* UBuildAbility::GetCostGameplayEffect() const
 	
 	EFBCMaterialType MaterialKey = EFBCMaterialType::FBCMat_Max;
 
-	// If we're local, use whatever material the the avatar currently has selected
-	if (IsLocallyControlled() && Avatar->Implements<UMaterialSwitchable>())
+	// If we're local, use whatever material the resource comp has selected
+	if (IsLocallyControlled() && ResourceComponent)
 	{
-		MaterialKey = IMaterialSwitchable::Execute_GetCurrentMaterial(Avatar);
+		MaterialKey = ResourceComponent->GetCurrentResourceType();
 	}
 
 	// If we're server, then we're applying the cost after placing a building. Used the type passed in target data
@@ -58,6 +58,11 @@ void UBuildAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 
 	Avatar = GetAvatarActorFromActorInfo();
 
+	if (AActor* OwnerActor = GetAbilitySystemComponentFromActorInfo()->GetOwnerActor())
+	{
+		ResourceComponent = OwnerActor->GetComponentByClass<UBuildResourceComponent>();
+	}
+
 	StrategyWorldSubsystem = GetWorld()->GetSubsystem<UStructureStrategyWorldSubsystem>();
 
 	AddAbilityInputMappingContext();
@@ -73,6 +78,7 @@ void UBuildAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	StartLocation.SourceActor = Avatar;
 	TargetingActor->StartLocation = StartLocation;
 	TargetingActor->SetAvatar(Cast<APawn>(Avatar));
+	TargetingActor->SetResourceComponent(ResourceComponent);
 
 	UGameplayStatics::FinishSpawningActor(TargetingActor, Avatar->GetActorTransform());
 

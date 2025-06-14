@@ -7,7 +7,7 @@
 #include "Data/BitGrid.h"
 #include "Data/StructureInfoDataAsset.h"
 #include "GameFramework/Actor.h"
-#include "Traversal/Traversable.h"
+#include "Interface/Traversable.h"
 #include "PlacedStructure.generated.h"
 
 class USplineComponent;

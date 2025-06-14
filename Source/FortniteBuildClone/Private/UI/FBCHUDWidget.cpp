@@ -10,10 +10,13 @@
 void UFBCHUDWidget::InitializeHUD(AFBCPlayerState* PS, UFBCAbilitySystemComponent* ASC)
 {
 	AbilitySystemComponent = ASC;
-
 	AS = PS->GetAttributeSet();
-
 	Avatar = ASC->GetAvatarActor();
+	Owner = ASC->GetOwnerActor();
+	if (Owner)
+	{
+		OwnerResourceComponent = Owner->GetComponentByClass<UBuildResourceComponent>();
+	}
 	
 	// Subscribe to material changes
 
@@ -44,11 +47,9 @@ void UFBCHUDWidget::InitializeHUD(AFBCPlayerState* PS, UFBCAbilitySystemComponen
 			}
 	);
 
-	if (Avatar && Avatar->Implements<UMaterialSwitchable>())
+	if (OwnerResourceComponent)
 	{
-		FOnMaterialTypeChangedSignature OnMaterialTypeChangedDelegate{};
-		OnMaterialTypeChangedDelegate.BindDynamic(this, &UFBCHUDWidget::BroadcastMaterialTypeChanged);
-		IMaterialSwitchable::Execute_BindOnMaterialTypeChanged(Avatar, OnMaterialTypeChangedDelegate);
+		OwnerResourceComponent->OnResourceTypeChanged.AddDynamic(this, &UFBCHUDWidget::BroadcastMaterialTypeChanged);
 	}
 }
 
@@ -60,13 +61,13 @@ void UFBCHUDWidget::BroadcastInitialValues()
 
 	OnMaterialCountChanged.Broadcast(EFBCMaterialType::FBCMat_Metal, AbilitySystemComponent->GetNumericAttribute(AS->GetMetalAttribute()));
 
-	if (Avatar && Avatar->Implements<UMaterialSwitchable>())
+	if (OwnerResourceComponent)
 	{
-		OnMaterialTypeChanged.Broadcast(IMaterialSwitchable::Execute_GetCurrentMaterial(Avatar));
+		OnResourceTypeChanged.Broadcast(OwnerResourceComponent->GetCurrentResourceType());
 	}
 }
 
 void UFBCHUDWidget::BroadcastMaterialTypeChanged(EFBCMaterialType NewMaterialType)
 {
-	OnMaterialTypeChanged.Broadcast(NewMaterialType);
+	OnResourceTypeChanged.Broadcast(NewMaterialType);
 }

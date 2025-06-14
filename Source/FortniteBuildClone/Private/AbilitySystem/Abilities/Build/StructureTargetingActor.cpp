@@ -4,7 +4,7 @@
 #include "FBCBlueprintLibrary.h"
 #include "Abilities/GameplayAbility.h"
 #include "AbilitySystem/Abilities/Build/BuildTargetData.h"
-#include "Interface/MaterialSwitchable.h"
+#include "Component/BuildResourceComponent.h"
 #include "Structure/PlacementStrategy/PlacementStrategy.h"
 
 
@@ -80,10 +80,9 @@ void AStructureTargetingActor::ConfirmTargetingAndContinue()
 
 	// Fallback to Wood if can't get the selected material
 	EFBCMaterialType MaterialType = EFBCMaterialType::FBCMat_Wood;
-	
-	if (Avatar->Implements<UMaterialSwitchable>())
+	if (ResourceComponent)
 	{
-		MaterialType = IMaterialSwitchable::Execute_GetCurrentMaterial(Avatar);
+		MaterialType = ResourceComponent->GetCurrentResourceType();
 	}
 	
 	FGameplayAbilityTargetDataHandle Handle{

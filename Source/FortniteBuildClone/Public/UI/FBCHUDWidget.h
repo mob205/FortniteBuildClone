@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Data/StructureMaterialTypes.h"
-#include "Interface/MaterialSwitchable.h"
+#include "Component/BuildResourceComponent.h"
 #include "FBCHUDWidget.generated.h"
 
 class UFBCAttributeSet;
@@ -30,18 +30,24 @@ protected:
 	FOnMaterialCountChangedSignature OnMaterialCountChanged;
 
 	UPROPERTY(BlueprintAssignable, Category = "Material")
-	FOnMaterialTypeChangedMulticastSignature OnMaterialTypeChanged;
+	FOnResourceTypeChangedSignature OnResourceTypeChanged;
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Ability System")
 	UFBCAbilitySystemComponent* AbilitySystemComponent;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Ability System")
-	AActor* Avatar;
+	TObjectPtr<AActor> Avatar;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Ability System")
+	TObjectPtr<AActor> Owner;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Ability System")
+	TObjectPtr<UBuildResourceComponent> OwnerResourceComponent;
 
 	UFUNCTION(BlueprintCallable)
 	void BroadcastInitialValues();
 private:
-	UFBCAttributeSet* AS;
+	TObjectPtr<UFBCAttributeSet> AS;
 
 	UFUNCTION()
 	void BroadcastMaterialTypeChanged(EFBCMaterialType NewMaterialType);

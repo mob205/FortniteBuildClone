@@ -8,6 +8,7 @@
 
 class UFBCAbilitySystemComponent;
 class UFBCAttributeSet;
+class UBuildResourceComponent;
 
 /**
  * 
@@ -29,4 +30,7 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<UFBCAttributeSet> AS;
+
+	UPROPERTY()
+	TObjectPtr<UBuildResourceComponent> BuildResourceComp;
 };
