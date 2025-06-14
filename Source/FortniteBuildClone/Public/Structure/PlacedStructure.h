@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Data/BitGrid.h"
+#include "Data/StructureInfoDataAsset.h"
 #include "GameFramework/Actor.h"
 #include "Traversal/Traversable.h"
 #include "PlacedStructure.generated.h"
@@ -44,14 +45,17 @@ public:
 	virtual const TArray<USplineComponent*> GetLedges_Implementation() const override { return Ledges; }
 	virtual const TMap<USplineComponent*, USplineComponent*> GetOppositeLedges_Implementation() const override { return OppositeLedges; }
 
-	UFUNCTION(BlueprintNativeEvent)
-	void SetMeshMaterial(UMaterialInterface* NewMaterial);
+	void SetMaterialType(EFBCMaterialType InMaterialType);
+	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Ability System")
 	FGameplayTag StructureTag{};
 
 	UPROPERTY(EditDefaultsOnly)
 	float DestructionDelay{.2f};
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TMap<EFBCMaterialType, UMaterialInstance*> MaterialMap{};
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -70,6 +74,7 @@ protected:
 	
 	UPROPERTY(BlueprintReadWrite)
 	TMap<USplineComponent*, USplineComponent*> OppositeLedges{};
+
 private:
 	FTimerHandle DestroyTimerHandle;
 	
@@ -83,4 +88,14 @@ private:
 	void SetGroundCache(bool bIsGrounded);
 	bool IsGroundCacheValid() const;
 	bool GetGroundCache() const { return bIsGroundedCached; }
+
+	// Set MaterialType to something invalid initially to force replication
+	// Otherwise, Wood (0) structures being placed will not trigger OnRep_MaterialType
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_MaterialType)
+	EFBCMaterialType MaterialType{EFBCMaterialType::FBCMat_Max};
+	
+	UFUNCTION()
+	void OnRep_MaterialType(EFBCMaterialType NewMaterialType);
+
+	void UpdateMeshMaterial();
 };

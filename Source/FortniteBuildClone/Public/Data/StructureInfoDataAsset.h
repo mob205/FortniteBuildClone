@@ -62,6 +62,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Edit Info")
 	TSubclassOf<AEditTargetingActor> GetEditTargetingClass(const FGameplayTag& StructureTag);
+	
 protected:
 	virtual void PostLoad() override;
 	
@@ -73,9 +74,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FGameplayTag, TSubclassOf<AEditTargetingActor>> EditTargetingActors{};
-
-	UPROPERTY(EditDefaultsOnly)
-	TMap<EFBCMaterialType, UMaterialInstance*> StructureMaterialMap{};
 	
 private:
 

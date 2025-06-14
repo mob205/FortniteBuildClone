@@ -145,9 +145,12 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 	// Spawn and initialize structure
 	APlacedStructure* PlacedStructure = GetWorld()->SpawnActorDeferred<APlacedStructure>(StructureActorClass, BuildingTransform);
 
-	
+	// Things that need to happen before actor is spawned
 	
 	UGameplayStatics::FinishSpawningActor(PlacedStructure, BuildingTransform);
+	
+	PlacedStructure->SetMaterialType(CurrentMaterialType);
+	
 }
 
 void UBuildAbility::CallEndAbility(const FGameplayAbilityTargetDataHandle& Data)

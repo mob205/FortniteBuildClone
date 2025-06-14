@@ -41,18 +41,14 @@ void APlacedStructure::NotifyGroundUpdate()
 		false);
 }
 
-void APlacedStructure::SetMeshMaterial_Implementation(UMaterialInterface* NewMaterial)
-{
-	StaticMesh->SetMaterial(0, NewMaterial);
-}
-
 void APlacedStructure::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION(APlacedStructure, StructureTag, COND_None);
 	DOREPLIFETIME_CONDITION(APlacedStructure, EditBitfield, COND_None);
-
+	DOREPLIFETIME_CONDITION(APlacedStructure, MaterialType, COND_None);
+	
 }
 
 void APlacedStructure::FinishStructureDestruction()
@@ -85,6 +81,26 @@ void APlacedStructure::SetGroundCache(bool bIsGrounded)
 bool APlacedStructure::IsGroundCacheValid() const
 {
 	return GroundCacheTimestamp == GetWorld()->GetTimeSeconds();
+}
+
+void APlacedStructure::OnRep_MaterialType(EFBCMaterialType NewMaterialType)
+{
+	UpdateMeshMaterial();
+}
+
+void APlacedStructure::SetMaterialType(EFBCMaterialType InMaterialType)
+{
+	MaterialType = InMaterialType;
+
+	UpdateMeshMaterial();
+}
+
+void APlacedStructure::UpdateMeshMaterial()
+{
+	if (MaterialMap.Contains(MaterialType))
+	{
+		StaticMesh->SetMaterial(0, MaterialMap[MaterialType]);
+	}
 }
 
 bool APlacedStructure::IsGrounded()
@@ -137,4 +153,3 @@ void APlacedStructure::SetCacheOnStructures(TSet<APlacedStructure*> Structures, 
 		Structure->SetGroundCache(bIsGrounded);
 	}
 }
-
