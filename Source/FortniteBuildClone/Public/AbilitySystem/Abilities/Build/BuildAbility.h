@@ -60,5 +60,8 @@ private:
 	// Updates targeting actor with the newly selected structure
 	UFUNCTION()
 	void OnSelectStructure(FGameplayEventData Payload);
+
+	UPROPERTY()
+	TObjectPtr<AActor> Avatar;
 };
 

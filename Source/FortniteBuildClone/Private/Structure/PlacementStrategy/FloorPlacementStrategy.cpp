@@ -24,7 +24,7 @@ bool UFloorPlacementStrategy::GetTargetingLocation(
 
 	FTransform PrimaryTargetLocation = OutResult;
 	
-	if (CanPlace(OutResult))
+	if (CanPlace(OutResult) && !IsOccupied(OutResult))
 	{
 		return true;
 	}
@@ -33,7 +33,9 @@ bool UFloorPlacementStrategy::GetTargetingLocation(
 	TargetLocation.Z = Player->GetActorLocation().Z;
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_RoundZ(TargetLocation));
 
-	if (CanPlace(OutResult) && !IsOccupied(OutResult))
+	// Don't check occupied for the primary targeting location
+	// If this is a valid place but it is occupied, no targeting ghost should be visible
+	if (CanPlace(OutResult))
 	{
 		return true;
 	}

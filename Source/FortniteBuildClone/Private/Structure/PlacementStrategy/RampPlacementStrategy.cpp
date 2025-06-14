@@ -27,7 +27,9 @@ bool URampPlacementStrategy::GetTargetingLocation(
 	OutResult.SetRotation(TargetRotator.Quaternion());
 
 	FTransform PrimaryTargetLocation = OutResult;
-	
+
+	// Don't check occupied for the primary targeting location
+	// If this is a valid place but it is occupied, no targeting ghost should be visible
 	if (CanPlace(OutResult))
 	{
 		return true;

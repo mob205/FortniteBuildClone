@@ -30,9 +30,9 @@ UGameplayEffect* UBuildAbility::GetCostGameplayEffect() const
 	EFBCMaterialType MaterialKey = EFBCMaterialType::FBCMat_Max;
 
 	// If we're local, use whatever material the the avatar currently has selected
-	if (IsLocallyControlled() && GetAvatarActorFromActorInfo()->Implements<UMaterialSwitchable>())
+	if (IsLocallyControlled() && Avatar->Implements<UMaterialSwitchable>())
 	{
-		MaterialKey = IMaterialSwitchable::Execute_GetCurrentMaterial(GetAvatarActorFromActorInfo());
+		MaterialKey = IMaterialSwitchable::Execute_GetCurrentMaterial(Avatar);
 	}
 
 	// If we're server, then we're applying the cost after placing a building. Used the type passed in target data
@@ -56,7 +56,7 @@ void UBuildAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	AActor* Avatar = GetAvatarActorFromActorInfo();
+	Avatar = GetAvatarActorFromActorInfo();
 
 	StrategyWorldSubsystem = GetWorld()->GetSubsystem<UStructureStrategyWorldSubsystem>();
 
