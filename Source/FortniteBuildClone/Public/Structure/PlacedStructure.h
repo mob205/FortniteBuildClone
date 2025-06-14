@@ -46,6 +46,7 @@ public:
 	virtual const TMap<USplineComponent*, USplineComponent*> GetOppositeLedges_Implementation() const override { return OppositeLedges; }
 
 	void SetMaterialType(EFBCMaterialType InMaterialType);
+	EFBCMaterialType GetMaterialType() const { return MaterialType;}
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Ability System")

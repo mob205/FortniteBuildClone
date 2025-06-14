@@ -188,6 +188,8 @@ void UEditAbility::EditStructure(int32 EditBitfield, int Yaw) const
 	TSet<AActor*> NearbyStructures{};
 	SelectedStructure->GetOverlappingActors(NearbyStructures, APlacedStructure::StaticClass());
 
+	EFBCMaterialType SelectedMaterial = SelectedStructure->GetMaterialType();
+	
 	// Replace old structure with new structure
 	SelectedStructure->Destroy();
 	
@@ -196,6 +198,8 @@ void UEditAbility::EditStructure(int32 EditBitfield, int Yaw) const
 		EditStructureClass,
 		StructureLocation,
 		StructureRotation);
+
+	SpawnedStructure->SetMaterialType(SelectedMaterial);
 
 	// Editing may remove support from nearby structures or leave the new structure unsupported
 	SpawnedStructure->SetEditBitfield(EditBitfield);
