@@ -12,8 +12,8 @@ UBuildResourceComponent::UBuildResourceComponent()
 void UBuildResourceComponent::SwitchResource()
 {
 	int8 CurrentResourceIntegral = static_cast<int8>(CurrentResourceType);
-	int8 NextResourceIntegral = (CurrentResourceIntegral + 1) % static_cast<int8>(EFBCMaterialType::FBCMat_Max);
-	CurrentResourceType = static_cast<EFBCMaterialType>(NextResourceIntegral);
+	int8 NextResourceIntegral = (CurrentResourceIntegral + 1) % static_cast<int8>(EFBCResourceType::FBCMat_Max);
+	CurrentResourceType = static_cast<EFBCResourceType>(NextResourceIntegral);
 
 	OnResourceTypeChanged.Broadcast(CurrentResourceType);
 }

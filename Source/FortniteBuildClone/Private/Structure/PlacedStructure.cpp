@@ -4,7 +4,6 @@
 #include "Structure/PlacedStructure.h"
 
 #include "FBCBlueprintLibrary.h"
-#include "Components/SplineComponent.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "Net/UnrealNetwork.h"
 
@@ -47,7 +46,7 @@ void APlacedStructure::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME_CONDITION(APlacedStructure, StructureTag, COND_None);
 	DOREPLIFETIME_CONDITION(APlacedStructure, EditBitfield, COND_None);
-	DOREPLIFETIME_CONDITION(APlacedStructure, MaterialType, COND_None);
+	DOREPLIFETIME_CONDITION(APlacedStructure, ResourceType, COND_None);
 	
 }
 
@@ -83,23 +82,23 @@ bool APlacedStructure::IsGroundCacheValid() const
 	return GroundCacheTimestamp == GetWorld()->GetTimeSeconds();
 }
 
-void APlacedStructure::OnRep_MaterialType(EFBCMaterialType NewMaterialType)
+void APlacedStructure::OnRep_ResourceType(EFBCResourceType NewResourceType)
 {
 	UpdateMeshMaterial();
 }
 
-void APlacedStructure::SetMaterialType(EFBCMaterialType InMaterialType)
+void APlacedStructure::SetResourceType(EFBCResourceType InResourceType)
 {
-	MaterialType = InMaterialType;
+	ResourceType = InResourceType;
 
 	UpdateMeshMaterial();
 }
 
 void APlacedStructure::UpdateMeshMaterial()
 {
-	if (MaterialMap.Contains(MaterialType))
+	if (MaterialMap.Contains(ResourceType))
 	{
-		StaticMesh->SetMaterial(0, MaterialMap[MaterialType]);
+		StaticMesh->SetMaterial(0, MaterialMap[ResourceType]);
 	}
 }
 

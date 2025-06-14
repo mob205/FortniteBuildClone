@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Data/StructureMaterialTypes.h"
+#include "Data/StructureResourceTypes.h"
 #include "BuildResourceComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnResourceTypeChangedSignature, EFBCMaterialType, NewResourceType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnResourceTypeChangedSignature, EFBCResourceType, NewResourceType);
 
 UCLASS(BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class FORTNITEBUILDCLONE_API UBuildResourceComponent : public UActorComponent
@@ -25,8 +25,8 @@ public:
 	void SwitchResource();
 
 	UFUNCTION(BlueprintCallable)
-	EFBCMaterialType GetCurrentResourceType() const { return CurrentResourceType; }
+	EFBCResourceType GetCurrentResourceType() const { return CurrentResourceType; }
 	
 private:
-	EFBCMaterialType CurrentResourceType{ EFBCMaterialType::FBCMat_Wood };
+	EFBCResourceType CurrentResourceType{ EFBCResourceType::FBCMat_Wood };
 };

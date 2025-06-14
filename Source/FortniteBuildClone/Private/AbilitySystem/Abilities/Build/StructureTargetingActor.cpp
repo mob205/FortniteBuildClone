@@ -79,7 +79,7 @@ void AStructureTargetingActor::ConfirmTargetingAndContinue()
 	}
 
 	// Fallback to Wood if can't get the selected material
-	EFBCMaterialType MaterialType = EFBCMaterialType::FBCMat_Wood;
+	EFBCResourceType MaterialType = EFBCResourceType::FBCMat_Wood;
 	if (ResourceComponent)
 	{
 		MaterialType = ResourceComponent->GetCurrentResourceType();

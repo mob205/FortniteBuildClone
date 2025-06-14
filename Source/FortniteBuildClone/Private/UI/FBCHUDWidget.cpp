@@ -25,7 +25,7 @@ void UFBCHUDWidget::InitializeHUD(AFBCPlayerState* PS, UFBCAbilitySystemComponen
 		AS->GetWoodAttribute()).AddLambda(
 			[this](const FOnAttributeChangeData& Data)
 			{
-				OnMaterialCountChanged.Broadcast(EFBCMaterialType::FBCMat_Wood, Data.NewValue);
+				OnMaterialCountChanged.Broadcast(EFBCResourceType::FBCMat_Wood, Data.NewValue);
 			}
 	);
 
@@ -34,7 +34,7 @@ void UFBCHUDWidget::InitializeHUD(AFBCPlayerState* PS, UFBCAbilitySystemComponen
 		AS->GetBrickAttribute()).AddLambda(
 			[this](const FOnAttributeChangeData& Data)
 			{
-				OnMaterialCountChanged.Broadcast(EFBCMaterialType::FBCMat_Brick, Data.NewValue);
+				OnMaterialCountChanged.Broadcast(EFBCResourceType::FBCMat_Brick, Data.NewValue);
 			}
 	);
 
@@ -43,7 +43,7 @@ void UFBCHUDWidget::InitializeHUD(AFBCPlayerState* PS, UFBCAbilitySystemComponen
 		AS->GetMetalAttribute()).AddLambda(
 			[this](const FOnAttributeChangeData& Data)
 			{
-				OnMaterialCountChanged.Broadcast(EFBCMaterialType::FBCMat_Metal, Data.NewValue);
+				OnMaterialCountChanged.Broadcast(EFBCResourceType::FBCMat_Metal, Data.NewValue);
 			}
 	);
 
@@ -55,11 +55,11 @@ void UFBCHUDWidget::InitializeHUD(AFBCPlayerState* PS, UFBCAbilitySystemComponen
 
 void UFBCHUDWidget::BroadcastInitialValues()
 {
-	OnMaterialCountChanged.Broadcast(EFBCMaterialType::FBCMat_Wood, AbilitySystemComponent->GetNumericAttribute(AS->GetWoodAttribute()));
+	OnMaterialCountChanged.Broadcast(EFBCResourceType::FBCMat_Wood, AbilitySystemComponent->GetNumericAttribute(AS->GetWoodAttribute()));
 
-	OnMaterialCountChanged.Broadcast(EFBCMaterialType::FBCMat_Brick, AbilitySystemComponent->GetNumericAttribute(AS->GetBrickAttribute()));
+	OnMaterialCountChanged.Broadcast(EFBCResourceType::FBCMat_Brick, AbilitySystemComponent->GetNumericAttribute(AS->GetBrickAttribute()));
 
-	OnMaterialCountChanged.Broadcast(EFBCMaterialType::FBCMat_Metal, AbilitySystemComponent->GetNumericAttribute(AS->GetMetalAttribute()));
+	OnMaterialCountChanged.Broadcast(EFBCResourceType::FBCMat_Metal, AbilitySystemComponent->GetNumericAttribute(AS->GetMetalAttribute()));
 
 	if (OwnerResourceComponent)
 	{
@@ -67,7 +67,7 @@ void UFBCHUDWidget::BroadcastInitialValues()
 	}
 }
 
-void UFBCHUDWidget::BroadcastMaterialTypeChanged(EFBCMaterialType NewMaterialType)
+void UFBCHUDWidget::BroadcastMaterialTypeChanged(EFBCResourceType NewMaterialType)
 {
 	OnResourceTypeChanged.Broadcast(NewMaterialType);
 }

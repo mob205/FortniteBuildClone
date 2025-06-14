@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Abilities/GameplayAbilityTargetTypes.h"
-#include "Data/StructureMaterialTypes.h"
+#include "Data/StructureResourceTypes.h"
 #include "BuildTargetData.generated.h"
 
 USTRUCT()
@@ -15,7 +15,7 @@ struct FBuildTargetData : public FGameplayAbilityTargetData
 
 	// Material of structure
 	UPROPERTY()
-	EFBCMaterialType MaterialType{};
+	EFBCResourceType MaterialType{};
 
 	// Location of structure
 	UPROPERTY()
@@ -27,7 +27,7 @@ struct FBuildTargetData : public FGameplayAbilityTargetData
 	FRotator Rotation{};
 
 	FBuildTargetData() {}
-	FBuildTargetData(const FGameplayTag& StructureTag, EFBCMaterialType MaterialType, const FVector& Location, const FRotator& Rotation)
+	FBuildTargetData(const FGameplayTag& StructureTag, EFBCResourceType MaterialType, const FVector& Location, const FRotator& Rotation)
 		: StructureTag(StructureTag), MaterialType(MaterialType), Location(Location), Rotation(Rotation)
 	{}
 

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Data/StructureMaterialTypes.h"
+#include "Data/StructureResourceTypes.h"
 #include "Component/BuildResourceComponent.h"
 #include "FBCHUDWidget.generated.h"
 
@@ -13,7 +13,7 @@ class UFBCAbilitySystemComponent;
 class AFBCPlayerState;
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMaterialCountChangedSignature, EFBCMaterialType, ChangedMaterialType, float, NewValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMaterialCountChangedSignature, EFBCResourceType, ChangedMaterialType, float, NewValue);
 /**
  * 
  */
@@ -50,5 +50,5 @@ private:
 	TObjectPtr<UFBCAttributeSet> AS;
 
 	UFUNCTION()
-	void BroadcastMaterialTypeChanged(EFBCMaterialType NewMaterialType);
+	void BroadcastMaterialTypeChanged(EFBCResourceType NewMaterialType);
 };

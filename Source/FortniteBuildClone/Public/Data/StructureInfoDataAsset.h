@@ -6,7 +6,7 @@
 #include "EditMapDataAsset.h"
 #include "Engine/DataAsset.h"
 #include "GameplayTagContainer.h"
-#include "StructureMaterialTypes.h"
+#include "StructureResourceTypes.h"
 #include "StructureInfoDataAsset.generated.h"
 
 class AEditTargetingActor;

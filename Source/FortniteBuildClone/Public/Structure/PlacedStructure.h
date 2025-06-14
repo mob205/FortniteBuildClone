@@ -45,8 +45,8 @@ public:
 	virtual const TArray<USplineComponent*> GetLedges_Implementation() const override { return Ledges; }
 	virtual const TMap<USplineComponent*, USplineComponent*> GetOppositeLedges_Implementation() const override { return OppositeLedges; }
 
-	void SetMaterialType(EFBCMaterialType InMaterialType);
-	EFBCMaterialType GetMaterialType() const { return MaterialType;}
+	void SetResourceType(EFBCResourceType InResourceType);
+	EFBCResourceType GetResourceType() const { return ResourceType;}
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Ability System")
@@ -56,7 +56,7 @@ protected:
 	float DestructionDelay{.2f};
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TMap<EFBCMaterialType, UMaterialInstance*> MaterialMap{};
+	TMap<EFBCResourceType, UMaterialInstance*> MaterialMap{};
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -91,12 +91,12 @@ private:
 	bool GetGroundCache() const { return bIsGroundedCached; }
 
 	// Set MaterialType to something invalid initially to force replication
-	// Otherwise, Wood (0) structures being placed will not trigger OnRep_MaterialType
-	UPROPERTY(Replicated, ReplicatedUsing = OnRep_MaterialType)
-	EFBCMaterialType MaterialType{EFBCMaterialType::FBCMat_Max};
+	// Otherwise, Wood (0) structures being placed will not trigger the OnRep function
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_ResourceType)
+	EFBCResourceType ResourceType{EFBCResourceType::FBCMat_Max};
 	
 	UFUNCTION()
-	void OnRep_MaterialType(EFBCMaterialType NewMaterialType);
+	void OnRep_ResourceType(EFBCResourceType NewResourceType);
 
 	void UpdateMeshMaterial();
 };

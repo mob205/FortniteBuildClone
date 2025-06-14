@@ -27,7 +27,7 @@ UGameplayEffect* UBuildAbility::GetCostGameplayEffect() const
 	// Placing structures gets the cost GE while active, so materials are still needed
 	if (!IsActive()) { return nullptr; }
 	
-	EFBCMaterialType MaterialKey = EFBCMaterialType::FBCMat_Max;
+	EFBCResourceType MaterialKey = EFBCResourceType::FBCMat_Max;
 
 	// If we're local, use whatever material the resource comp has selected
 	if (IsLocallyControlled() && ResourceComponent)
@@ -174,7 +174,7 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 	
 	UGameplayStatics::FinishSpawningActor(PlacedStructure, BuildingTransform);
 	
-	PlacedStructure->SetMaterialType(CachedMaterialType);
+	PlacedStructure->SetResourceType(CachedMaterialType);
 	
 }
 
