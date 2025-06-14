@@ -25,7 +25,7 @@ void UFBCHUDWidget::InitializeHUD(AFBCPlayerState* PS, UFBCAbilitySystemComponen
 		AS->GetWoodAttribute()).AddLambda(
 			[this](const FOnAttributeChangeData& Data)
 			{
-				OnMaterialCountChanged.Broadcast(EFBCResourceType::FBCMat_Wood, Data.NewValue);
+				OnResourceCountChanged.Broadcast(EFBCResourceType::FBCMat_Wood, Data.NewValue);
 			}
 	);
 
@@ -34,7 +34,7 @@ void UFBCHUDWidget::InitializeHUD(AFBCPlayerState* PS, UFBCAbilitySystemComponen
 		AS->GetBrickAttribute()).AddLambda(
 			[this](const FOnAttributeChangeData& Data)
 			{
-				OnMaterialCountChanged.Broadcast(EFBCResourceType::FBCMat_Brick, Data.NewValue);
+				OnResourceCountChanged.Broadcast(EFBCResourceType::FBCMat_Brick, Data.NewValue);
 			}
 	);
 
@@ -43,7 +43,7 @@ void UFBCHUDWidget::InitializeHUD(AFBCPlayerState* PS, UFBCAbilitySystemComponen
 		AS->GetMetalAttribute()).AddLambda(
 			[this](const FOnAttributeChangeData& Data)
 			{
-				OnMaterialCountChanged.Broadcast(EFBCResourceType::FBCMat_Metal, Data.NewValue);
+				OnResourceCountChanged.Broadcast(EFBCResourceType::FBCMat_Metal, Data.NewValue);
 			}
 	);
 
@@ -55,11 +55,11 @@ void UFBCHUDWidget::InitializeHUD(AFBCPlayerState* PS, UFBCAbilitySystemComponen
 
 void UFBCHUDWidget::BroadcastInitialValues()
 {
-	OnMaterialCountChanged.Broadcast(EFBCResourceType::FBCMat_Wood, AbilitySystemComponent->GetNumericAttribute(AS->GetWoodAttribute()));
+	OnResourceCountChanged.Broadcast(EFBCResourceType::FBCMat_Wood, AbilitySystemComponent->GetNumericAttribute(AS->GetWoodAttribute()));
 
-	OnMaterialCountChanged.Broadcast(EFBCResourceType::FBCMat_Brick, AbilitySystemComponent->GetNumericAttribute(AS->GetBrickAttribute()));
+	OnResourceCountChanged.Broadcast(EFBCResourceType::FBCMat_Brick, AbilitySystemComponent->GetNumericAttribute(AS->GetBrickAttribute()));
 
-	OnMaterialCountChanged.Broadcast(EFBCResourceType::FBCMat_Metal, AbilitySystemComponent->GetNumericAttribute(AS->GetMetalAttribute()));
+	OnResourceCountChanged.Broadcast(EFBCResourceType::FBCMat_Metal, AbilitySystemComponent->GetNumericAttribute(AS->GetMetalAttribute()));
 
 	if (OwnerResourceComponent)
 	{

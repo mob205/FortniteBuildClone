@@ -8,6 +8,7 @@
 #include "GameplayTagContainer.h"
 #include "FBCCharacter.generated.h"
 
+class AFBCPlayerState;
 class UFBCAttributeSet;
 class UFBCAbilitySystemComponent;
 class AFBCPlayerController;
@@ -51,10 +52,13 @@ protected:
 	void OnBuildAction(UInputAction* InputAction);
 
 	UPROPERTY(BlueprintReadOnly)
-	AFBCPlayerController* PlayerController;
+	TObjectPtr<AFBCPlayerController> PlayerController;
 
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<UFBCAbilitySystemComponent> ASC;
+
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<AFBCPlayerState> FBCPlayerState;
 
 private:
 	void InitAbilityActorInfo();

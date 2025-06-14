@@ -44,13 +44,13 @@ void AFBCCharacter::BeginPlay()
 
 void AFBCCharacter::InitAbilityActorInfo()
 {
-	AFBCPlayerState* PS = GetPlayerState<AFBCPlayerState>();
-	check(PS);
+	FBCPlayerState = GetPlayerState<AFBCPlayerState>();
+	check(FBCPlayerState);
 
-	ASC = PS->GetAbilitySystemComponent();
-	ASC->InitAbilityActorInfo(PS, this);
+	ASC = FBCPlayerState->GetAbilitySystemComponent();
+	ASC->InitAbilityActorInfo(FBCPlayerState, this);
 
-	AS = PS->GetAttributeSet();
+	AS = FBCPlayerState->GetAttributeSet();
 	
 	PlayerController = Cast<AFBCPlayerController>(GetController());
 }

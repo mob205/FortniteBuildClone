@@ -13,7 +13,7 @@ class UFBCAbilitySystemComponent;
 class AFBCPlayerState;
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMaterialCountChangedSignature, EFBCResourceType, ChangedMaterialType, float, NewValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnResourceCountChangedSignature, EFBCResourceType, ChangedMaterialType, float, NewValue);
 /**
  * 
  */
@@ -27,7 +27,7 @@ public:
 
 protected:
 	UPROPERTY(BlueprintAssignable, Category = "Ability System")
-	FOnMaterialCountChangedSignature OnMaterialCountChanged;
+	FOnResourceCountChangedSignature OnResourceCountChanged;
 
 	UPROPERTY(BlueprintAssignable, Category = "Material")
 	FOnResourceTypeChangedSignature OnResourceTypeChanged;

@@ -23,6 +23,9 @@ public:
 
 	UFBCAbilitySystemComponent* GetAbilitySystemComponent() const { return ASC; }
 	UFBCAttributeSet* GetAttributeSet() const { return AS; }
+
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<UBuildResourceComponent> BuildResourceComp;
 	
 protected:
 	UPROPERTY()
@@ -31,6 +34,5 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UFBCAttributeSet> AS;
 
-	UPROPERTY()
-	TObjectPtr<UBuildResourceComponent> BuildResourceComp;
+
 };

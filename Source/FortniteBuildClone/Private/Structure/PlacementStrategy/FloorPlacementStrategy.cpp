@@ -24,7 +24,7 @@ bool UFloorPlacementStrategy::GetTargetingLocation(
 
 	FTransform PrimaryTargetLocation = OutResult;
 	
-	if (CanPlace(OutResult) && !IsOccupied(OutResult))
+	if (CanPlace(OutResult))
 	{
 		return true;
 	}
