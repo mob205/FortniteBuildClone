@@ -43,7 +43,7 @@ private:
 	TObjectPtr<AStructureTargetingActor> TargetingActor{};
 	TObjectPtr<UStructureStrategyWorldSubsystem> StrategyWorldSubsystem{};
 
-	EFBCMaterialType CurrentMaterialType{};
+	EFBCMaterialType CachedMaterialType{};
 	
 	// Places a structure after target data is received
 	UFUNCTION()

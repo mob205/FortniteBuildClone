@@ -14,6 +14,7 @@
 #include "AbilitySystem/Abilities/Build/BuildTargetData.h"
 #include "Structure/PlacementStrategy/PlacementStrategy.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
+#include "Interface/MaterialSwitchable.h"
 
 UBuildAbility::UBuildAbility()
 {
@@ -22,9 +23,27 @@ UBuildAbility::UBuildAbility()
 
 UGameplayEffect* UBuildAbility::GetCostGameplayEffect() const
 {
-	if (MaterialCostEffects.Contains(CurrentMaterialType))
+	// Allow the ability to start to show targeting actor even with no mats
+	// Placing structures gets the cost GE while active, so materials are still needed
+	if (!IsActive()) { return nullptr; }
+	
+	EFBCMaterialType MaterialKey = EFBCMaterialType::FBCMat_Max;
+
+	// If we're local, use whatever material the the avatar currently has selected
+	if (IsLocallyControlled() && GetAvatarActorFromActorInfo()->Implements<UMaterialSwitchable>())
 	{
-		return MaterialCostEffects[CurrentMaterialType]->GetDefaultObject<UGameplayEffect>();
+		MaterialKey = IMaterialSwitchable::Execute_GetCurrentMaterial(GetAvatarActorFromActorInfo());
+	}
+
+	// If we're server, then we're applying the cost after placing a building. Used the type passed in target data
+	else if (HasAuthority(&CurrentActivationInfo))
+	{
+		MaterialKey = CachedMaterialType;
+	}
+	
+	if (MaterialCostEffects.Contains(MaterialKey))
+	{
+		return MaterialCostEffects[MaterialKey]->GetDefaultObject<UGameplayEffect>();
 	}
 	else
 	{
@@ -98,13 +117,6 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 	if (!HasAuthority(&CurrentActivationInfo)) { return; }
 
 	const FBuildTargetData* BuildData = static_cast<const FBuildTargetData*>(Data.Get(0));
-
-	CurrentMaterialType = BuildData->MaterialType;
-	if (!CommitAbility(GetCurrentAbilitySpecHandle(), CurrentActorInfo, GetCurrentActivationInfo()))
-	{
-		UE_LOG(LogFBC, Warning, TEXT("BuildAbility: Insufficient materials"));
-		return;
-	}
 	
 	FTransform BuildingTransform{BuildData->Rotation.Quaternion(), BuildData->Location};
 	BuildingTransform = UFBCBlueprintLibrary::SnapTransformToGrid(BuildingTransform);
@@ -128,6 +140,13 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 		UE_LOG(LogFBC, Warning, TEXT("BuildAbility: Request placement is in an occupied location."))
 		return;
 	}
+
+	CachedMaterialType = BuildData->MaterialType;
+	if (!CommitAbility(GetCurrentAbilitySpecHandle(), CurrentActorInfo, GetCurrentActivationInfo()))
+	{
+		UE_LOG(LogFBC, Warning, TEXT("BuildAbility: Insufficient materials"));
+		return;
+	}
 	
 	// Build request validated
 	
@@ -149,7 +168,7 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 	
 	UGameplayStatics::FinishSpawningActor(PlacedStructure, BuildingTransform);
 	
-	PlacedStructure->SetMaterialType(CurrentMaterialType);
+	PlacedStructure->SetMaterialType(CachedMaterialType);
 	
 }
 
