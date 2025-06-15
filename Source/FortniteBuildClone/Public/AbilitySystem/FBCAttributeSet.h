@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AttributeSet.h"
 #include "AbilitySystemComponent.h"
+#include "Data/StructureResourceTypes.h"
 #include "FBCAttributeSet.generated.h"
 
 // This macro does NOT work for actually defining attributes, since UHT runs before C++ preprocessor
@@ -37,10 +38,13 @@ class FORTNITEBUILDCLONE_API UFBCAttributeSet : public UAttributeSet
 	GENERATED_BODY()
 
 public:
+	UFBCAttributeSet();
+	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Wood, Category = "Material Count")
 	FGameplayAttributeData Wood;
+	
 	ATTRIBUTE_ACCESSORS(UFBCAttributeSet, Wood);
 	UFUNCTION()
 	void OnRep_Wood(const FGameplayAttributeData& OldValue) const
@@ -64,4 +68,6 @@ public:
 	{
 		GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, Metal, OldValue);
 	};
+
+	static TMap<EFBCResourceType, FGameplayAttribute> ResourceToAttributeMap;
 };

@@ -5,6 +5,15 @@
 
 #include "Net/UnrealNetwork.h"
 
+TMap<EFBCResourceType, FGameplayAttribute> UFBCAttributeSet::ResourceToAttributeMap{};
+
+UFBCAttributeSet::UFBCAttributeSet()
+{
+	ResourceToAttributeMap.Add(EFBCResourceType::FBCMat_Wood, GetWoodAttribute());
+	ResourceToAttributeMap.Add(EFBCResourceType::FBCMat_Brick, GetBrickAttribute());
+	ResourceToAttributeMap.Add(EFBCResourceType::FBCMat_Metal, GetMetalAttribute());
+}
+
 void UFBCAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);

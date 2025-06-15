@@ -7,6 +7,7 @@
 #include "Data/StructureResourceTypes.h"
 #include "BuildResourceComponent.generated.h"
 
+class UAbilitySystemComponent;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnResourceTypeChangedSignature, EFBCResourceType, NewResourceType);
 
 UCLASS(BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -26,7 +27,19 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	EFBCResourceType GetCurrentResourceType() const { return CurrentResourceType; }
+
+	UFUNCTION()
+	void OnResourceCountChanged(EFBCResourceType ResourceType, float NewValue);
+	
+protected:
+	virtual void BeginPlay() override;
 	
 private:
 	EFBCResourceType CurrentResourceType{ EFBCResourceType::FBCMat_Wood };
+
+	UAbilitySystemComponent* OwnerASC{};
+
+	EFBCResourceType GetNextResourceType(EFBCResourceType ResourceType) const;
+
+	void SetResourceType(EFBCResourceType NewResourceType);
 };
