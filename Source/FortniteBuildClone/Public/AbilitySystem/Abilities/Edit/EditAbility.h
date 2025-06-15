@@ -50,7 +50,7 @@ private:
 
 	const FEditMap* CurrentEditMap{};
 	
-	AEditTargetingActor* SpawnTargetingActor() const;
+	AEditTargetingActor* SpawnTargetingActor(TSubclassOf<AEditTargetingActor> ActorClass) const;
 	TObjectPtr<AEditTargetingActor> TargetingActor;
 	
 	void EditStructure(int32 EditBitfield, int Yaw) const;
@@ -69,4 +69,6 @@ private:
 	
 	UFUNCTION()
 	void OnEditReset(FGameplayEventData Payload);
+
+	bool bAllowRotations{};
 };

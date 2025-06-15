@@ -35,6 +35,19 @@ struct FStructureInfo
 	TSubclassOf<UPlacementStrategy> PlacementStrategyClass{};
 };
 
+USTRUCT(BlueprintType)
+struct FEditTargetingClassInfo
+{
+
+	GENERATED_BODY()
+	// Class of targeting actor to use 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<AEditTargetingActor> TargetingActorClass{};
+	
+	// Server will validate edits and ignore rotations if not allowed
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bCanRotate;
+};
 
 UCLASS(BlueprintType, Blueprintable)
 class FORTNITEBUILDCLONE_API UStructureInfoDataAsset : public UDataAsset
@@ -61,7 +74,7 @@ public:
 	const UEditMapDataAsset* GetEditMapAsset(const FGameplayTag& StructureTag);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Edit Info")
-	TSubclassOf<AEditTargetingActor> GetEditTargetingClass(const FGameplayTag& StructureTag);
+	FEditTargetingClassInfo GetEditTargetingClass(const FGameplayTag& StructureTag);
 	
 protected:
 	virtual void PostLoad() override;
@@ -73,7 +86,7 @@ protected:
 	TMap<FGameplayTag, UEditMapDataAsset*> EditMaps{};
 
 	UPROPERTY(EditDefaultsOnly)
-	TMap<FGameplayTag, TSubclassOf<AEditTargetingActor>> EditTargetingActors{};
+	TMap<FGameplayTag, FEditTargetingClassInfo> EditTargetingActors{};
 	
 private:
 

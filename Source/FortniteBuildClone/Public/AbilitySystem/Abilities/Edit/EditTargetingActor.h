@@ -32,9 +32,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ResetEdit();
 
-	// Returns true if edits allow the structure to change rotation
-	virtual FORCEINLINE bool IsEditRotatingAllowed() const { return false; }
-
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UMaterialInstance> GhostMaterial{};
