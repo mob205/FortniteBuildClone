@@ -67,7 +67,7 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> Root;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UStaticMeshComponent> StaticMesh;
 
 	UPROPERTY(BlueprintReadWrite)
@@ -76,6 +76,8 @@ protected:
 	UPROPERTY(BlueprintReadWrite)
 	TMap<USplineComponent*, USplineComponent*> OppositeLedges{};
 
+	UFUNCTION(BlueprintNativeEvent)
+	void SetStructureMeshMaterial(UMaterialInstance* Material);
 private:
 	FTimerHandle DestroyTimerHandle;
 	

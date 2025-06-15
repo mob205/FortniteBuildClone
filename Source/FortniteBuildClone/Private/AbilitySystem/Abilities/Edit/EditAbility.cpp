@@ -169,7 +169,7 @@ void UEditAbility::EditStructure(int32 EditBitfield, int Yaw) const
 
 	bool bIsSameRotation{ true };
 
-	if (!TargetingActor)
+	if (!IsValid(TargetingActor))
 	{
 		UE_LOG(LogFBC, Error, TEXT("EditAbility: Edit received but no targeting actor!"));
 	}
