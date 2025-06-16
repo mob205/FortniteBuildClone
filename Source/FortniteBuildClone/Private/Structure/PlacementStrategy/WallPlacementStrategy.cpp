@@ -81,9 +81,14 @@ bool UWallPlacementStrategy::IsStructureOccupying(const FTransform& QueryTransfo
 	bool bIsSameWall = QueryYaw == StructureYaw
 						&& QueryCoordinateLocation == StructureCoordinateLocation
 						&& IncompatibleStructureTags.HasTagExact(Structure->GetStructureTag());
+
+	// Nearby walls with flipped orientation that we need to consider as "occupying the spot" are either 1 away in the X or 1 away in the Y, but never both
+	bool bIsXNeighbor = abs(QueryCoordinateLocation.X - StructureCoordinateLocation.X) == 1;
+	bool bIsYNeighbor = abs(QueryCoordinateLocation.Y - StructureCoordinateLocation.Y) == 1;
 	
 	bool bIsOppositeWall = FlippedQueryYaw == StructureYaw
 						&& QueryCoordinateLocation.Z == StructureCoordinateLocation.Z
+						&& (!bIsXNeighbor != !bIsYNeighbor) 
 						&& IncompatibleStructureTags.HasTagExact(Structure->GetStructureTag());
 
 	return bIsSameWall || bIsOppositeWall;
