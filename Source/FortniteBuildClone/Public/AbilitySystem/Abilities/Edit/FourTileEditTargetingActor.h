@@ -13,6 +13,4 @@ class FORTNITEBUILDCLONE_API AFourTileEditTargetingActor : public AEditTargeting
 	
 public:
 	virtual void SetSelectedEdit(int32 InBitfield) override;
-
-	virtual bool IsEditRotatingAllowed() const override { return true;}
 };

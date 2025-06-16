@@ -98,8 +98,13 @@ void APlacedStructure::UpdateMeshMaterial()
 {
 	if (MaterialMap.Contains(ResourceType))
 	{
-		StaticMesh->SetMaterial(0, MaterialMap[ResourceType]);
+		SetStructureMeshMaterial(MaterialMap[ResourceType]);
 	}
+}
+
+void APlacedStructure::SetStructureMeshMaterial_Implementation(UMaterialInstance* Material)
+{
+	StaticMesh->SetMaterial(0, Material);
 }
 
 bool APlacedStructure::IsGrounded()

@@ -19,33 +19,16 @@ void UFBCHUDWidget::InitializeHUD(AFBCPlayerState* PS, UFBCAbilitySystemComponen
 	}
 	
 	// Subscribe to material changes
-
-	// Wood
-	ASC->GetGameplayAttributeValueChangeDelegate(
-		AS->GetWoodAttribute()).AddLambda(
-			[this](const FOnAttributeChangeData& Data)
-			{
-				OnResourceCountChanged.Broadcast(EFBCResourceType::FBCMat_Wood, Data.NewValue);
-			}
-	);
-
-	// Brick
-	ASC->GetGameplayAttributeValueChangeDelegate(
-		AS->GetBrickAttribute()).AddLambda(
-			[this](const FOnAttributeChangeData& Data)
-			{
-				OnResourceCountChanged.Broadcast(EFBCResourceType::FBCMat_Brick, Data.NewValue);
-			}
-	);
-
-	// Metal
-	ASC->GetGameplayAttributeValueChangeDelegate(
-		AS->GetMetalAttribute()).AddLambda(
-			[this](const FOnAttributeChangeData& Data)
-			{
-				OnResourceCountChanged.Broadcast(EFBCResourceType::FBCMat_Metal, Data.NewValue);
-			}
-	);
+	for (const auto& Resource : UFBCAttributeSet::ResourceToAttributeMap)
+	{
+		ASC->GetGameplayAttributeValueChangeDelegate(Resource.Value)
+			.AddLambda(
+				[this, Resource](const FOnAttributeChangeData& Data)
+				{
+					OnResourceCountChanged.Broadcast(Resource.Key, Data.NewValue);
+				}
+			);
+	}
 
 	if (OwnerResourceComponent)
 	{
@@ -55,11 +38,10 @@ void UFBCHUDWidget::InitializeHUD(AFBCPlayerState* PS, UFBCAbilitySystemComponen
 
 void UFBCHUDWidget::BroadcastInitialValues()
 {
-	OnResourceCountChanged.Broadcast(EFBCResourceType::FBCMat_Wood, AbilitySystemComponent->GetNumericAttribute(AS->GetWoodAttribute()));
-
-	OnResourceCountChanged.Broadcast(EFBCResourceType::FBCMat_Brick, AbilitySystemComponent->GetNumericAttribute(AS->GetBrickAttribute()));
-
-	OnResourceCountChanged.Broadcast(EFBCResourceType::FBCMat_Metal, AbilitySystemComponent->GetNumericAttribute(AS->GetMetalAttribute()));
+	for (const auto& Resource : UFBCAttributeSet::ResourceToAttributeMap)
+	{
+		OnResourceCountChanged.Broadcast(Resource.Key, AbilitySystemComponent->GetNumericAttribute(Resource.Value));
+	}
 
 	if (OwnerResourceComponent)
 	{

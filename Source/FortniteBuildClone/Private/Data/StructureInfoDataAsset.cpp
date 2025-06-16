@@ -60,13 +60,13 @@ const UEditMapDataAsset* UStructureInfoDataAsset::GetEditMapAsset(const FGamepla
 	return nullptr;
 }
 
-TSubclassOf<AEditTargetingActor> UStructureInfoDataAsset::GetEditTargetingClass(const FGameplayTag& StructureTag)
+FEditTargetingClassInfo UStructureInfoDataAsset::GetEditTargetingClass(const FGameplayTag& StructureTag)
 {
 	if (EditTargetingActors.Contains(StructureTag))
 	{
 		return EditTargetingActors[StructureTag];
 	}
-	return nullptr;
+	return {};
 }
 
 void UStructureInfoDataAsset::PostLoad()

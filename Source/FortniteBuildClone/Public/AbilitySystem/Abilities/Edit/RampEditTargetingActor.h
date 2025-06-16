@@ -14,10 +14,6 @@ class FORTNITEBUILDCLONE_API ARampEditTargetingActor : public AEditTargetingActo
 {
 	GENERATED_BODY()
 
-public:
-	// Returns true if edits allow the structure to change rotation
-	virtual FORCEINLINE bool IsEditRotatingAllowed() const override { return true; }
-	
 protected:
 	virtual void StartSelecting() override;
 	virtual void ProcessSelecting() override;

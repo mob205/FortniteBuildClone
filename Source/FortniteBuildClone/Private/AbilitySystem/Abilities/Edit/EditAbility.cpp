@@ -30,8 +30,20 @@ void UEditAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 
 	// End the ability if the structure is destroyed mid-edit
 	SelectedStructure->OnDestroyed.AddDynamic(this, &UEditAbility::OnSelectedStructureDestroyed);
+
+	// Get targeting information for the structure type
+	FEditTargetingClassInfo EditTargetingInfo = StructureInfo->GetEditTargetingClass(SelectedStructure->GetStructureTag());
+	TSubclassOf<AEditTargetingActor> TargetingActorClass = EditTargetingInfo.TargetingActorClass;
+	bAllowRotations = EditTargetingInfo.bCanRotate;
 	
-	TargetingActor = SpawnTargetingActor();
+	if (!TargetingActorClass)
+	{
+		UE_LOG(LogFBC, Warning, TEXT("UEditAbility: No edit targeting actor found for structure tag %s"), *SelectedStructure->GetStructureTag().ToString());
+		CancelAbility(Handle, ActorInfo, ActivationInfo, true);
+		return;
+	}
+	
+	TargetingActor = SpawnTargetingActor(TargetingActorClass);
 
 	// Listen for edit data
 	UAbilityTask_WaitTargetData* WaitTargetData = UAbilityTask_WaitTargetData::WaitTargetDataUsingActor(
@@ -91,17 +103,11 @@ APlacedStructure* UEditAbility::GetSelectedStructure() const
 	return nullptr;
 }
 
-AEditTargetingActor* UEditAbility::SpawnTargetingActor() const
+AEditTargetingActor* UEditAbility::SpawnTargetingActor(TSubclassOf<AEditTargetingActor> ActorClass) const
 {
-	TSubclassOf<AEditTargetingActor> TargetingActorClass = StructureInfo->GetEditTargetingClass(SelectedStructure->GetStructureTag());
-	if (!TargetingActorClass)
-	{
-		UE_LOG(LogFBC, Warning, TEXT("UEditAbility: No edit targeting actor found for structure tag %s"), *SelectedStructure->GetStructureTag().ToString());
-		return nullptr;
-	}
 	
 	AEditTargetingActor* SpawnedTargetingActor = GetWorld()->SpawnActorDeferred<AEditTargetingActor>(
-		TargetingActorClass,
+		ActorClass,
 		SelectedStructure->GetActorTransform(),
 		GetAvatarActorFromActorInfo(),
 		nullptr,
@@ -168,12 +174,8 @@ void UEditAbility::EditStructure(int32 EditBitfield, int Yaw) const
 	FRotator StructureRotation = SelectedStructure->GetActorRotation();
 
 	bool bIsSameRotation{ true };
-
-	if (!TargetingActor)
-	{
-		UE_LOG(LogFBC, Error, TEXT("EditAbility: Edit received but no targeting actor!"));
-	}
-	if (TargetingActor->IsEditRotatingAllowed())
+	
+	if (bAllowRotations)
 	{
 		int StructureYaw = UFBCBlueprintLibrary::SnapAngleToGridInt(StructureRotation.Yaw);
 		
