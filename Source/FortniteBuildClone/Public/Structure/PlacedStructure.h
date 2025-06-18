@@ -10,6 +10,7 @@
 #include "Interface/Traversable.h"
 #include "PlacedStructure.generated.h"
 
+class UDestructionSubsystem;
 class USplineComponent;
 
 UCLASS()
@@ -60,6 +61,7 @@ protected:
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	virtual void BeginPlay() override;
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated, Category = "Editing")
 	FBitGrid EditBitfield{};
@@ -100,5 +102,10 @@ private:
 	UFUNCTION()
 	void OnRep_ResourceType(EFBCResourceType NewResourceType);
 
+	UFUNCTION(NetMulticast, Reliable)
+	void DisableStructure();
+	
 	void UpdateMeshMaterial();
+
+	TObjectPtr<UDestructionSubsystem> DestructionSubsystem;
 };

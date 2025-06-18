@@ -6,6 +6,7 @@
 #include "FBCBlueprintLibrary.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "Net/UnrealNetwork.h"
+#include "Subsystem/DestructionSubsystem.h"
 
 APlacedStructure::APlacedStructure()
 {
@@ -50,6 +51,16 @@ void APlacedStructure::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	
 }
 
+void APlacedStructure::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (HasAuthority())
+	{
+		DestructionSubsystem = GetWorld()->GetSubsystem<UDestructionSubsystem>();
+	}
+}
+
 void APlacedStructure::FinishStructureDestruction()
 {
 	UE_LOG(LogFBC, Display, TEXT("Destroying structure %s at grid slot %s"), *GetActorNameOrLabel(),
@@ -64,8 +75,16 @@ void APlacedStructure::FinishStructureDestruction()
 			AsStructure->NotifyGroundUpdate();
 		}
 	}
-	Destroy();
+	SetActorEnableCollision(false);
+	DisableStructure();
+	DestructionSubsystem->QueueDestruction(this);
 }
+
+void APlacedStructure::DisableStructure_Implementation()
+{
+	SetStructureMeshVisibility(false);
+}
+
 
 void APlacedStructure::SetStructureMeshVisibility(bool bIsVisible)
 {

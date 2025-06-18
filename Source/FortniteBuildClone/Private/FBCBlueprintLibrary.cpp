@@ -55,6 +55,15 @@ FIntVector UFBCBlueprintLibrary::GetGridCoordinateLocation(FVector InWorldLocati
 	return Result;
 }
 
+FIntVector UFBCBlueprintLibrary::GetCustomGridCoordinateLocation(FVector InWorldLocation, FVector InGridDimensions)
+{
+	FIntVector Result;
+	Result.X = FMath::RoundToInt(InWorldLocation.X / InGridDimensions.X);
+	Result.Y = FMath::RoundToInt(InWorldLocation.Y / InGridDimensions.Y);
+	Result.Z = FMath::RoundToInt(InWorldLocation.Z / InGridDimensions.Z);
+	return Result;
+}
+
 bool UFBCBlueprintLibrary::IsGround(AActor* Actor)
 {
 	UPrimitiveComponent* PrimitiveComp = Actor->GetComponentByClass<UPrimitiveComponent>();
