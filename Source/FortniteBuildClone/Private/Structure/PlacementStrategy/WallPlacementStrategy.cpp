@@ -88,7 +88,7 @@ bool UWallPlacementStrategy::IsStructureOccupying(const FTransform& QueryTransfo
 	
 	bool bIsOppositeWall = FlippedQueryYaw == StructureYaw
 						&& QueryCoordinateLocation.Z == StructureCoordinateLocation.Z
-						&& (!bIsXNeighbor != !bIsYNeighbor) 
+						&& (bIsXNeighbor != bIsYNeighbor) // XOR
 						&& IncompatibleStructureTags.HasTagExact(Structure->GetStructureTag());
 
 	return bIsSameWall || bIsOppositeWall;
