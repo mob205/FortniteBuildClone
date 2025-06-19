@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GridSizes.h"
 #include "Structure/PlacedStructure.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "DestructionSubsystem.generated.h"
 
+class AFBCGameState;
 class APlacedStructure;
 
 inline constexpr int DestructionCellLength{8};
@@ -29,8 +29,11 @@ public:
 
 	virtual TStatId GetStatId() const override { return TStatId(); }
 protected:
+	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 	virtual void Tick(float DeltaTime) override;
 
 private:
+	TObjectPtr<AFBCGameState> GameState{};
 	TQueue<APlacedStructure*> DestructionQueue;
+	TArray<APlacedStructure*> DisableStructureBuffer;
 };

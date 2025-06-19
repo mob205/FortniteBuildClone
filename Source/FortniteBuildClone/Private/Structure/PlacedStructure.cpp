@@ -82,7 +82,6 @@ void APlacedStructure::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME_CONDITION(APlacedStructure, StructureTag, COND_None);
 	DOREPLIFETIME_CONDITION(APlacedStructure, EditBitfield, COND_None);
 	DOREPLIFETIME_CONDITION(APlacedStructure, ResourceType, COND_None);
-	DOREPLIFETIME_CONDITION(APlacedStructure, bIsDisabled, COND_None);
 }
 
 void APlacedStructure::BeginPlay()
@@ -145,15 +144,7 @@ void APlacedStructure::DisableStructure()
 {
 	SetStructureMeshVisibility(false);
 	SetActorEnableCollision(false);
-	bIsDisabled = true;
 }
-
-void APlacedStructure::OnDisabled()
-{
-	SetActorEnableCollision(false);
-	SetStructureMeshVisibility(false);
-}
-
 
 void APlacedStructure::SetStructureMeshVisibility(bool bIsVisible)
 {

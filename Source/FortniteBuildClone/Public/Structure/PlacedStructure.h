@@ -51,7 +51,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ReportNeighbors();
-
+	
+	void DisableStructure();
 	
 	// Initiates destroying the structure after a delay if structure isn't grounded
 	void NotifyGroundUpdate();
@@ -107,14 +108,6 @@ private:
 	
 	UFUNCTION()
 	void OnRep_ResourceType(EFBCResourceType NewResourceType);
-
-	void DisableStructure();
-
-	UPROPERTY(Replicated, ReplicatedUsing = OnDisabled)
-	bool bIsDisabled{};
-
-	UFUNCTION()
-	void OnDisabled();
 	
 	void UpdateMeshMaterial();
 
