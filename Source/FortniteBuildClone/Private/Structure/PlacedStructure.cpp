@@ -41,6 +41,40 @@ void APlacedStructure::NotifyGroundUpdate()
 		false);
 }
 
+void APlacedStructure::RemoveNeighbor(APlacedStructure* Structure, bool bRecheckGround)
+{
+	Neighbors.Remove(Structure);
+	if (bRecheckGround)
+	{
+		NotifyGroundUpdate();
+	}
+}
+
+void APlacedStructure::AddNeighbor(APlacedStructure* Structure)
+{
+	Neighbors.Add(Structure);
+}
+
+void APlacedStructure::ReportNeighbors()
+{
+	FString Log = FString::Printf(TEXT("Neighbors of %s: "), *GetName());
+	for (const auto Neighbor : Neighbors)
+	{
+		Log += FString::Printf(TEXT("%s, "), *Neighbor->GetName());
+	}
+	UE_LOG(LogFBC, Warning, TEXT("%s"), *Log);
+
+	TArray<AActor*> Overlaps;
+	GetOverlappingActors(Overlaps);
+	
+	FString Log2 = FString::Printf(TEXT("Overlapping actors of %s: "), *GetName());
+	for (const auto Neighbor : Overlaps)
+	{
+		Log2 += FString::Printf(TEXT("%s, "), *Neighbor->GetName());
+	}
+	UE_LOG(LogFBC, Warning, TEXT("%s"), *Log2);
+}
+
 void APlacedStructure::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -48,7 +82,7 @@ void APlacedStructure::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME_CONDITION(APlacedStructure, StructureTag, COND_None);
 	DOREPLIFETIME_CONDITION(APlacedStructure, EditBitfield, COND_None);
 	DOREPLIFETIME_CONDITION(APlacedStructure, ResourceType, COND_None);
-	
+	DOREPLIFETIME_CONDITION(APlacedStructure, bIsDisabled, COND_None);
 }
 
 void APlacedStructure::BeginPlay()
@@ -58,30 +92,65 @@ void APlacedStructure::BeginPlay()
 	if (HasAuthority())
 	{
 		DestructionSubsystem = GetWorld()->GetSubsystem<UDestructionSubsystem>();
+
+		// Objects with RF_WasLoaded are placed in level in editor and will have their overlaps already updated
+		if (!HasAnyFlags(RF_WasLoaded))
+		{
+			UpdateOverlaps();
+		}
+		
+		InitializeNeighbors();
+	}
+}
+
+
+void APlacedStructure::InitializeNeighbors()
+{
+	TArray<AActor*> OverlappingActors{};
+	GetOverlappingActors(OverlappingActors);
+	for (const auto OverlappingActor : OverlappingActors)
+	{
+		if (APlacedStructure* AsStructure = Cast<APlacedStructure>(OverlappingActor))
+		{
+			Neighbors.Add(AsStructure);
+			AsStructure->AddNeighbor(this);
+		}
+		else if (UFBCBlueprintLibrary::IsGround(OverlappingActor))
+		{
+			bIsGroundingStructure = true;
+		}
 	}
 }
 
 void APlacedStructure::FinishStructureDestruction()
 {
-	UE_LOG(LogFBC, Display, TEXT("Destroying structure %s at grid slot %s"), *GetActorNameOrLabel(),
-		*UFBCBlueprintLibrary::GetGridCoordinateLocation(GetActorLocation()).ToString());
-	
-	TArray<AActor*> OverlappingActors{};
-	GetOverlappingActors(OverlappingActors);
-	for (const auto& Actor : OverlappingActors)
+	TRACE_CPUPROFILER_EVENT_SCOPE_STR("FinishDestruction");
+
 	{
-		if (APlacedStructure* AsStructure = Cast<APlacedStructure>(Actor))
+		TRACE_CPUPROFILER_EVENT_SCOPE_STR("Neighbors");
+		for (auto Neighbor: Neighbors)
 		{
-			AsStructure->NotifyGroundUpdate();
+			Neighbor->RemoveNeighbor(this);
 		}
 	}
-	SetActorEnableCollision(false);
-	DisableStructure();
+
+	{
+		TRACE_CPUPROFILER_EVENT_SCOPE_STR("Disable");
+		DisableStructure();
+	}
 	DestructionSubsystem->QueueDestruction(this);
 }
 
-void APlacedStructure::DisableStructure_Implementation()
+void APlacedStructure::DisableStructure()
 {
+	SetStructureMeshVisibility(false);
+	SetActorEnableCollision(false);
+	bIsDisabled = true;
+}
+
+void APlacedStructure::OnDisabled()
+{
+	SetActorEnableCollision(false);
 	SetStructureMeshVisibility(false);
 }
 
@@ -128,13 +197,18 @@ void APlacedStructure::SetStructureMeshMaterial_Implementation(UMaterialInstance
 
 bool APlacedStructure::IsGrounded()
 {
+	TRACE_CPUPROFILER_EVENT_SCOPE_STR("Ground");
+
+	if (bIsGroundingStructure)
+	{
+		return true;
+	}
 	if (IsGroundCacheValid())
 	{
 		return bIsGroundedCached;
 	}
 	
 	TSet<APlacedStructure*> SeenStructures{};
-	TArray<AActor*> OverlappingActors{};
 	TQueue<APlacedStructure*> Queue{};
 	Queue.Enqueue(this);
 
@@ -143,34 +217,40 @@ bool APlacedStructure::IsGrounded()
 		APlacedStructure* CurStructure = *Queue.Peek();
 		Queue.Pop();
 
-		CurStructure->GetOverlappingActors(OverlappingActors);
-		for (const auto& Actor : OverlappingActors)
+		TRACE_CPUPROFILER_EVENT_SCOPE_STR("GroundActor");
+
+		const TSet<APlacedStructure*>& CurrentNeighbors = CurStructure->GetNeighbors();
+		
+		for (const auto Neighbor : CurrentNeighbors)
 		{
-			if (APlacedStructure* AsStructure = Cast<APlacedStructure>(Actor))
+			if (SeenStructures.Contains(Neighbor))
 			{
-				if (SeenStructures.Contains(AsStructure)) { continue; }
-				if (AsStructure->IsGroundCacheValid())
-				{
-					bool bIsGrounded = AsStructure->GetGroundCache();
-					SetCacheOnStructures(SeenStructures, bIsGrounded);
-					return bIsGrounded;
-				}
-				SeenStructures.Add(AsStructure);
-				Queue.Enqueue(AsStructure);
+				continue;
 			}
-			else if (UFBCBlueprintLibrary::IsGround(Actor))
+			
+			if (Neighbor->bIsGroundingStructure)
 			{
 				SetCacheOnStructures(SeenStructures, true);
 				return true;
 			}
+			if (Neighbor->IsGroundCacheValid())
+			{
+				bool bIsGrounded = Neighbor->GetGroundCache();
+				SetCacheOnStructures(SeenStructures, bIsGrounded);
+				return bIsGrounded;
+			}
+
+			SeenStructures.Add(Neighbor);
+			Queue.Enqueue(Neighbor);
 		}
 	}
 	SetCacheOnStructures(SeenStructures, false);
 	return false;
 }
 
-void APlacedStructure::SetCacheOnStructures(TSet<APlacedStructure*> Structures, bool bIsGrounded)
+void APlacedStructure::SetCacheOnStructures(TSet<APlacedStructure*>& Structures, bool bIsGrounded)
 {
+	TRACE_CPUPROFILER_EVENT_SCOPE_STR("Caching");
 	for (const auto& Structure : Structures)
 	{
 		Structure->SetGroundCache(bIsGrounded);

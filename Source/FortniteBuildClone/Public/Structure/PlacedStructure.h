@@ -23,11 +23,7 @@ public:
 	
 	FGameplayTag GetStructureTag() const { return StructureTag; }
 	void SetStructureTag(FGameplayTag Tag) { StructureTag = Tag; }
-
-	// Initiates destroying the structure after a delay
-	UFUNCTION(BlueprintCallable)
-	void NotifyGroundUpdate();
-
+	
 	// Destroys and unregisters the structure without checking for groundedness
 	// Prompts nearby structures to start destroying if not grounded
 	UFUNCTION(BlueprintCallable)
@@ -48,7 +44,17 @@ public:
 
 	void SetResourceType(EFBCResourceType InResourceType);
 	EFBCResourceType GetResourceType() const { return ResourceType;}
+
+	const TSet<APlacedStructure*>& GetNeighbors() const { return Neighbors; }
+	void RemoveNeighbor(APlacedStructure* Structure, bool bRecheckGround = true);
+	void AddNeighbor(APlacedStructure* Structure);
+
+	UFUNCTION(BlueprintCallable)
+	void ReportNeighbors();
+
 	
+	// Initiates destroying the structure after a delay if structure isn't grounded
+	void NotifyGroundUpdate();
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Ability System")
 	FGameplayTag StructureTag{};
@@ -89,7 +95,7 @@ private:
 	bool bIsGroundedCached{};
 	double GroundCacheTimestamp{};
 
-	void SetCacheOnStructures(TSet<APlacedStructure*> Structures, bool bIsGrounded);
+	void SetCacheOnStructures(TSet<APlacedStructure*>& Structures, bool bIsGrounded);
 	void SetGroundCache(bool bIsGrounded);
 	bool IsGroundCacheValid() const;
 	bool GetGroundCache() const { return bIsGroundedCached; }
@@ -102,10 +108,20 @@ private:
 	UFUNCTION()
 	void OnRep_ResourceType(EFBCResourceType NewResourceType);
 
-	UFUNCTION(NetMulticast, Reliable)
 	void DisableStructure();
+
+	UPROPERTY(Replicated, ReplicatedUsing = OnDisabled)
+	bool bIsDisabled{};
+
+	UFUNCTION()
+	void OnDisabled();
 	
 	void UpdateMeshMaterial();
 
 	TObjectPtr<UDestructionSubsystem> DestructionSubsystem;
+
+	void InitializeNeighbors();
+	
+	TSet<APlacedStructure*> Neighbors{};
+	bool bIsGroundingStructure{};
 };
