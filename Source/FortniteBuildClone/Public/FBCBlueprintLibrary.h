@@ -43,5 +43,5 @@ public:
 	static bool IsGround(AActor* Actor);
 
 	UFUNCTION(BlueprintCallable, Category = "Trace")
-	static bool TraceControllerLook(AController* PC, float Range, FHitResult& OutHit);
+	static bool TraceControllerLook(AController* PC, float Range, FHitResult& OutHit, ECollisionChannel TraceChannel = ECC_Visibility);
 };

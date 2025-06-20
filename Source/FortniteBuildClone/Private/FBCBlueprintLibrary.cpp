@@ -74,7 +74,7 @@ bool UFBCBlueprintLibrary::IsGround(AActor* Actor)
 	return false;
 }
 
-bool UFBCBlueprintLibrary::TraceControllerLook(AController* PC, float Range, FHitResult& OutHit)
+bool UFBCBlueprintLibrary::TraceControllerLook(AController* PC, float Range, FHitResult& OutHit, ECollisionChannel TraceChannel)
 {
 	FVector ViewStart{};
 	FRotator ViewRot{};

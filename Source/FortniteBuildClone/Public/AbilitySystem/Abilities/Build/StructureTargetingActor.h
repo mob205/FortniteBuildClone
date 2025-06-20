@@ -45,9 +45,11 @@ public:
 
 	void SetStructureEdit(int32 Edit) { CurrentStructureEdit = Edit; }
 	int32 GetStructureEdit() const { return CurrentStructureEdit; }
+
+	void ToggleEditTarget(bool bNewIsEditTarget);
 	
 protected:
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> GhostMeshComponent;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -58,6 +60,7 @@ protected:
 	
 private:
 	bool bHasValidTarget{};
+	bool bIsEditTarget{};
 
 	// Number of 90 degree turns to offset from standard rotation
 	int CurrentRotationOffset{};

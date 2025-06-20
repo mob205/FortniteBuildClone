@@ -67,6 +67,9 @@ private:
 	UFUNCTION()
 	void OnSelectStructure(FGameplayEventData Payload);
 
+	// Handles when an edit ability is activated while the build ability is ongoing
+	void OnStartEdit(FGameplayTag Tag, int32 Count);
+	
 	UPROPERTY()
 	TObjectPtr<AActor> Avatar;
 

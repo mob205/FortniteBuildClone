@@ -27,6 +27,9 @@ void UEditAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 		return;
 	}
 
+	// Build targeting actors don't replicate to server
+	if (!IsLocallyControlled()) { return; }
+	
 	SelectedBuildTargetingActor = GetSelection<AStructureTargetingActor>();
 	if (IsValid(SelectedBuildTargetingActor))
 	{
@@ -35,6 +38,7 @@ void UEditAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 	}
 
 	// No valid selection
+	// Cancel ability will replicate to server
 	CancelAbility(Handle, ActorInfo, ActivationInfo, true);
 }
 
@@ -114,15 +118,14 @@ void UEditAbility::HandleBuildTargetingActorEdit()
 	WaitTargetData->ReadyForActivation();
 	
 	AddAbilityInputMappingContext();
-	
-	// SelectedStructure->SetStructureMeshVisibility(false);
+
+	//SelectedBuildTargetingActor->ToggleEditTarget(true);
 
 	ListenForInput();
 }
 
 AEditTargetingActor* UEditAbility::SpawnTargetingActor(const FTransform& SpawnTransform, TSubclassOf<AEditTargetingActor> ActorClass) const
 {
-	
 	AEditTargetingActor* SpawnedTargetingActor = GetWorld()->SpawnActorDeferred<AEditTargetingActor>(
 		ActorClass,
 		SpawnTransform,
@@ -147,6 +150,11 @@ void UEditAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGa
 		SelectedStructure->SetStructureMeshVisibility(true);
 		SelectedStructure->OnDestroyed.RemoveAll(this);
 		SelectedStructure = nullptr;
+	}
+
+	if (IsValid(SelectedBuildTargetingActor))
+	{
+		SelectedBuildTargetingActor = nullptr;
 	}
 
 	if (IsValid(TargetingActor))
@@ -178,8 +186,9 @@ void UEditAbility::OnStructureEditDataReceived(const FGameplayAbilityTargetDataH
 void UEditAbility::OnBuildTargetingEditDataReceived(const FGameplayAbilityTargetDataHandle& Data)
 {
 	const FEditTargetData* EditData = static_cast<const FEditTargetData*>(Data.Get(0));
-	UE_LOG(LogFBC, Warning, TEXT("Received edit: %d"), EditData->EditBitfield);
 
+	SelectedBuildTargetingActor->SetStructureEdit(EditData->EditBitfield);
+	
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }
 

@@ -108,6 +108,10 @@ void UBuildAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	
 	SelectStructureGameplayEvent->EventReceived.AddDynamic(this, &UBuildAbility::OnSelectStructure);
 	SelectStructureGameplayEvent->ReadyForActivation();
+
+	// Listen for edit ability to be activated
+	GetAbilitySystemComponentFromActorInfo()->RegisterGameplayTagEvent(FGameplayTag::RequestGameplayTag("Abilities.Edit"))
+		.AddUObject(this, &UBuildAbility::OnStartEdit);
 }
 
 void UBuildAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
@@ -115,6 +119,8 @@ void UBuildAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FG
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 	RemoveAbilityInputMappingContext();
+	GetAbilitySystemComponentFromActorInfo()->RegisterGameplayTagEvent(FGameplayTag::RequestGameplayTag("Abilities.Edit"))
+		.RemoveAll(this);
 }
 
 void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
@@ -215,5 +221,24 @@ int32 UBuildAbility::GetCurrentStructureEdit(FGameplayTag StructureTag)
 		int32 DefaultEdit = StructureInfo->GetDefaultEdit(StructureTag);
 		CurrentStructureEdits.Add(StructureTag, DefaultEdit);
 		return DefaultEdit;
+	}
+}
+
+void UBuildAbility::OnStartEdit(const FGameplayTag Tag, int32 Count)
+{
+	if (Count == 0)
+	{
+		// Edit ability ended
+		AddAbilityInputMappingContext();
+		TargetingActor->ToggleEditTarget(false);
+
+		// Save final edit
+		CurrentStructureEdits.Add(TargetingActor->GetStructureTag(), TargetingActor->GetStructureEdit());
+	}
+	else
+	{
+		// Edit ability started
+		RemoveAbilityInputMappingContext();
+		TargetingActor->ToggleEditTarget(true);
 	}
 }

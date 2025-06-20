@@ -30,9 +30,12 @@ void AStructureTargetingActor::StartTargeting(UGameplayAbility* Ability)
 void AStructureTargetingActor::Tick(float DeltaTime)
 {
 	bHasValidTarget = false;
-	
+
+	// We don't need to move if we're currently being edited
+	if (bIsEditTarget) { return; }
+
 	if (!IsValid(CurrentStrategy)) { return; }
-	
+
 	FTransform ResultTransform{};
 
 	APawn* Player = Cast<APawn>(Avatar);
@@ -73,7 +76,8 @@ void AStructureTargetingActor::Tick(float DeltaTime)
 
 void AStructureTargetingActor::ConfirmTargetingAndContinue()
 {
-	if (!bHasValidTarget)
+	// Editing may have same input as confirming build placement. Ignore placement while being edited
+	if (!bHasValidTarget || bIsEditTarget)
 	{
 		return;
 	}
@@ -127,4 +131,14 @@ void AStructureTargetingActor::HideGhost() const
 }
 
 
+void AStructureTargetingActor::ToggleEditTarget(bool bNewIsEditTarget)
+{
+	bIsEditTarget = bNewIsEditTarget;
+
+	// Hide mesh if edit target
+	GhostMeshComponent->SetVisibility(!bNewIsEditTarget);
+
+	// Ignore visibility channel if edit target as to not block editing selection
+	GhostMeshComponent->SetCollisionResponseToChannel(ECC_Visibility, static_cast<ECollisionResponse>(bNewIsEditTarget));
+}
 
