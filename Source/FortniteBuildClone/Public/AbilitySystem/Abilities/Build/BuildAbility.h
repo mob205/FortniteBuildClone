@@ -33,9 +33,6 @@ public:
 	TSubclassOf<AStructureTargetingActor> TargetingActorClass{};
 
 	virtual UGameplayEffect* GetCostGameplayEffect() const override;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Targeting")
-	TMap<FGameplayTag, FBitGrid> DefaultStructureEdits{};
 	
 protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
