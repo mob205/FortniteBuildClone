@@ -82,6 +82,6 @@ bool UFBCBlueprintLibrary::TraceControllerLook(AController* PC, float Range, FHi
 
 	FVector ViewEnd = ViewStart + (ViewRot.Vector() * Range);
 	
-	return PC->GetWorld()->LineTraceSingleByChannel(OutHit, ViewStart, ViewEnd, ECollisionChannel::ECC_Visibility);
+	return PC->GetWorld()->LineTraceSingleByChannel(OutHit, ViewStart, ViewEnd, TraceChannel);
 
 }

@@ -102,11 +102,6 @@ void AStructureTargetingActor::ConfirmTargetingAndContinue()
 	TargetDataReadyDelegate.Broadcast(Handle);
 }
 
-void AStructureTargetingActor::SetGhostMesh(UStaticMesh* InGhostMesh)
-{
-	GhostMeshComponent->SetStaticMesh(InGhostMesh);
-}
-
 void AStructureTargetingActor::SetPlacementStrategy(UPlacementStrategy* InStrategy)
 {
 	CurrentStrategy = InStrategy;
@@ -116,29 +111,47 @@ void AStructureTargetingActor::ValidateGhost() const
 {
 	GhostMeshComponent->SetVisibility(true);
 	GhostMeshComponent->SetMaterial(0, ValidGhostMaterial);
+	GhostMeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 }
 
 void AStructureTargetingActor::InvalidateGhost() const
 {
 	GhostMeshComponent->SetVisibility(true);
 	GhostMeshComponent->SetMaterial(0, InvalidGhostMaterial);
-
+	GhostMeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
 }
 
 void AStructureTargetingActor::HideGhost() const
 {
 	GhostMeshComponent->SetVisibility(false);
+	GhostMeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
 }
 
+
+void AStructureTargetingActor::SetStructureEdit(int32 Edit)
+{
+	CurrentStructureEdit = Edit;
+
+	check(CurrentEditMap->Contains(Edit));
+
+	GhostMeshComponent->SetStaticMesh(CurrentEditMap->FindChecked(Edit).EditPreviewMesh);
+}
 
 void AStructureTargetingActor::ToggleEditTarget(bool bNewIsEditTarget)
 {
 	bIsEditTarget = bNewIsEditTarget;
 
 	// Hide mesh if edit target
-	GhostMeshComponent->SetVisibility(!bNewIsEditTarget);
+	GhostMeshComponent->SetVisibility(!bIsEditTarget);
 
 	// Ignore visibility channel if edit target as to not block editing selection
-	GhostMeshComponent->SetCollisionResponseToChannel(ECC_Visibility, static_cast<ECollisionResponse>(bNewIsEditTarget));
+	if (bIsEditTarget)
+	{
+		GhostMeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+	}
+	else
+	{
+		GhostMeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	}
 }
 

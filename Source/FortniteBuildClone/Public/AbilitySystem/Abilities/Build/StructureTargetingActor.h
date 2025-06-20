@@ -25,25 +25,21 @@ public:
 	virtual void StartTargeting(UGameplayAbility* Ability) override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void ConfirmTargetingAndContinue() override;
-
-	// Sets the type of structure for the targeting actor to use. Used for building preview and location selection 
-	UFUNCTION(BlueprintCallable)
-	void SetGhostMesh(UStaticMesh* InGhostMesh);
-
+	
 	// Adds a rotation offset. Each call adds a 90-degree turn around Z-axis.
 	UFUNCTION(BlueprintCallable)
 	void AddRotationOffset() { CurrentRotationOffset = (CurrentRotationOffset + 1) % 4; };
 
-	void SetPlacementStrategy(UPlacementStrategy* InStrategy);
-
 	void SetAvatar(APawn* InAvatar) { Avatar = InAvatar; }
-
 	void SetResourceComponent(UBuildResourceComponent* InResourceComponent) { ResourceComponent = InResourceComponent; }
-
+	void SetEditMap(const FEditMap& InEditMap) { CurrentEditMap = &InEditMap; }
+	
+	void SetPlacementStrategy(UPlacementStrategy* InStrategy);
+	
 	void SetStructureTag(FGameplayTag InStructureTag) { CurrentStructureTag = InStructureTag; }
 	FGameplayTag GetStructureTag() const { return CurrentStructureTag; }
 
-	void SetStructureEdit(int32 Edit) { CurrentStructureEdit = Edit; }
+	void SetStructureEdit(int32 Edit);
 	int32 GetStructureEdit() const { return CurrentStructureEdit; }
 
 	void ToggleEditTarget(bool bNewIsEditTarget);
@@ -62,6 +58,9 @@ private:
 	bool bHasValidTarget{};
 	bool bIsEditTarget{};
 
+	int32 CurrentStructureEdit{};
+	const FEditMap* CurrentEditMap{};
+	
 	// Number of 90 degree turns to offset from standard rotation
 	int CurrentRotationOffset{};
 	
@@ -72,7 +71,7 @@ private:
 	TObjectPtr<UBuildResourceComponent> ResourceComponent;
 	
 	FGameplayTag CurrentStructureTag{};
-	int32 CurrentStructureEdit{};
+	
 
 	void ValidateGhost() const;
 	void InvalidateGhost() const;

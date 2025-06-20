@@ -133,26 +133,57 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 	FTransform BuildingTransform{BuildData->Rotation.Quaternion(), BuildData->Location};
 	BuildingTransform = UFBCBlueprintLibrary::SnapTransformToGrid(BuildingTransform);
 
+	// Validate the requested build
+	// Could also check for range using placement strategy's TargetingRange
+	// (e.g. make sure player isn't trying to build across the map)
+
+	// Ensure placement strategy is setup properly
 	UPlacementStrategy* PlacementStrategy = StrategyWorldSubsystem->GetStrategy(BuildData->StructureTag);
 	if (!IsValid(PlacementStrategy))
 	{
 		UE_LOG(LogFBC, Error, TEXT("BuildAbility: No valid placement strategy found."));
 	}
-	
+
+	// Ensure the requested location is supported
 	if (!PlacementStrategy->CanPlace(BuildingTransform, BuildData->Edit))
 	{
 		UE_LOG(LogFBC, Warning, TEXT("BuildAbility: Requested placement is invalid (not supported by structures or ground)"));
+		return;
 	}
 
-	// Validate the requested build
-	// Could also check for range using placement strategy's TargetingRange
-	// (e.g. make sure player isn't trying to build across the map)
+	// Check nothing is already occupying that spot
 	if (PlacementStrategy->IsOccupied(BuildingTransform))
 	{
 		UE_LOG(LogFBC, Warning, TEXT("BuildAbility: Request placement is in an occupied location."))
 		return;
 	}
 
+	// Ensure we can find the class to spawn through edit data 
+	const UEditMapDataAsset* EditMapDataAsset = StructureInfo->GetEditMapAsset(BuildData->StructureTag);
+	if (!EditMapDataAsset)
+	{
+		UE_LOG(LogFBC, Error, TEXT("BuildAbility: No edit map found for structure tag %s"), *BuildData->StructureTag.GetTagName().ToString());
+		return;
+	}
+
+	if (!EditMapDataAsset->GetEditMap().Contains(BuildData->Edit))
+	{
+		UE_LOG(LogFBC, Error, TEXT("BuildAbility: Received invalid edit %d for structure type %s"),
+			BuildData->Edit,
+			*BuildData->StructureTag.GetTagName().ToString());
+		return;
+	}
+
+	TSubclassOf<APlacedStructure> StructureActorClass = EditMapDataAsset->GetEditMap()[BuildData->Edit].StructureClass;
+	if (!IsValid(StructureActorClass))
+	{
+		UE_LOG(LogFBC, Error,
+			TEXT("BuildAbility: No valid structure classes found for structure tag %s. Could not spawn structure."),
+			*BuildData->StructureTag.GetTagName().ToString());
+		return;
+	}
+
+	// Finally, make sure we have enough materials
 	CachedMaterialType = BuildData->MaterialType;
 	if (!CommitAbility(GetCurrentAbilitySpecHandle(), CurrentActorInfo, GetCurrentActivationInfo()))
 	{
@@ -162,17 +193,6 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 	
 	// Build request validated
 	
-	// Get class of actor to spawn
-	TSubclassOf<APlacedStructure> StructureActorClass = StructureInfo->GetStructureActorClass(BuildData->StructureTag);
-
-	if (!IsValid(StructureActorClass))
-	{
-		UE_LOG(LogFBC, Error,
-			TEXT("BuildAbility: No valid structure classes found for structure tag %s. Could not spawn structure."),
-			*BuildData->StructureTag.GetTagName().ToString());
-		return;
-	}
-
 	// Spawn and initialize structure
 	APlacedStructure* PlacedStructure = GetWorld()->SpawnActorDeferred<APlacedStructure>(StructureActorClass, BuildingTransform);
 
@@ -181,7 +201,7 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 	UGameplayStatics::FinishSpawningActor(PlacedStructure, BuildingTransform);
 	
 	PlacedStructure->SetResourceType(CachedMaterialType);
-	
+	PlacedStructure->SetEditBitfield(BuildData->Edit);
 }
 
 void UBuildAbility::CallEndAbility(const FGameplayAbilityTargetDataHandle& Data)
@@ -203,7 +223,7 @@ void UBuildAbility::OnSelectStructure(FGameplayEventData Payload)
 
 	if (IsValid(TargetingActor))
 	{
-		TargetingActor->SetGhostMesh(StructureInfo->GetMesh(Tag));
+		TargetingActor->SetEditMap(StructureInfo->GetEditMapAsset(Tag)->GetEditMap());
 		TargetingActor->SetPlacementStrategy(StrategyWorldSubsystem->GetStrategy(Tag));
 		TargetingActor->SetStructureTag(Tag);
 		TargetingActor->SetStructureEdit(GetCurrentStructureEdit(Tag));
@@ -230,7 +250,6 @@ void UBuildAbility::OnStartEdit(const FGameplayTag Tag, int32 Count)
 	{
 		// Edit ability ended
 		AddAbilityInputMappingContext();
-		TargetingActor->ToggleEditTarget(false);
 
 		// Save final edit
 		CurrentStructureEdits.Add(TargetingActor->GetStructureTag(), TargetingActor->GetStructureEdit());
@@ -239,6 +258,5 @@ void UBuildAbility::OnStartEdit(const FGameplayTag Tag, int32 Count)
 	{
 		// Edit ability started
 		RemoveAbilityInputMappingContext();
-		TargetingActor->ToggleEditTarget(true);
 	}
 }

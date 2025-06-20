@@ -119,7 +119,9 @@ void UEditAbility::HandleBuildTargetingActorEdit()
 	
 	AddAbilityInputMappingContext();
 
-	//SelectedBuildTargetingActor->ToggleEditTarget(true);
+	// Toggle the edit target status here instead of in the build ability since it turns off the actor's response to visibility
+	// If this was in build ability, edit wouldn't be able to select it
+	SelectedBuildTargetingActor->ToggleEditTarget(true);
 
 	ListenForInput();
 }
@@ -154,6 +156,7 @@ void UEditAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGa
 
 	if (IsValid(SelectedBuildTargetingActor))
 	{
+		SelectedBuildTargetingActor->ToggleEditTarget(false);
 		SelectedBuildTargetingActor = nullptr;
 	}
 
