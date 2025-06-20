@@ -41,8 +41,10 @@ public:
 	void SetResourceComponent(UBuildResourceComponent* InResourceComponent) { ResourceComponent = InResourceComponent; }
 
 	void SetStructureTag(FGameplayTag InStructureTag) { CurrentStructureTag = InStructureTag; }
+	FGameplayTag GetStructureTag() const { return CurrentStructureTag; }
 
 	void SetStructureEdit(int32 Edit) { CurrentStructureEdit = Edit; }
+	int32 GetStructureEdit() const { return CurrentStructureEdit; }
 	
 protected:
 	UPROPERTY()

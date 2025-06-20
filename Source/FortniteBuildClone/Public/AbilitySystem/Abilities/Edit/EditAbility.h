@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FBCBlueprintLibrary.h"
 #include "AbilitySystem/Abilities/FBCGameplayAbility.h"
 #include "Abilities/GameplayAbility.h"
 #include "Abilities/GameplayAbilityTargetTypes.h"
+#include "AbilitySystem/Abilities/Build/StructureTargetingActor.h"
 #include "Data/StructureInfoDataAsset.h"
 #include "EditAbility.generated.h"
 
@@ -22,6 +24,8 @@ class FORTNITEBUILDCLONE_API UEditAbility : public UFBCGameplayAbility
 
 protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+	AEditTargetingActor* InitializeFromStructureInfo(
+		const FTransform& TargetTransform, const FGameplayTag& StructureTag);
 
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
@@ -45,18 +49,25 @@ protected:
 	FGameplayTag ResetEditTag{};
 
 private:
-	APlacedStructure* GetSelectedStructure() const;
+	template<typename T>
+	T* GetSelection() const;
+	
+	
 	TObjectPtr<APlacedStructure> SelectedStructure;
+	TObjectPtr<AStructureTargetingActor> SelectedBuildTargetingActor{};
 
 	const FEditMap* CurrentEditMap{};
 	
-	AEditTargetingActor* SpawnTargetingActor(TSubclassOf<AEditTargetingActor> ActorClass) const;
+	AEditTargetingActor* SpawnTargetingActor(const FTransform& SpawnTransform, TSubclassOf<AEditTargetingActor> ActorClass) const;
 	TObjectPtr<AEditTargetingActor> TargetingActor;
 	
 	void EditStructure(int32 EditBitfield, int Yaw) const;
 
 	UFUNCTION()
-	void OnEditDataReceived(const FGameplayAbilityTargetDataHandle& Data);
+	void OnStructureEditDataReceived(const FGameplayAbilityTargetDataHandle& Data);
+
+	UFUNCTION()
+	void OnBuildTargetingEditDataReceived(const FGameplayAbilityTargetDataHandle& Data);
 	
 	UFUNCTION()
 	void StartSelection(FGameplayEventData Payload);
@@ -71,4 +82,27 @@ private:
 	void OnEditReset(FGameplayEventData Payload);
 
 	bool bAllowRotations{};
+	
+	void ListenForInput();
+	void HandleStructureEdit();
+	void HandleBuildTargetingActorEdit();
 };
+
+template<typename T>
+T* UEditAbility::GetSelection() const
+{
+	APawn* AvatarPawn = Cast<APawn>(GetAvatarActorFromActorInfo());
+	
+	check(AvatarPawn); // Currently, avatars are always pawns
+
+	FHitResult HitResult{};
+	if (!UFBCBlueprintLibrary::TraceControllerLook(AvatarPawn->GetController(), Range, HitResult))
+	{
+		return nullptr;
+	}
+	if (T* AsType = Cast<T>(HitResult.GetActor()))
+	{
+		return AsType;
+	}
+	return nullptr;
+}

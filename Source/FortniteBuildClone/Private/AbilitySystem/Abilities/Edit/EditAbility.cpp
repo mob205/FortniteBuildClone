@@ -18,40 +18,63 @@ void UEditAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	SelectedStructure = GetSelectedStructure();
-	if (!IsValid(SelectedStructure))
+	TargetingActor = nullptr;
+
+	SelectedStructure = GetSelection<APlacedStructure>();
+	if (IsValid(SelectedStructure))
 	{
-		TargetingActor = nullptr;
-		CancelAbility(Handle, ActorInfo, ActivationInfo, true);
+		HandleStructureEdit();
 		return;
 	}
 
-	CurrentEditMap = &StructureInfo->GetEditMapAsset(SelectedStructure->GetStructureTag())->GetEditMap();
+	SelectedBuildTargetingActor = GetSelection<AStructureTargetingActor>();
+	if (IsValid(SelectedBuildTargetingActor))
+	{
+		HandleBuildTargetingActorEdit();
+		return;
+	}
 
-	// End the ability if the structure is destroyed mid-edit
-	SelectedStructure->OnDestroyed.AddDynamic(this, &UEditAbility::OnSelectedStructureDestroyed);
+	// No valid selection
+	CancelAbility(Handle, ActorInfo, ActivationInfo, true);
+}
+
+AEditTargetingActor* UEditAbility::InitializeFromStructureInfo(const FTransform& TargetTransform, const FGameplayTag& StructureTag)
+{
+	CurrentEditMap = &StructureInfo->GetEditMapAsset(StructureTag)->GetEditMap();
 
 	// Get targeting information for the structure type
-	FEditTargetingClassInfo EditTargetingInfo = StructureInfo->GetEditTargetingClass(SelectedStructure->GetStructureTag());
+	FEditTargetingClassInfo EditTargetingInfo = StructureInfo->GetEditTargetingClass(StructureTag);
 	TSubclassOf<AEditTargetingActor> TargetingActorClass = EditTargetingInfo.TargetingActorClass;
 	bAllowRotations = EditTargetingInfo.bCanRotate;
 	
 	if (!TargetingActorClass)
 	{
-		UE_LOG(LogFBC, Warning, TEXT("UEditAbility: No edit targeting actor found for structure tag %s"), *SelectedStructure->GetStructureTag().ToString());
-		CancelAbility(Handle, ActorInfo, ActivationInfo, true);
-		return;
+		UE_LOG(LogFBC, Warning, TEXT("UEditAbility: No edit targeting actor found for structure tag %s"), *StructureTag.ToString());
+		CancelAbility(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), GetCurrentActivationInfo(), true);
+		return nullptr;
 	}
 	
-	TargetingActor = SpawnTargetingActor(TargetingActorClass);
+	return SpawnTargetingActor(TargetTransform, TargetingActorClass);
+}
 
+void UEditAbility::HandleStructureEdit()
+{
+	// End the ability if the structure is destroyed mid-edit
+	SelectedStructure->OnDestroyed.AddDynamic(this, &UEditAbility::OnSelectedStructureDestroyed);
+
+	TargetingActor = InitializeFromStructureInfo(SelectedStructure->GetActorTransform(), SelectedStructure->GetStructureTag());
+
+	if (!TargetingActor) { return; }
+
+	TargetingActor->SetSelectedEdit(SelectedStructure->GetEditBitfield());
+	
 	// Listen for edit data
 	UAbilityTask_WaitTargetData* WaitTargetData = UAbilityTask_WaitTargetData::WaitTargetDataUsingActor(
 		this,
 		"Wait Edit Target Data",
 		EGameplayTargetingConfirmation::Custom,
 		TargetingActor);
-	WaitTargetData->ValidData.AddDynamic(this, &UEditAbility::OnEditDataReceived);
+	WaitTargetData->ValidData.AddDynamic(this, &UEditAbility::OnStructureEditDataReceived);
 	WaitTargetData->ReadyForActivation();
 
 	GetAbilitySystemComponentFromActorInfo()->CancelAbilities(&SuccessfulActivationCancelTags);
@@ -63,52 +86,46 @@ void UEditAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 	
 	SelectedStructure->SetStructureMeshVisibility(false);
 
-	// Listen for input to start selecting edit tiles
-	UAbilityTask_WaitGameplayEvent* StartSelectionEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
-		this, StartSelectionTag, nullptr, false, true);
-	
-	StartSelectionEvent->EventReceived.AddDynamic(this, &UEditAbility::StartSelection);
-	StartSelectionEvent->ReadyForActivation();
-
-	// Listen for input to stop selecting
-	UAbilityTask_WaitGameplayEvent* EndSelectionEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
-		this, EndSelectionTag, nullptr, false, true);
-
-	EndSelectionEvent->EventReceived.AddDynamic(this, &UEditAbility::EndSelection);
-	EndSelectionEvent->ReadyForActivation();
-
-	// Listen for input to reset the edit
-	UAbilityTask_WaitGameplayEvent* ResetEditEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
-		this, ResetEditTag, nullptr, false, true);
-
-	ResetEditEvent->EventReceived.AddDynamic(this, &UEditAbility::OnEditReset);
-	ResetEditEvent->ReadyForActivation();
+	ListenForInput();
 }
 
-APlacedStructure* UEditAbility::GetSelectedStructure() const
+void UEditAbility::HandleBuildTargetingActorEdit()
 {
-	APawn* AvatarPawn = Cast<APawn>(GetAvatarActorFromActorInfo());
-	
-	check(AvatarPawn); // Currently, avatars are always pawns
+	// Editing build targeting actor is local only
+	if (!IsLocallyControlled()) { return; }
 
-	FHitResult HitResult{};
-	if (!UFBCBlueprintLibrary::TraceControllerLook(AvatarPawn->GetController(), Range, HitResult))
-	{
-		return nullptr;
-	}
-	if (APlacedStructure* AsStructure = Cast<APlacedStructure>(HitResult.GetActor()))
-	{
-		return AsStructure;
-	}
-	return nullptr;
+	FGameplayTag StructureTag = SelectedBuildTargetingActor->GetStructureTag();
+	
+	CurrentEditMap = &StructureInfo->GetEditMapAsset(StructureTag)->GetEditMap();
+
+	TargetingActor = InitializeFromStructureInfo(SelectedBuildTargetingActor->GetActorTransform(), StructureTag);
+
+	if (!TargetingActor) { return; }
+
+	TargetingActor->SetSelectedEdit(SelectedBuildTargetingActor->GetStructureEdit());
+	
+	// Listen for edit data
+	UAbilityTask_WaitTargetData* WaitTargetData = UAbilityTask_WaitTargetData::WaitTargetDataUsingActor(
+		this,
+		"Wait Edit Target Data",
+		EGameplayTargetingConfirmation::Custom,
+		TargetingActor);
+	WaitTargetData->ValidData.AddDynamic(this, &UEditAbility::OnBuildTargetingEditDataReceived);
+	WaitTargetData->ReadyForActivation();
+	
+	AddAbilityInputMappingContext();
+	
+	// SelectedStructure->SetStructureMeshVisibility(false);
+
+	ListenForInput();
 }
 
-AEditTargetingActor* UEditAbility::SpawnTargetingActor(TSubclassOf<AEditTargetingActor> ActorClass) const
+AEditTargetingActor* UEditAbility::SpawnTargetingActor(const FTransform& SpawnTransform, TSubclassOf<AEditTargetingActor> ActorClass) const
 {
 	
 	AEditTargetingActor* SpawnedTargetingActor = GetWorld()->SpawnActorDeferred<AEditTargetingActor>(
 		ActorClass,
-		SelectedStructure->GetActorTransform(),
+		SpawnTransform,
 		GetAvatarActorFromActorInfo(),
 		nullptr,
 		ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
@@ -116,10 +133,8 @@ AEditTargetingActor* UEditAbility::SpawnTargetingActor(TSubclassOf<AEditTargetin
 
 	APlayerController* AvatarPC = Cast<APlayerController>(Cast<APawn>(GetAvatarActorFromActorInfo())->GetController());
 	SpawnedTargetingActor->InitializeEditTargeting(AvatarPC, Range, CurrentEditMap);
-
-	SpawnedTargetingActor->SetSelectedEdit(SelectedStructure->GetEditBitfield());
-
-	UGameplayStatics::FinishSpawningActor(SpawnedTargetingActor, SelectedStructure->GetActorTransform());
+	
+	UGameplayStatics::FinishSpawningActor(SpawnedTargetingActor, SpawnTransform);
 
 	return SpawnedTargetingActor;
 }
@@ -131,11 +146,13 @@ void UEditAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGa
 	{
 		SelectedStructure->SetStructureMeshVisibility(true);
 		SelectedStructure->OnDestroyed.RemoveAll(this);
+		SelectedStructure = nullptr;
 	}
 
 	if (IsValid(TargetingActor))
 	{
 		TargetingActor->Destroy();
+		TargetingActor = nullptr;
 	}
 
 	if (IsLocallyControlled())
@@ -146,7 +163,7 @@ void UEditAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGa
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
-void UEditAbility::OnEditDataReceived(const FGameplayAbilityTargetDataHandle& Data)
+void UEditAbility::OnStructureEditDataReceived(const FGameplayAbilityTargetDataHandle& Data)
 {
 	if (HasAuthority(&CurrentActivationInfo))
 	{
@@ -156,6 +173,14 @@ void UEditAbility::OnEditDataReceived(const FGameplayAbilityTargetDataHandle& Da
 	}
 	
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
+}
+
+void UEditAbility::OnBuildTargetingEditDataReceived(const FGameplayAbilityTargetDataHandle& Data)
+{
+	const FEditTargetData* EditData = static_cast<const FEditTargetData*>(Data.Get(0));
+	UE_LOG(LogFBC, Warning, TEXT("Received edit: %d"), EditData->EditBitfield);
+
+	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }
 
 void UEditAbility::EditStructure(int32 EditBitfield, int Yaw) const
@@ -238,4 +263,28 @@ void UEditAbility::OnSelectedStructureDestroyed(AActor* DestroyedActor)
 void UEditAbility::OnEditReset(FGameplayEventData Payload)
 {
 	TargetingActor->ResetEdit();
+}
+
+void UEditAbility::ListenForInput()
+{
+	// Listen for input to start selecting edit tiles
+	UAbilityTask_WaitGameplayEvent* StartSelectionEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+		this, StartSelectionTag, nullptr, false, true);
+	
+	StartSelectionEvent->EventReceived.AddDynamic(this, &UEditAbility::StartSelection);
+	StartSelectionEvent->ReadyForActivation();
+
+	// Listen for input to stop selecting
+	UAbilityTask_WaitGameplayEvent* EndSelectionEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+		this, EndSelectionTag, nullptr, false, true);
+
+	EndSelectionEvent->EventReceived.AddDynamic(this, &UEditAbility::EndSelection);
+	EndSelectionEvent->ReadyForActivation();
+
+	// Listen for input to reset the edit
+	UAbilityTask_WaitGameplayEvent* ResetEditEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+		this, ResetEditTag, nullptr, false, true);
+
+	ResetEditEvent->EventReceived.AddDynamic(this, &UEditAbility::OnEditReset);
+	ResetEditEvent->ReadyForActivation();
 }
