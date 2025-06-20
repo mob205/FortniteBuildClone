@@ -38,7 +38,7 @@ void UStructureStrategyWorldSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	for (const auto& StrategyClass : StructureInfo->GetAllPlacementStrategyClasses())
 	{
 		UPlacementStrategy* Strategy = NewObject<UPlacementStrategy>(this, StrategyClass.Value);
-		Strategy->InitializeStrategy();
+		Strategy->InitializeStrategy(StructureInfo);
 		Strategies.Add(StrategyClass.Key, Strategy);
 	}
 }

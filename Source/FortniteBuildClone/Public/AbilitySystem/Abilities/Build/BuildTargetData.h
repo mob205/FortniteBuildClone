@@ -26,9 +26,13 @@ struct FBuildTargetData : public FGameplayAbilityTargetData
 	UPROPERTY()
 	FRotator Rotation{};
 
+	// Edit to use for the structure
+	UPROPERTY()
+	int32 Edit{};
+
 	FBuildTargetData() {}
-	FBuildTargetData(const FGameplayTag& StructureTag, EFBCResourceType MaterialType, const FVector& Location, const FRotator& Rotation)
-		: StructureTag(StructureTag), MaterialType(MaterialType), Location(Location), Rotation(Rotation)
+	FBuildTargetData(const FGameplayTag& StructureTag, EFBCResourceType MaterialType, const FVector& Location, const FRotator& Rotation, int32 Edit)
+		: StructureTag(StructureTag), MaterialType(MaterialType), Location(Location), Rotation(Rotation), Edit(Edit)
 	{}
 
 	virtual UScriptStruct* GetScriptStruct() const override
@@ -47,6 +51,7 @@ struct FBuildTargetData : public FGameplayAbilityTargetData
 		Ar << MaterialType;
 		Ar << Location;
 		Ar << Rotation;
+		Ar << Edit;
 	
 		bOutSuccess = true;
 		return true;
@@ -55,7 +60,8 @@ struct FBuildTargetData : public FGameplayAbilityTargetData
 	bool operator==(const FBuildTargetData& Other) const
 	{
 		return Location == Other.Location && Rotation == Other.Rotation
-			&& StructureTag == Other.StructureTag && MaterialType == Other.MaterialType;
+			&& StructureTag == Other.StructureTag && MaterialType == Other.MaterialType
+			&& Edit == Other.Edit;
 	}
 };
 

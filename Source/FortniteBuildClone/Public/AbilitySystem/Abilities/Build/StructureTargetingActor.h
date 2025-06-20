@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbilityTargetActor.h"
+#include "Data/EditMapDataAsset.h"
 #include "StructureTargetingActor.generated.h"
 
 class UBuildResourceComponent;
@@ -40,6 +41,9 @@ public:
 	void SetResourceComponent(UBuildResourceComponent* InResourceComponent) { ResourceComponent = InResourceComponent; }
 
 	void SetStructureTag(FGameplayTag InStructureTag) { CurrentStructureTag = InStructureTag; }
+
+	void SetStructureEdit(int32 Edit) { CurrentStructureEdit = Edit; }
+	
 protected:
 	UPROPERTY()
 	TObjectPtr<UStaticMeshComponent> GhostMeshComponent;
@@ -63,6 +67,7 @@ private:
 	TObjectPtr<UBuildResourceComponent> ResourceComponent;
 	
 	FGameplayTag CurrentStructureTag{};
+	int32 CurrentStructureEdit{};
 
 	void ValidateGhost() const;
 	void InvalidateGhost() const;

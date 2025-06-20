@@ -55,7 +55,7 @@ void UBuildAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
                                     const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-
+	
 	Avatar = GetAvatarActorFromActorInfo();
 
 	if (AActor* OwnerActor = GetAbilitySystemComponentFromActorInfo()->GetOwnerActor())
@@ -133,7 +133,7 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 		UE_LOG(LogFBC, Error, TEXT("BuildAbility: No valid placement strategy found."));
 	}
 	
-	if (!PlacementStrategy->CanPlace(BuildingTransform))
+	if (!PlacementStrategy->CanPlace(BuildingTransform, BuildData->Edit))
 	{
 		UE_LOG(LogFBC, Warning, TEXT("BuildAbility: Requested placement is invalid (not supported by structures or ground)"));
 	}
@@ -200,5 +200,20 @@ void UBuildAbility::OnSelectStructure(FGameplayEventData Payload)
 		TargetingActor->SetGhostMesh(StructureInfo->GetMesh(Tag));
 		TargetingActor->SetPlacementStrategy(StrategyWorldSubsystem->GetStrategy(Tag));
 		TargetingActor->SetStructureTag(Tag);
+		TargetingActor->SetStructureEdit(GetCurrentStructureEdit(Tag));
+	}
+}
+
+int32 UBuildAbility::GetCurrentStructureEdit(FGameplayTag StructureTag)
+{
+	if (CurrentStructureEdits.Contains(StructureTag))
+	{
+		return CurrentStructureEdits[StructureTag];
+	}
+	else
+	{
+		int32 DefaultEdit = StructureInfo->GetDefaultEdit(StructureTag);
+		CurrentStructureEdits.Add(StructureTag, DefaultEdit);
+		return DefaultEdit;
 	}
 }

@@ -37,7 +37,7 @@ void AStructureTargetingActor::Tick(float DeltaTime)
 
 	APawn* Player = Cast<APawn>(Avatar);
 
-	bool bReceivedValidLocation = CurrentStrategy->GetTargetingLocation(Player, CurrentRotationOffset, ResultTransform);
+	bool bReceivedValidLocation = CurrentStrategy->GetTargetingLocation(Player, CurrentRotationOffset, CurrentStructureEdit, ResultTransform);
 	bool bIsOccupied{};
 	bool bHasEnoughMaterial{ true };
 	if (bReceivedValidLocation)
@@ -90,7 +90,8 @@ void AStructureTargetingActor::ConfirmTargetingAndContinue()
 			CurrentStructureTag,
 			MaterialType,
 			GetActorLocation(),
-			GetActorRotation()
+			GetActorRotation(),
+			CurrentStructureEdit
 		}
 	};
 	

@@ -6,7 +6,7 @@
 #include "FBCBlueprintLibrary.h"
 
 bool UPyramidPlacementStrategy::GetTargetingLocation(
-	APawn* Player, int RotationOffset, FTransform& OutResult)
+	APawn* Player, int RotationOffset, int32 Edit, FTransform& OutResult)
 {
 	APlayerController* PC = Cast<APlayerController>(Player->GetController());
 
@@ -26,7 +26,7 @@ bool UPyramidPlacementStrategy::GetTargetingLocation(
 	
 	// Don't check occupied for the primary targeting location
 	// If this is a valid place but it is occupied, no targeting ghost should be visible
-	if (CanPlace(OutResult))
+	if (CanPlace(OutResult, Edit))
 	{
 		return true;
 	}
@@ -35,14 +35,14 @@ bool UPyramidPlacementStrategy::GetTargetingLocation(
 	TargetLocation.Z = Player->GetActorLocation().Z;
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_RoundZ(TargetLocation));
 
-	if (CanPlace(OutResult) && !IsOccupied(OutResult))
+	if (CanPlace(OutResult, Edit) && !IsOccupied(OutResult))
 	{
 		return true;
 	}
 
 	// Try the player's current grid slot
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(Player->GetActorLocation()));
-	if (CanPlace(OutResult) && !IsOccupied(OutResult))
+	if (CanPlace(OutResult, Edit) && !IsOccupied(OutResult))
 	{
 		return true;
 	}

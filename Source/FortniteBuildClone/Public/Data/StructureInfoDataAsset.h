@@ -46,7 +46,7 @@ struct FEditTargetingClassInfo
 	
 	// Server will validate edits and ignore rotations if not allowed
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool bCanRotate;
+	bool bCanRotate{};
 };
 
 UCLASS(BlueprintType, Blueprintable)
@@ -59,22 +59,25 @@ public:
 	FGameplayTag GetTagFromInput(const UInputAction* InputAction) const;
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Structure Info")
-	UStaticMesh* GetMesh(const FGameplayTag& StructureTag);
+	UStaticMesh* GetMesh(const FGameplayTag& StructureTag) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Structure Info")
-	TSubclassOf<APlacedStructure> GetStructureActorClass(const FGameplayTag& StructureTag);
+	TSubclassOf<APlacedStructure> GetStructureActorClass(const FGameplayTag& StructureTag) const;
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Structure Info")
-	TSubclassOf<UPlacementStrategy> GetPlacementStrategyClass(const FGameplayTag& StructureTag);
+	TSubclassOf<UPlacementStrategy> GetPlacementStrategyClass(const FGameplayTag& StructureTag) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Structure Info")
-	TMap<FGameplayTag, TSubclassOf<UPlacementStrategy>> GetAllPlacementStrategyClasses();
+	TMap<FGameplayTag, TSubclassOf<UPlacementStrategy>> GetAllPlacementStrategyClasses() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Edit Info")
-	const UEditMapDataAsset* GetEditMapAsset(const FGameplayTag& StructureTag);
+	const UEditMapDataAsset* GetEditMapAsset(const FGameplayTag& StructureTag) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Edit Info")
-	FEditTargetingClassInfo GetEditTargetingClass(const FGameplayTag& StructureTag);
+	FEditTargetingClassInfo GetEditTargetingClass(const FGameplayTag& StructureTag) const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Edit Info")
+	int32 GetDefaultEdit(const FGameplayTag& StructureTag) const;
 	
 protected:
 	virtual void PostLoad() override;
@@ -87,7 +90,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FGameplayTag, FEditTargetingClassInfo> EditTargetingActors{};
-	
 private:
 
 	UPROPERTY(Transient)

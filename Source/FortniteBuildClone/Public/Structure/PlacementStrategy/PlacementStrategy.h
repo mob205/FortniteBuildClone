@@ -9,6 +9,7 @@
 
 class APlayerController;
 class APlacedStructure;
+class UStructureInfoDataAsset;
 
 UCLASS(Blueprintable)
 class FORTNITEBUILDCLONE_API UPlacementStrategy : public UObject
@@ -19,35 +20,34 @@ public:
 	/**
 	 *	Attempts to find a valid location to place a structure of a certain type.
 	 *	@param RotationOffset The number of rotations requested by the building player
+	 *	@param Edit
 	 *	@param OutResult Out parameter to store the valid transform, if found
 	 *	@returns true if a valid location was found
 	 */
 	virtual bool GetTargetingLocation(
-		APawn* Player, int RotationOffset, FTransform& OutResult) { return false; }
+		APawn* Player, int RotationOffset, int32 Edit, FTransform& OutResult) { return false; }
 
 	/**
 	 * Checks if the strategy's structure would be supported if placed at the specified transform.
 	 * Does NOT check for occupation. Use IsOccupied for that
 	 * @param QueryTransform The transform the structure will be checked at
-	 * @return true if the structure can be succesfully placed
+	 * @return true if the structure can be successfully placed
 	 */
-	bool CanPlace(const FTransform& QueryTransform) const;
+	bool CanPlace(const FTransform& QueryTransform, int32 Edit);
 
 	/**
 	 * Checks if the strategy's structure will be blocked by an incompatible structure in the same location
 	 * @param QueryTransform The transform the structure will be checked at
 	 * @return 
 	 */
-	bool IsOccupied(const FTransform& QueryTransform) const;
+	bool IsOccupied(const FTransform& QueryTransform);
 	
-	void InitializeStrategy();
+	void InitializeStrategy(UStructureInfoDataAsset* InStructureInfo);
 
 	UPROPERTY(EditDefaultsOnly)
 	float TargetingRange{};
 
 protected:
-	TObjectPtr<AActor> OverlapQueryActor{};
-
 	FVector GetViewLocation(const APlayerController* PC, const FCollisionObjectQueryParams& ObjectQueryParams) const;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -64,5 +64,14 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AActor> OverlapQueryActorClass;
 
-	void GetNearbyActors(const FTransform& QueryTransform, TArray<AActor*>& OutActors) const;
+	void GetNearbyActors(const FTransform& QueryTransform, TArray<AActor*>& OutActors);
+
+	void GetNearbyActors(const FTransform& QueryTransform, int32 Edit, TArray<AActor*>& OutActors);
+
+	TObjectPtr<UStructureInfoDataAsset> StructureInfo{};
+
+	AActor* GetQueryActor(int32 Edit);
+	
+	UPROPERTY()
+	TMap<int32, AActor*> QueryActors{};
 };

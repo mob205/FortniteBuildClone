@@ -7,7 +7,7 @@
 #include "GridSizes.h"
 
 bool URampPlacementStrategy::GetTargetingLocation(
-	APawn* Player, int RotationOffset, FTransform& OutResult)
+	APawn* Player, int RotationOffset, int32 Edit, FTransform& OutResult)
 {
 	APlayerController* PC = Cast<APlayerController>(Player->GetController());
 	
@@ -30,7 +30,7 @@ bool URampPlacementStrategy::GetTargetingLocation(
 
 	// Don't check occupied for the primary targeting location
 	// If this is a valid place but it is occupied, no targeting ghost should be visible
-	if (CanPlace(OutResult))
+	if (CanPlace(OutResult, Edit))
 	{
 		return true;
 	}
@@ -39,14 +39,14 @@ bool URampPlacementStrategy::GetTargetingLocation(
 	TargetLocation.Z = Player->GetActorLocation().Z;
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation));
 
-	if (CanPlace(OutResult) && !IsOccupied(OutResult))
+	if (CanPlace(OutResult, Edit) && !IsOccupied(OutResult))
 	{
 		return true;
 	}
 
 	// Try placing in one below the player's vertical block
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation) - FVector{0, 0, GridSizeVertical });
-	if (CanPlace(OutResult) && !IsOccupied(OutResult))
+	if (CanPlace(OutResult, Edit) && !IsOccupied(OutResult))
 	{
 		return true;
 	}

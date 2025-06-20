@@ -17,7 +17,7 @@ FGameplayTag UStructureInfoDataAsset::GetTagFromInput(const UInputAction* InputA
 	return {};
 }
 
-UStaticMesh* UStructureInfoDataAsset::GetMesh(const FGameplayTag& StructureTag)
+UStaticMesh* UStructureInfoDataAsset::GetMesh(const FGameplayTag& StructureTag) const
 {
 	checkf(Meshes.Contains(StructureTag),
 		TEXT("Attempted to find mesh of invalid structure tag %s."),
@@ -26,9 +26,8 @@ UStaticMesh* UStructureInfoDataAsset::GetMesh(const FGameplayTag& StructureTag)
 	return Meshes[StructureTag];
 }
 
-TSubclassOf<APlacedStructure> UStructureInfoDataAsset::GetStructureActorClass(const FGameplayTag& StructureTag)
+TSubclassOf<APlacedStructure> UStructureInfoDataAsset::GetStructureActorClass(const FGameplayTag& StructureTag) const
 {
-	
 	checkf(StructureClasses.Contains(StructureTag),
 		TEXT("Attempted to find structure class of invalid structure tag %s."),
 		*StructureTag.GetTagName().ToString());
@@ -36,7 +35,7 @@ TSubclassOf<APlacedStructure> UStructureInfoDataAsset::GetStructureActorClass(co
 	return StructureClasses[StructureTag];
 }
 
-TSubclassOf<UPlacementStrategy> UStructureInfoDataAsset::GetPlacementStrategyClass(const FGameplayTag& StructureTag)
+TSubclassOf<UPlacementStrategy> UStructureInfoDataAsset::GetPlacementStrategyClass(const FGameplayTag& StructureTag) const
 {
 
 	checkf(StrategyClasses.Contains(StructureTag),
@@ -46,27 +45,33 @@ TSubclassOf<UPlacementStrategy> UStructureInfoDataAsset::GetPlacementStrategyCla
 	return StrategyClasses[StructureTag];
 }
 
-TMap<FGameplayTag, TSubclassOf<UPlacementStrategy>> UStructureInfoDataAsset::GetAllPlacementStrategyClasses()
+TMap<FGameplayTag, TSubclassOf<UPlacementStrategy>> UStructureInfoDataAsset::GetAllPlacementStrategyClasses() const
 {
 	return StrategyClasses;
 }
 
-const UEditMapDataAsset* UStructureInfoDataAsset::GetEditMapAsset(const FGameplayTag& StructureTag)
+const UEditMapDataAsset* UStructureInfoDataAsset::GetEditMapAsset(const FGameplayTag& StructureTag) const
 {
-	if (EditMaps.Contains(StructureTag))
-	{
-		return EditMaps[StructureTag];
-	}
-	return nullptr;
+	checkf(EditMaps.Contains(StructureTag),
+		TEXT("Attempted to find edit map of invalid structure tag %s."),
+		*StructureTag.GetTagName().ToString());
+		
+	return EditMaps[StructureTag];
+
 }
 
-FEditTargetingClassInfo UStructureInfoDataAsset::GetEditTargetingClass(const FGameplayTag& StructureTag)
+FEditTargetingClassInfo UStructureInfoDataAsset::GetEditTargetingClass(const FGameplayTag& StructureTag) const
 {
-	if (EditTargetingActors.Contains(StructureTag))
-	{
-		return EditTargetingActors[StructureTag];
-	}
-	return {};
+	checkf(EditTargetingActors.Contains(StructureTag),
+		TEXT("Attempted to find edit map of invalid structure tag %s."),
+		*StructureTag.GetTagName().ToString());
+	
+	return EditTargetingActors[StructureTag];
+}
+
+int32 UStructureInfoDataAsset::GetDefaultEdit(const FGameplayTag& StructureTag) const
+{
+	return GetEditMapAsset(StructureTag)->GetDefaultEdit();
 }
 
 void UStructureInfoDataAsset::PostLoad()

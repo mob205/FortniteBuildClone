@@ -6,7 +6,7 @@
 #include "FBCBlueprintLibrary.h"
 
 bool UFloorPlacementStrategy::GetTargetingLocation(
-	APawn* Player, int RotationOffset, FTransform& OutResult)
+	APawn* Player, int RotationOffset, int32 Edit, FTransform& OutResult)
 {
 	APlayerController* PC = Cast<APlayerController>(Player->GetController());
 	
@@ -24,7 +24,7 @@ bool UFloorPlacementStrategy::GetTargetingLocation(
 
 	FTransform PrimaryTargetLocation = OutResult;
 	
-	if (CanPlace(OutResult))
+	if (CanPlace(OutResult, Edit))
 	{
 		return true;
 	}
@@ -35,14 +35,14 @@ bool UFloorPlacementStrategy::GetTargetingLocation(
 
 	// Don't check occupied for the primary targeting location
 	// If this is a valid place but it is occupied, no targeting ghost should be visible
-	if (CanPlace(OutResult))
+	if (CanPlace(OutResult, Edit))
 	{
 		return true;
 	}
 
 	// Try the player's current grid slot
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(Player->GetActorLocation()));
-	if (CanPlace(OutResult) && !IsOccupied(OutResult))
+	if (CanPlace(OutResult, Edit) && !IsOccupied(OutResult))
 	{
 		return true;
 	}

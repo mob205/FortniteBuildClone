@@ -33,7 +33,12 @@ class FORTNITEBUILDCLONE_API UEditMapDataAsset : public UDataAsset
 	
 public:
 	const FEditMap& GetEditMap() const { return EditMap;}
+
+	int32 GetDefaultEdit() const { return DefaultEdit; }
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FBitGrid DefaultEdit{};
+	
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FBitGrid, FStructureEditInfo> EditMap;
 };

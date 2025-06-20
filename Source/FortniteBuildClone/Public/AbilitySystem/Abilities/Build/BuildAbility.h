@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/FBCGameplayAbility.h"
 #include "Abilities/GameplayAbility.h"
+#include "Data/BitGrid.h"
 #include "Data/StructureResourceTypes.h"
 #include "Subsystem/StructureStrategyWorldSubsystem.h"
 #include "BuildAbility.generated.h"
@@ -32,6 +33,9 @@ public:
 	TSubclassOf<AStructureTargetingActor> TargetingActorClass{};
 
 	virtual UGameplayEffect* GetCostGameplayEffect() const override;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Targeting")
+	TMap<FGameplayTag, FBitGrid> DefaultStructureEdits{};
 	
 protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
@@ -45,6 +49,10 @@ private:
 	TObjectPtr<UStructureStrategyWorldSubsystem> StrategyWorldSubsystem{};
 
 	EFBCResourceType CachedMaterialType{};
+
+	int32 GetCurrentStructureEdit(FGameplayTag StructureTag);
+	
+	TMap<FGameplayTag, FBitGrid> CurrentStructureEdits{};
 	
 	// Places a structure after target data is received
 	UFUNCTION()
