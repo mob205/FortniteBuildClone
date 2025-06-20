@@ -131,6 +131,10 @@ void ARampEditTargetingActor::EndSelecting()
 
 void ARampEditTargetingActor::SetSelectedEdit(int32 InBitfield)
 {
+	InternalUpdateEdit(InBitfield);
+
+	// URamps are the only edit where the bitfield representation doesn't match with the selection tiles
+	// Handle this special case here
 	if(InBitfield == URampLeft || InBitfield == URampRight)
 	{
 		InBitfield = URamp;
@@ -139,8 +143,6 @@ void ARampEditTargetingActor::SetSelectedEdit(int32 InBitfield)
 
 	
 	UpdateSelectionTiles();
-
-	InternalUpdateEdit(InBitfield);
 }
 
 void ARampEditTargetingActor::RotateToCenter(int CenterIndex)
