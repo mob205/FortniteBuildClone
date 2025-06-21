@@ -26,10 +26,12 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void ConfirmTargetingAndContinue() override;
 	
-	// Adds a rotation offset. Each call adds a 90-degree turn around Z-axis.
+	// Adds a rotation offset. Each call adds a 90-degree turn around Z-axis clockwise
 	UFUNCTION(BlueprintCallable)
 	void AddRotationOffset() { CurrentRotationOffset = (CurrentRotationOffset + 1) % 4; };
 
+	void SetRotationOffset(int NewRotationOffset) { CurrentRotationOffset = NewRotationOffset; }
+	
 	void SetAvatar(APawn* InAvatar) { Avatar = InAvatar; }
 	void SetResourceComponent(UBuildResourceComponent* InResourceComponent) { ResourceComponent = InResourceComponent; }
 	void SetEditMap(const FEditMap& InEditMap) { CurrentEditMap = &InEditMap; }

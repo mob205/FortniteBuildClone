@@ -160,12 +160,6 @@ void UEditAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGa
 		SelectedBuildTargetingActor = nullptr;
 	}
 
-	if (IsValid(TargetingActor))
-	{
-		TargetingActor->Destroy();
-		TargetingActor = nullptr;
-	}
-
 	if (IsLocallyControlled())
 	{
 		RemoveAbilityInputMappingContext();
@@ -190,7 +184,12 @@ void UEditAbility::OnBuildTargetingEditDataReceived(const FGameplayAbilityTarget
 {
 	const FEditTargetData* EditData = static_cast<const FEditTargetData*>(Data.Get(0));
 
+	int AvatarNumCWTurns = UFBCBlueprintLibrary::SnapAngleToGridInt(GetAvatarActorFromActorInfo()->GetActorRotation().Yaw) / 90;
+	
 	SelectedBuildTargetingActor->SetStructureEdit(EditData->EditBitfield);
+
+	// Set the rotation offset so the build targeting actor appears in the exact same orientation as the edit targeting actor
+	SelectedBuildTargetingActor->SetRotationOffset(EditData->YawCWTurns - AvatarNumCWTurns);
 	
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }

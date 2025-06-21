@@ -118,7 +118,7 @@ void AStructureTargetingActor::InvalidateGhost() const
 {
 	GhostMeshComponent->SetVisibility(true);
 	GhostMeshComponent->SetMaterial(0, InvalidGhostMaterial);
-	GhostMeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+	GhostMeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 }
 
 void AStructureTargetingActor::HideGhost() const

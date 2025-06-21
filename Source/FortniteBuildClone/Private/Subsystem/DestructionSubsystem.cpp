@@ -12,8 +12,11 @@ constexpr int MaxDeletionsPerTick{5};
 
 void UDestructionSubsystem::QueueDestruction(APlacedStructure* Structure)
 {
-	DestructionQueue.Enqueue(Structure);
-	DisableStructureBuffer.Add(Structure);
+	if (IsValid(Structure))
+	{
+		DestructionQueue.Enqueue(Structure);
+		DisableStructureBuffer.Add(Structure);
+	}
 }
 
 FIntVector UDestructionSubsystem::GetDestructionCoordinate(const FVector& WorldLocation)
