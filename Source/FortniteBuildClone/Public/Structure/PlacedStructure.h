@@ -33,6 +33,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetStructureMeshVisibility(bool bIsVisible);
 
+	// Set visibility of Blueprint-only components (e.g. doors)
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "SetStructureMeshVisibility")
+	void BP_SetStructureVisibility(bool bIsVisible);
+
 	UFUNCTION(BlueprintCallable)
 	int32 GetEditBitfield() const { return EditBitfield; }
 

@@ -150,6 +150,8 @@ void APlacedStructure::SetStructureMeshVisibility(bool bIsVisible)
 {
 	StaticMesh->SetVisibility(bIsVisible);
 	StaticMesh->SetCollisionResponseToChannel(ECC_Visibility, bIsVisible ? ECR_Block : ECR_Ignore);
+
+	BP_SetStructureVisibility(bIsVisible);
 }
 void APlacedStructure::SetGroundCache(bool bIsGrounded)
 {

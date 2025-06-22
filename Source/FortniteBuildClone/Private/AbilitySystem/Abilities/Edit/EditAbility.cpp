@@ -189,6 +189,9 @@ void UEditAbility::OnBuildTargetingEditDataReceived(const FGameplayAbilityTarget
 {
 	const FEditTargetData* EditData = static_cast<const FEditTargetData*>(Data.Get(0));
 
+	// Invalid edit
+	if (!CurrentEditMap->Contains(EditData->EditBitfield)) { return; }
+		
 	int AvatarNumCWTurns = UFBCBlueprintLibrary::SnapAngleToGridInt(GetAvatarActorFromActorInfo()->GetActorRotation().Yaw) / 90;
 	
 	SelectedBuildTargetingActor->SetStructureEdit(EditData->EditBitfield);
