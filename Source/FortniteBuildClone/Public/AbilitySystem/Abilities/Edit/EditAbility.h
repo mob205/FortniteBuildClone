@@ -39,6 +39,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Targeting")
 	float Range{};
 
+	// The ability will be cancelled if the avatar leaves the CancelRange
+	UPROPERTY(EditDefaultsOnly, Category = "Canceling")
+	float CancelRange{};
+
+	UPROPERTY(EditDefaultsOnly, Category = "Canceling")
+	float CancelRangeCheckDelay{};
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Targeting")
 	FGameplayTag StartSelectionTag{};
 
@@ -52,16 +59,19 @@ private:
 	template<typename T>
 	T* GetSelection() const;
 	
-	
 	TObjectPtr<APlacedStructure> SelectedStructure;
 	TObjectPtr<AStructureTargetingActor> SelectedBuildTargetingActor{};
+	
+	FTimerHandle CancelRangeTimer{};
 
 	const FEditMap* CurrentEditMap{};
 	
 	AEditTargetingActor* SpawnTargetingActor(const FTransform& SpawnTransform, TSubclassOf<AEditTargetingActor> ActorClass) const;
 	TObjectPtr<AEditTargetingActor> TargetingActor;
-	
+
 	void EditStructure(int32 EditBitfield, int Yaw) const;
+
+	void CheckCancelRange();
 
 	UFUNCTION()
 	void OnStructureEditDataReceived(const FGameplayAbilityTargetDataHandle& Data);

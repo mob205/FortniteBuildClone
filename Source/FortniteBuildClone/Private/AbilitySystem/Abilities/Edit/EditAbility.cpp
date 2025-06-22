@@ -57,6 +57,9 @@ AEditTargetingActor* UEditAbility::InitializeFromStructureInfo(const FTransform&
 		CancelAbility(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), GetCurrentActivationInfo(), true);
 		return nullptr;
 	}
+
+	FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &UEditAbility::CheckCancelRange);
+	GetWorld()->GetTimerManager().SetTimer(CancelRangeTimer, TimerDelegate, CancelRangeCheckDelay, true);
 	
 	return SpawnTargetingActor(TargetTransform, TargetingActorClass);
 }
@@ -160,6 +163,8 @@ void UEditAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGa
 		SelectedBuildTargetingActor = nullptr;
 	}
 
+	GetWorld()->GetTimerManager().ClearTimer(CancelRangeTimer);
+	
 	if (IsLocallyControlled())
 	{
 		RemoveAbilityInputMappingContext();
@@ -255,6 +260,17 @@ void UEditAbility::EditStructure(int32 EditBitfield, int Yaw) const
 	}
 }
 
+void UEditAbility::CheckCancelRange()
+{
+	FVector AvatarLocation = GetAvatarActorFromActorInfo()->GetActorLocation();
+	FVector TargetingActorLocation = TargetingActor->GetActorLocation();
+
+	float SqrDisplacement = (AvatarLocation - TargetingActorLocation).SquaredLength();
+	if (SqrDisplacement > CancelRange * CancelRange)
+	{
+		CancelAbility(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), GetCurrentActivationInfo(), true);
+	}
+}
 
 void UEditAbility::StartSelection(FGameplayEventData Payload)
 {
