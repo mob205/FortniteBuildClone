@@ -39,6 +39,8 @@ class FORTNITEBUILDCLONE_API AFBCCharacter : public ACharacter, public IAbilityS
 
 public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	
+	FCollisionQueryParams GetIgnoreCharacterParams() const;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building")
 	TObjectPtr<UStructureInfoDataAsset> StructureInfo;

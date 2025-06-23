@@ -16,6 +16,15 @@ UAbilitySystemComponent* AFBCCharacter::GetAbilitySystemComponent() const
 	return ASC;
 }
 
+FCollisionQueryParams AFBCCharacter::GetIgnoreCharacterParams() const
+{
+	FCollisionQueryParams Params{};
+
+	Params.AddIgnoredActor(this);
+
+	return Params;
+}
+
 // Called on server only
 void AFBCCharacter::PossessedBy(AController* NewController)
 {
