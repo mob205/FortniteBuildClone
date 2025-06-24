@@ -38,6 +38,9 @@ class FORTNITEBUILDCLONE_API AFBCCharacter : public ACharacter, public IAbilityS
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(BlueprintReadOnly, Replicated, Category=Character)
+	uint8 bIsSliding:1;
+	
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	
 	FCollisionQueryParams GetIgnoreCharacterParams() const;
@@ -61,6 +64,8 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<AFBCPlayerState> FBCPlayerState;
+	
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
 	void InitAbilityActorInfo();

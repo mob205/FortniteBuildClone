@@ -8,6 +8,7 @@
 #include "Data/StructureInfoDataAsset.h"
 #include "InputAction.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
+#include "Net/UnrealNetwork.h"
 #include "Player/FBCPlayerController.h"
 #include "Player/FBCPlayerState.h"
 
@@ -49,6 +50,13 @@ void AFBCCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	BuildAbilityTag = FGameplayTag::RequestGameplayTag("Abilities.Build");
+}
+
+void AFBCCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION_NOTIFY(AFBCCharacter, bIsSliding, COND_None, REPNOTIFY_Always);
 }
 
 void AFBCCharacter::InitAbilityActorInfo()

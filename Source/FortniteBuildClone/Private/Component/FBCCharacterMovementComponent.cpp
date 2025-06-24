@@ -120,6 +120,8 @@ void UFBCCharacterMovementComponent::EnterSlide()
 {
 	// Still apply crouch for reduced capsule height
 	bWantsToCrouch = true;
+	
+	FBCCharacterOwner->bIsSliding = true;
 
 	// Apply initial boost when entering slide
 	Velocity += Velocity.GetSafeNormal2D() * Slide_EnterImpulse;
@@ -131,6 +133,8 @@ void UFBCCharacterMovementComponent::ExitSlide()
 {
 	bWantsToCrouch = false;
 
+	FBCCharacterOwner->bIsSliding = false;
+	
 	// Sliding changes rotation of capsule to align with plane. Correct this by resetting it
 	FQuat NewRotation = FRotationMatrix::MakeFromXZ(UpdatedComponent->GetForwardVector().GetSafeNormal2D(), FVector::UpVector).ToQuat();
 	FHitResult Hit;
