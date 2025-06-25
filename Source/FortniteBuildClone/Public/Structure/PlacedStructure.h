@@ -13,6 +13,14 @@
 class UDestructionSubsystem;
 class USplineComponent;
 
+UENUM()
+enum ENeighborRemovalGroundUpdateRule
+{
+	NRG_None,
+	NRG_Local,
+	NRG_Multicast
+};
+
 UCLASS()
 class FORTNITEBUILDCLONE_API APlacedStructure : public AActor, public ITraversable
 {
@@ -50,7 +58,7 @@ public:
 	EFBCResourceType GetResourceType() const { return ResourceType;}
 
 	const TSet<APlacedStructure*>& GetNeighbors() const { return Neighbors; }
-	void RemoveNeighbor(APlacedStructure* Structure, bool bRecheckGround = true);
+	void RemoveNeighbor(APlacedStructure* Structure, ENeighborRemovalGroundUpdateRule GroundUpdateRule = NRG_Multicast);
 	void AddNeighbor(APlacedStructure* Structure);
 
 	UFUNCTION(BlueprintCallable)
@@ -59,6 +67,7 @@ public:
 	void DisableStructure();
 	
 	// Initiates destroying the structure after a delay if structure isn't grounded
+	UFUNCTION(NetMulticast, Reliable)
 	void NotifyGroundUpdate();
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Ability System")

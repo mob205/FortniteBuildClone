@@ -3,47 +3,30 @@
 
 #include "Subsystem/DestructionSubsystem.h"
 
-#include "FBCBlueprintLibrary.h"
-#include "FBCGameState.h"
-#include "GridSizes.h"
 #include "Structure/PlacedStructure.h"
 
 constexpr int MaxDeletionsPerTick{5};
+constexpr int MaxDisabledActorsPerRPC{10};
 
 void UDestructionSubsystem::QueueDestruction(APlacedStructure* Structure)
 {
 	if (IsValid(Structure))
 	{
 		DestructionQueue.Enqueue(Structure);
-		DisableStructureBuffer.Add(Structure);
+		bQueuedThisFrame = true;
 	}
-}
-
-FIntVector UDestructionSubsystem::GetDestructionCoordinate(const FVector& WorldLocation)
-{
-	return UFBCBlueprintLibrary::GetCustomGridCoordinateLocation(WorldLocation,
-		FVector{
-			GridSizeHorizontal * DestructionCellLength,
-			GridSizeHorizontal * DestructionCellLength,
-			GridSizeVertical * DestructionCellLength
-		});
-}
-
-void UDestructionSubsystem::OnWorldBeginPlay(UWorld& InWorld)
-{
-	Super::OnWorldBeginPlay(InWorld);
-
-	GameState = Cast<AFBCGameState>(GetWorld()->GetGameState());
 }
 
 void UDestructionSubsystem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (DisableStructureBuffer.Num() != 0)
+	if (bQueuedThisFrame)
 	{
-		GameState->DisableStructures(DisableStructureBuffer);
+		bQueuedThisFrame = false;
+		return;
 	}
+	
 	int NumDeleted{};
 	while (!DestructionQueue.IsEmpty() && NumDeleted < MaxDeletionsPerTick)
 	{

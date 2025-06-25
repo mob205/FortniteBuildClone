@@ -21,7 +21,7 @@ APlacedStructure::APlacedStructure()
 	StaticMesh->SetupAttachment(Root);
 }
 
-void APlacedStructure::NotifyGroundUpdate()
+void APlacedStructure::NotifyGroundUpdate_Implementation()
 {
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 	if (TimerManager.TimerExists(DestroyTimerHandle) &&
@@ -41,12 +41,19 @@ void APlacedStructure::NotifyGroundUpdate()
 		false);
 }
 
-void APlacedStructure::RemoveNeighbor(APlacedStructure* Structure, bool bRecheckGround)
+void APlacedStructure::RemoveNeighbor(APlacedStructure* Structure, ENeighborRemovalGroundUpdateRule GroundUpdateRule)
 {
 	Neighbors.Remove(Structure);
-	if (bRecheckGround)
+	switch (GroundUpdateRule)
 	{
+	case NRG_Local:
+		NotifyGroundUpdate_Implementation();
+		break;
+	case NRG_Multicast:
 		NotifyGroundUpdate();
+		break;
+	default:
+		break;
 	}
 }
 
@@ -88,17 +95,17 @@ void APlacedStructure::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Objects with RF_WasLoaded are placed in level in editor and will have their overlaps already updated
+	if (!HasAnyFlags(RF_WasLoaded))
+	{
+		UpdateOverlaps();
+	}
+		
+	InitializeNeighbors();
+	
 	if (HasAuthority())
 	{
 		DestructionSubsystem = GetWorld()->GetSubsystem<UDestructionSubsystem>();
-
-		// Objects with RF_WasLoaded are placed in level in editor and will have their overlaps already updated
-		if (!HasAnyFlags(RF_WasLoaded))
-		{
-			UpdateOverlaps();
-		}
-		
-		InitializeNeighbors();
 	}
 }
 
@@ -129,21 +136,34 @@ void APlacedStructure::FinishStructureDestruction()
 		TRACE_CPUPROFILER_EVENT_SCOPE_STR("Neighbors");
 		for (auto Neighbor: Neighbors)
 		{
-			Neighbor->RemoveNeighbor(this);
+			Neighbor->RemoveNeighbor(this, NRG_Local);
 		}
 	}
 
 	{
 		TRACE_CPUPROFILER_EVENT_SCOPE_STR("Disable");
-		DisableStructure();
+
+		// Disabling structures is comparable to the grounding check itself
+		// Defer this to next frame for smoother performance
+		FTimerHandle DelayedDisable{};
+		GetWorldTimerManager().SetTimer(DelayedDisable, FTimerDelegate::CreateUObject(this, &APlacedStructure::DisableStructure), .01, false);
 	}
-	DestructionSubsystem->QueueDestruction(this);
+	if (DestructionSubsystem)
+	{
+		DestructionSubsystem->QueueDestruction(this);
+	}
 }
 
 void APlacedStructure::DisableStructure()
 {
-	SetStructureMeshVisibility(false);
-	SetActorEnableCollision(false);
+	{
+		TRACE_CPUPROFILER_EVENT_SCOPE_STR("Set Actor Hidden");
+		SetActorHiddenInGame(true);
+	}
+	{
+		TRACE_CPUPROFILER_EVENT_SCOPE_STR("Disable Collision");
+		SetActorEnableCollision(false);
+	}
 }
 
 void APlacedStructure::SetStructureMeshVisibility(bool bIsVisible)

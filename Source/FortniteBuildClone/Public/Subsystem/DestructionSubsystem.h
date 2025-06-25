@@ -25,15 +25,11 @@ public:
 	*/
 	void QueueDestruction(APlacedStructure* Structure);
 
-	FORCEINLINE static FIntVector GetDestructionCoordinate(const FVector& WorldLocation);
-
 	virtual TStatId GetStatId() const override { return TStatId(); }
 protected:
-	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	TObjectPtr<AFBCGameState> GameState{};
 	TQueue<APlacedStructure*> DestructionQueue;
-	TArray<APlacedStructure*> DisableStructureBuffer;
+	bool bQueuedThisFrame{};
 };
