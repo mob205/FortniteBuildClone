@@ -24,11 +24,11 @@ APlacedStructure::APlacedStructure()
 void APlacedStructure::NotifyGroundUpdate_Implementation()
 {
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-	if (TimerManager.TimerExists(DestroyTimerHandle) &&
-		TimerManager.GetTimerRemaining(DestroyTimerHandle) < .03) { return; }
+	if (TimerManager.TimerExists(GroundCheckTimerHandle) &&
+		TimerManager.GetTimerRemaining(GroundCheckTimerHandle) < .03) { return; }
 	
 	GetWorld()->GetTimerManager().SetTimer(
-		DestroyTimerHandle,
+		GroundCheckTimerHandle,
 		FTimerDelegate::CreateLambda(
 		[this]()
 		{

@@ -236,8 +236,9 @@ void UEditAbility::EditStructure(int32 EditBitfield, int Yaw) const
 	// Explicitly make copy of neighbors just in case destroying the structure leaves dangling reference
 	const TSet<APlacedStructure*> OldNeighbors = SelectedStructure->GetNeighbors(); 
 	EFBCResourceType SelectedMaterial = SelectedStructure->GetResourceType();
-	
+
 	// Replace old structure with new structure
+	APlacedStructure* StructureKey = SelectedStructure.Get();
 	SelectedStructure->Destroy();
 	
 	TSubclassOf<APlacedStructure> EditStructureClass = CurrentStructureInfo.StructureClass;
@@ -247,7 +248,7 @@ void UEditAbility::EditStructure(int32 EditBitfield, int Yaw) const
 		StructureRotation);
 
 	SpawnedStructure->SetResourceType(SelectedMaterial);
-
+	
 	// Editing may remove support from nearby structures or leave the new structure unsupported
 	SpawnedStructure->SetEditBitfield(EditBitfield);
 	SpawnedStructure->NotifyGroundUpdate();
@@ -257,8 +258,7 @@ void UEditAbility::EditStructure(int32 EditBitfield, int Yaw) const
 	{
 		if (!NewNeighbors.Contains(Neighbor))
 		{
-			// Should be safe to use destroyed structure here since the address only acts as a key
-			Neighbor->RemoveNeighbor(SelectedStructure);
+			Neighbor->RemoveNeighbor(StructureKey);
 		}
 	}
 }

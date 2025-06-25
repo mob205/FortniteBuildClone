@@ -101,7 +101,7 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	void SetStructureMeshMaterial(UMaterialInstance* Material);
 private:
-	FTimerHandle DestroyTimerHandle;
+	FTimerHandle GroundCheckTimerHandle;
 	
 	// Returns true if the structure has a path to a structure connected to the ground
 	bool IsGrounded();
