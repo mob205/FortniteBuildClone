@@ -67,6 +67,8 @@ private:
 	const FEditMap* CurrentEditMap{};
 	
 	AEditTargetingActor* SpawnTargetingActor(const FTransform& SpawnTransform, TSubclassOf<AEditTargetingActor> ActorClass) const;
+
+	UPROPERTY()
 	TObjectPtr<AEditTargetingActor> TargetingActor;
 
 	void EditStructure(int32 EditBitfield, int Yaw) const;

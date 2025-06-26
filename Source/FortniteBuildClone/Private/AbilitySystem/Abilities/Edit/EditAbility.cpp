@@ -9,6 +9,7 @@
 #include "Abilities/Tasks/AbilityTask_WaitTargetData.h"
 #include "AbilitySystem/Abilities/Edit/EditTargetData.h"
 #include "AbilitySystem/Abilities/Edit/EditTargetingActor.h"
+#include "Component/StructureGroundingComponent.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "Kismet/GameplayStatics.h"
 #include "Structure/PlacedStructure.h"
@@ -58,8 +59,11 @@ AEditTargetingActor* UEditAbility::InitializeFromStructureInfo(const FTransform&
 		return nullptr;
 	}
 
-	FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &UEditAbility::CheckCancelRange);
-	GetWorld()->GetTimerManager().SetTimer(CancelRangeTimer, TimerDelegate, CancelRangeCheckDelay, true);
+	if (IsLocallyControlled())
+	{
+		FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(this, &UEditAbility::CheckCancelRange);
+		GetWorld()->GetTimerManager().SetTimer(CancelRangeTimer, TimerDelegate, CancelRangeCheckDelay, true);
+	}
 	
 	return SpawnTargetingActor(TargetTransform, TargetingActorClass);
 }
@@ -163,10 +167,10 @@ void UEditAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGa
 		SelectedBuildTargetingActor = nullptr;
 	}
 
-	GetWorld()->GetTimerManager().ClearTimer(CancelRangeTimer);
 	
 	if (IsLocallyControlled())
 	{
+		GetWorld()->GetTimerManager().ClearTimer(CancelRangeTimer);
 		RemoveAbilityInputMappingContext();
 	}
 	
@@ -234,11 +238,11 @@ void UEditAbility::EditStructure(int32 EditBitfield, int Yaw) const
 	
 	// Save current structure info
 	// Explicitly make copy of neighbors just in case destroying the structure leaves dangling reference
-	const TSet<APlacedStructure*> OldNeighbors = SelectedStructure->GetNeighbors(); 
+	UStructureGroundingComponent* SelectedGroundingComponent = SelectedStructure->GetGroundingComponent();
+	const TSet<UStructureGroundingComponent*> OldNeighbors = SelectedGroundingComponent->GetNeighbors(); 
 	EFBCResourceType SelectedMaterial = SelectedStructure->GetResourceType();
 
 	// Replace old structure with new structure
-	APlacedStructure* StructureKey = SelectedStructure.Get();
 	SelectedStructure->Destroy();
 	
 	TSubclassOf<APlacedStructure> EditStructureClass = CurrentStructureInfo.StructureClass;
@@ -251,14 +255,16 @@ void UEditAbility::EditStructure(int32 EditBitfield, int Yaw) const
 	
 	// Editing may remove support from nearby structures or leave the new structure unsupported
 	SpawnedStructure->SetEditBitfield(EditBitfield);
-	SpawnedStructure->NotifyGroundUpdate();
 
-	const TSet<APlacedStructure*>& NewNeighbors = SpawnedStructure->GetNeighbors();
+	UStructureGroundingComponent* SpawnedGroundingComp = SpawnedStructure->GetGroundingComponent();
+	SpawnedGroundingComp->NotifyGroundUpdate();
+
+	const TSet<UStructureGroundingComponent*>& NewNeighbors = SpawnedGroundingComp->GetNeighbors();
 	for (const auto& Neighbor : OldNeighbors)
 	{
 		if (!NewNeighbors.Contains(Neighbor))
 		{
-			Neighbor->RemoveNeighbor(StructureKey);
+			Neighbor->RemoveNeighbor(SelectedGroundingComponent);
 		}
 	}
 }

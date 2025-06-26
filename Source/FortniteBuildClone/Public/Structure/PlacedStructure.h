@@ -10,16 +10,11 @@
 #include "Interface/Traversable.h"
 #include "PlacedStructure.generated.h"
 
+class UStructureGroundingComponent;
 class UDestructionSubsystem;
 class USplineComponent;
 
-UENUM()
-enum ENeighborRemovalGroundUpdateRule
-{
-	NRG_None,
-	NRG_Local,
-	NRG_Multicast
-};
+
 
 UCLASS()
 class FORTNITEBUILDCLONE_API APlacedStructure : public AActor, public ITraversable
@@ -31,11 +26,6 @@ public:
 	
 	FGameplayTag GetStructureTag() const { return StructureTag; }
 	void SetStructureTag(FGameplayTag Tag) { StructureTag = Tag; }
-	
-	// Destroys and unregisters the structure without checking for groundedness
-	// Prompts nearby structures to start destroying if not grounded
-	UFUNCTION(BlueprintCallable)
-	void FinishStructureDestruction();
 
 	// Sets the visibility of the structure's static mesh. Only applies locally - visibility does not replicate
 	UFUNCTION(BlueprintCallable)
@@ -45,9 +35,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "SetStructureMeshVisibility")
 	void BP_SetStructureVisibility(bool bIsVisible);
 
+	// Structures store their edit bitfields to help initialize edit ability
 	UFUNCTION(BlueprintCallable)
 	int32 GetEditBitfield() const { return EditBitfield; }
-
 	UFUNCTION(BlueprintCallable)
 	void SetEditBitfield(int32 InEditBitfield) { EditBitfield = InEditBitfield; }
 	
@@ -55,33 +45,21 @@ public:
 	virtual const TMap<USplineComponent*, USplineComponent*> GetOppositeLedges_Implementation() const override { return OppositeLedges; }
 
 	void SetResourceType(EFBCResourceType InResourceType);
-	EFBCResourceType GetResourceType() const { return ResourceType;}
+	EFBCResourceType GetResourceType() const { return ResourceType; }
 
-	const TSet<APlacedStructure*>& GetNeighbors() const { return Neighbors; }
-	void RemoveNeighbor(APlacedStructure* Structure, ENeighborRemovalGroundUpdateRule GroundUpdateRule = NRG_Multicast);
-	void AddNeighbor(APlacedStructure* Structure);
-
-	UFUNCTION(BlueprintCallable)
-	void ReportNeighbors();
+	UStructureGroundingComponent* GetGroundingComponent() const { return GroundingComponent; }
 	
 	void DisableStructure();
 	
-	// Initiates destroying the structure after a delay if structure isn't grounded
-	UFUNCTION(NetMulticast, Reliable)
-	void NotifyGroundUpdate();
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Ability System")
 	FGameplayTag StructureTag{};
-
-	UPROPERTY(EditDefaultsOnly)
-	float DestructionDelay{.2f};
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TMap<EFBCResourceType, UMaterialInstance*> MaterialMap{};
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	virtual void BeginPlay() override;
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated, Category = "Editing")
 	FBitGrid EditBitfield{};
@@ -98,22 +76,12 @@ protected:
 	UPROPERTY(BlueprintReadWrite)
 	TMap<USplineComponent*, USplineComponent*> OppositeLedges{};
 
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	UStructureGroundingComponent* GroundingComponent{};
+	
 	UFUNCTION(BlueprintNativeEvent)
 	void SetStructureMeshMaterial(UMaterialInstance* Material);
 private:
-	FTimerHandle GroundCheckTimerHandle;
-	
-	// Returns true if the structure has a path to a structure connected to the ground
-	bool IsGrounded();
-
-	bool bIsGroundedCached{};
-	double GroundCacheTimestamp{};
-
-	void SetCacheOnStructures(TSet<APlacedStructure*>& Structures, bool bIsGrounded);
-	void SetGroundCache(bool bIsGrounded);
-	bool IsGroundCacheValid() const;
-	bool GetGroundCache() const { return bIsGroundedCached; }
-
 	// Set MaterialType to something invalid initially to force replication
 	// Otherwise, Wood (0) structures being placed will not trigger the OnRep function
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_ResourceType)
@@ -123,11 +91,4 @@ private:
 	void OnRep_ResourceType(EFBCResourceType NewResourceType);
 	
 	void UpdateMeshMaterial();
-
-	TObjectPtr<UDestructionSubsystem> DestructionSubsystem;
-
-	void InitializeNeighbors();
-	
-	TSet<APlacedStructure*> Neighbors{};
-	bool bIsGroundingStructure{};
 };
