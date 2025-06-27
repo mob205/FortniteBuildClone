@@ -19,15 +19,17 @@ APlacedStructure::APlacedStructure()
 	StaticMesh->SetupAttachment(Root);
 
 	GroundingComponent = CreateDefaultSubobject<UStructureGroundingComponent>("Grounding Component");
+
+	NetDormancy = ENetDormancy::DORM_DormantAll;
 }
 
 void APlacedStructure::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME_CONDITION(APlacedStructure, StructureTag, COND_None);
-	DOREPLIFETIME_CONDITION(APlacedStructure, EditBitfield, COND_None);
-	DOREPLIFETIME_CONDITION(APlacedStructure, ResourceType, COND_None);
+	DOREPLIFETIME_CONDITION(APlacedStructure, StructureTag, COND_InitialOnly);
+	DOREPLIFETIME_CONDITION(APlacedStructure, EditBitfield, COND_InitialOnly);
+	DOREPLIFETIME_CONDITION(APlacedStructure, ResourceType, COND_InitialOnly);
 }
 
 void APlacedStructure::DisableStructure()
