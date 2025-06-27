@@ -45,6 +45,7 @@ void UStructureGroundingComponent::InitializeNeighbors()
 	{
 		if (APlacedStructure* AsStructure = Cast<APlacedStructure>(OverlappingActor))
 		{
+			if (AsStructure->IsStructureDisabled()) { continue; }
 			UStructureGroundingComponent* GroundingComp = AsStructure->GetGroundingComponent();
 			Neighbors.Add(GroundingComp);
 			GroundingComp->AddNeighbor(this);
@@ -115,6 +116,7 @@ void UStructureGroundingComponent::FinishStructureDestruction()
 
 		// Disabling structures is comparable to the grounding check itself
 		// Defer this to next frame for smoother performance
+		Owner->SetIsStructureDisabled(true);
 		FTimerHandle DelayedDisable{};
 		GetWorld()->GetTimerManager().SetTimer(DelayedDisable, FTimerDelegate::CreateUObject(Owner, &APlacedStructure::DisableStructure), .01, false);
 	}

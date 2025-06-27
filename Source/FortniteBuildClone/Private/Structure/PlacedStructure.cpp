@@ -37,6 +37,7 @@ void APlacedStructure::DisableStructure()
 	TRACE_CPUPROFILER_EVENT_SCOPE_STR("Disable");
 	Root->SetVisibility(false, true);
 	SetActorEnableCollision(false);
+	bIsDisabled = true;
 }
 
 void APlacedStructure::SetStructureMeshVisibility(bool bIsVisible)

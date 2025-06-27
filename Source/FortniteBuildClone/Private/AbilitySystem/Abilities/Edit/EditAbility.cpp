@@ -194,7 +194,11 @@ void UEditAbility::OnBuildTargetingEditDataReceived(const FGameplayAbilityTarget
 	const FEditTargetData* EditData = static_cast<const FEditTargetData*>(Data.Get(0));
 
 	// Invalid edit
-	if (!CurrentEditMap->Contains(EditData->EditBitfield)) { return; }
+	if (!CurrentEditMap->Contains(EditData->EditBitfield))
+	{
+		CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
+		return;
+	}
 		
 	int AvatarNumCWTurns = UFBCBlueprintLibrary::SnapAngleToGridInt(GetAvatarActorFromActorInfo()->GetActorRotation().Yaw) / 90;
 	
@@ -235,15 +239,16 @@ void UEditAbility::EditStructure(int32 EditBitfield, int Yaw) const
 	if (SelectedStructure->GetEditBitfield() == EditBitfield && bIsSameRotation) { return; }
 	
 	// We have a valid edit!
+
+	// TODO: The system for handling ground checks can use improvements for robustness
 	
 	// Save current structure info
-	// Explicitly make copy of neighbors just in case destroying the structure leaves dangling reference
 	UStructureGroundingComponent* SelectedGroundingComponent = SelectedStructure->GetGroundingComponent();
-	const TSet<UStructureGroundingComponent*> OldNeighbors = SelectedGroundingComponent->GetNeighbors(); 
+	//const TSet<UStructureGroundingComponent*> OldNeighbors = SelectedGroundingComponent->GetNeighbors(); 
 	EFBCResourceType SelectedMaterial = SelectedStructure->GetResourceType();
 
 	// Replace old structure with new structure
-	SelectedStructure->Destroy();
+	SelectedGroundingComponent->DestroyOnClients();
 	
 	TSubclassOf<APlacedStructure> EditStructureClass = CurrentStructureInfo.StructureClass;
 	APlacedStructure* SpawnedStructure = GetWorld()->SpawnActor<APlacedStructure>(
@@ -258,15 +263,6 @@ void UEditAbility::EditStructure(int32 EditBitfield, int Yaw) const
 
 	UStructureGroundingComponent* SpawnedGroundingComp = SpawnedStructure->GetGroundingComponent();
 	SpawnedGroundingComp->NotifyGroundUpdate();
-
-	const TSet<UStructureGroundingComponent*>& NewNeighbors = SpawnedGroundingComp->GetNeighbors();
-	for (const auto& Neighbor : OldNeighbors)
-	{
-		if (!NewNeighbors.Contains(Neighbor))
-		{
-			Neighbor->RemoveNeighbor(SelectedGroundingComponent);
-		}
-	}
 }
 
 void UEditAbility::CheckCancelRange()

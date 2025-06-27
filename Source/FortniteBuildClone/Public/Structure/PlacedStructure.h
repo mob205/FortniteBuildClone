@@ -50,7 +50,8 @@ public:
 	UStructureGroundingComponent* GetGroundingComponent() const { return GroundingComponent; }
 	
 	void DisableStructure();
-	
+	bool IsStructureDisabled() const { return bIsDisabled; }
+	void SetIsStructureDisabled(bool bNewIsDisabled) { bIsDisabled = bNewIsDisabled; }
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Ability System")
@@ -91,4 +92,6 @@ private:
 	void OnRep_ResourceType(EFBCResourceType NewResourceType);
 	
 	void UpdateMeshMaterial();
+
+	bool bIsDisabled{};
 };
