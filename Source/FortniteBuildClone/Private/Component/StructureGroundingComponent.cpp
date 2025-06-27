@@ -158,8 +158,6 @@ bool UStructureGroundingComponent::IsGrounded()
 			}
 
 			SeenStructures.Add(Neighbor);
-			// Initially predict that structures won't be grounded
-			Neighbor->SetGroundCache(false);
 			
 			if (Neighbor->bIsGroundingStructure)
 			{
@@ -177,6 +175,11 @@ bool UStructureGroundingComponent::IsGrounded()
 				}
 				return bIsGrounded;
 			}
+			
+			// Initially predict that structures won't be grounded
+			// If we are grounded, there will probably be less structure to cache
+			Neighbor->SetGroundCache(false);
+			
 			Queue.Enqueue(Neighbor);
 		}
 	}
