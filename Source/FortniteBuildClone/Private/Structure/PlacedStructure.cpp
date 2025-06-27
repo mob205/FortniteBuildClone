@@ -32,7 +32,8 @@ void APlacedStructure::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 void APlacedStructure::DisableStructure()
 {
-	SetActorHiddenInGame(true);
+	TRACE_CPUPROFILER_EVENT_SCOPE_STR("Disable");
+	Root->SetVisibility(false, true);
 	SetActorEnableCollision(false);
 }
 

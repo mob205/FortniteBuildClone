@@ -21,6 +21,7 @@ void UDestructionSubsystem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	TRACE_CPUPROFILER_EVENT_SCOPE_STR("UDestructionSubsystem::Tick");
 	if (bQueuedThisFrame)
 	{
 		bQueuedThisFrame = false;

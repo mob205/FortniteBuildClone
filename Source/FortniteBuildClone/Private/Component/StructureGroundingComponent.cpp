@@ -10,7 +10,6 @@
 UStructureGroundingComponent::UStructureGroundingComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	SetIsReplicatedByDefault(true);
 }
 
 void UStructureGroundingComponent::DestroyOnClients_Implementation()
@@ -112,7 +111,7 @@ void UStructureGroundingComponent::FinishStructureDestruction()
 	}
 
 	{
-		TRACE_CPUPROFILER_EVENT_SCOPE_STR("Disable");
+		TRACE_CPUPROFILER_EVENT_SCOPE_STR("Disable Timer");
 
 		// Disabling structures is comparable to the grounding check itself
 		// Defer this to next frame for smoother performance
@@ -157,6 +156,10 @@ bool UStructureGroundingComponent::IsGrounded()
 			{
 				continue;
 			}
+
+			SeenStructures.Add(Neighbor);
+			// Initially predict that structures won't be grounded
+			Neighbor->SetGroundCache(false);
 			
 			if (Neighbor->bIsGroundingStructure)
 			{
@@ -166,15 +169,17 @@ bool UStructureGroundingComponent::IsGrounded()
 			if (Neighbor->IsGroundCacheValid())
 			{
 				bool bIsGrounded = Neighbor->GetGroundCache();
-				SetCacheOnStructures(SeenStructures, bIsGrounded);
+
+				// Don't set ground cache if not grounded, since we're already initially predicting they aren't grounded
+				if (bIsGrounded)
+				{
+					SetCacheOnStructures(SeenStructures, true);
+				}
 				return bIsGrounded;
 			}
-
-			SeenStructures.Add(Neighbor);
 			Queue.Enqueue(Neighbor);
 		}
 	}
-	SetCacheOnStructures(SeenStructures, false);
 	return false;
 }
 
@@ -195,6 +200,8 @@ bool UStructureGroundingComponent::IsGroundCacheValid() const
 {
 	return GroundCacheTimestamp == GetWorld()->GetTimeSeconds();
 }
+
+
 
 
 
