@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "5.5",
+	"EngineAssociation": "{1A7C9E38-409B-AE7E-12A2-D9BDB325186D}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -49,6 +49,10 @@
 		},
 		{
 			"Name": "GameplayAbilities",
+			"Enabled": true
+		},
+		{
+			"Name": "GameLiftPlugin",
 			"Enabled": true
 		}
 	]
