@@ -31,7 +31,7 @@ public:
     CreateGameSessionMessage(CreateGameSessionMessage &&) = default;
     CreateGameSessionMessage &operator=(const CreateGameSessionMessage &) = default;
     CreateGameSessionMessage &operator=(CreateGameSessionMessage &&) = default;
-    ~CreateGameSessionMessage() = default;
+    virtual ~CreateGameSessionMessage() = default;
 
     inline const std::string &GetGameSessionId() const { return m_gameSessionId; }
 

@@ -28,7 +28,7 @@ public:
     RefreshConnectionMessage(RefreshConnectionMessage &&) = default;
     RefreshConnectionMessage &operator=(const RefreshConnectionMessage &) = default;
     RefreshConnectionMessage &operator=(RefreshConnectionMessage &&) = default;
-    ~RefreshConnectionMessage() = default;
+    virtual ~RefreshConnectionMessage() = default;
 
     inline const std::string &GetRefreshConnectionEndpoint() const { return m_refreshConnectionEndpoint; }
     inline const std::string &GetAuthToken() const { return m_authToken; }

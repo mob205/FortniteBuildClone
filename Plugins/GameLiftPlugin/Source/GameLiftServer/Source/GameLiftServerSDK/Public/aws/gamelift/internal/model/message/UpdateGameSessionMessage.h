@@ -29,7 +29,7 @@ public:
     UpdateGameSessionMessage(UpdateGameSessionMessage &&) = default;
     UpdateGameSessionMessage &operator=(const UpdateGameSessionMessage &) = default;
     UpdateGameSessionMessage &operator=(UpdateGameSessionMessage &&) = default;
-    ~UpdateGameSessionMessage() = default;
+    virtual ~UpdateGameSessionMessage() = default;
 
     inline const WebSocketGameSession &GetGameSession() const { return m_gameSession; }
 

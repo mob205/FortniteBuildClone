@@ -353,11 +353,11 @@ bool Aws::GameLift::Internal::GameLiftServerState::AssertNetworkInitialized() { 
 #endif
 Aws::GameLift::Internal::GameLiftServerState::GameLiftServerState()
     : m_onStartGameSession(nullptr), m_onProcessTerminate(nullptr), m_onHealthCheck(nullptr), m_processReady(false), m_terminationTime(-1),
-      m_webSocketClientManager(nullptr), m_webSocketClientWrapper(nullptr), m_healthCheckThread(nullptr), m_healthCheckInterrupted(false),
-      m_createGameSessionCallback(new CreateGameSessionCallback(this)), m_describePlayerSessionsCallback(new DescribePlayerSessionsCallback()),
+      m_webSocketClientManager(nullptr), m_webSocketClientWrapper(nullptr), m_createGameSessionCallback(new CreateGameSessionCallback(this)), m_describePlayerSessionsCallback(new DescribePlayerSessionsCallback()),
       m_getComputeCertificateCallback(new GetComputeCertificateCallback()), m_getFleetRoleCredentialsCallback(new GetFleetRoleCredentialsCallback()),
       m_terminateProcessCallback(new TerminateProcessCallback(this)), m_updateGameSessionCallback(new UpdateGameSessionCallback(this)),
-      m_startMatchBackfillCallback(new StartMatchBackfillCallback()), m_refreshConnectionCallback(new RefreshConnectionCallback(this)) {}
+      m_startMatchBackfillCallback(new StartMatchBackfillCallback()), m_refreshConnectionCallback(new RefreshConnectionCallback(this)),
+      m_healthCheckThread(nullptr), m_healthCheckInterrupted(false) {}
 
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic pop

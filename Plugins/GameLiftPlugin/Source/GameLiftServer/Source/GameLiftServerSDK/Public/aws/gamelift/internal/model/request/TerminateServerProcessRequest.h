@@ -30,7 +30,7 @@ public:
     TerminateServerProcessRequest(TerminateServerProcessRequest &&) = default;
     TerminateServerProcessRequest &operator=(const TerminateServerProcessRequest &) = default;
     TerminateServerProcessRequest &operator=(TerminateServerProcessRequest &&) = default;
-    ~TerminateServerProcessRequest() = default;
+    virtual ~TerminateServerProcessRequest() = default;
 
 private:
     static constexpr const char *TERMINATE_SERVER_PROCESS = "TerminateServerProcess";

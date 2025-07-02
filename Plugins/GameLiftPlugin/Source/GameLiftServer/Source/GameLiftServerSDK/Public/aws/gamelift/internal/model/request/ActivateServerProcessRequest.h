@@ -32,7 +32,7 @@ public:
     ActivateServerProcessRequest(ActivateServerProcessRequest &&) = default;
     ActivateServerProcessRequest &operator=(const ActivateServerProcessRequest &) = default;
     ActivateServerProcessRequest &operator=(ActivateServerProcessRequest &&) = default;
-    ~ActivateServerProcessRequest() = default;
+    virtual ~ActivateServerProcessRequest() = default;
 
     inline const std::string &GetSdkVersion() const { return m_sdkVersion; }
 

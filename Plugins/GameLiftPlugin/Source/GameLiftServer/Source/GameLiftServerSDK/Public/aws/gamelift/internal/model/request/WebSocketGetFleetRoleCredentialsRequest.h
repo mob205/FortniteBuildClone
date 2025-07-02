@@ -29,7 +29,7 @@ public:
 
     WebSocketGetFleetRoleCredentialsRequest &operator=(WebSocketGetFleetRoleCredentialsRequest &&) = default;
 
-    ~WebSocketGetFleetRoleCredentialsRequest() = default;
+    virtual ~WebSocketGetFleetRoleCredentialsRequest() = default;
 
     inline const std::string &GetRoleArn() const { return m_roleArn; }
 

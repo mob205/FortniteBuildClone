@@ -28,7 +28,7 @@ public:
     WebSocketGetComputeCertificateRequest(WebSocketGetComputeCertificateRequest &&) = default;
     WebSocketGetComputeCertificateRequest &operator=(const WebSocketGetComputeCertificateRequest &) = default;
     WebSocketGetComputeCertificateRequest &operator=(WebSocketGetComputeCertificateRequest &&) = default;
-    ~WebSocketGetComputeCertificateRequest() = default;
+    virtual ~WebSocketGetComputeCertificateRequest() = default;
 
     friend std::ostream &operator<<(std::ostream &os, const WebSocketGetComputeCertificateRequest &describePlayerSessionsRequest);
 

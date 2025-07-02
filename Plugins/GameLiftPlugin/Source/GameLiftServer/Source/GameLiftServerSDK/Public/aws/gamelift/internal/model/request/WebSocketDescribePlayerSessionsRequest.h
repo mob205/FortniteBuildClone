@@ -28,7 +28,7 @@ public:
     WebSocketDescribePlayerSessionsRequest(WebSocketDescribePlayerSessionsRequest &&) = default;
     WebSocketDescribePlayerSessionsRequest &operator=(const WebSocketDescribePlayerSessionsRequest &) = default;
     WebSocketDescribePlayerSessionsRequest &operator=(WebSocketDescribePlayerSessionsRequest &&) = default;
-    ~WebSocketDescribePlayerSessionsRequest() = default;
+    virtual ~WebSocketDescribePlayerSessionsRequest() = default;
 
     inline const std::string &GetGameSessionId() const { return m_gameSessionId; }
 
