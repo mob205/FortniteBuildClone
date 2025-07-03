@@ -17,7 +17,9 @@ void AFBCGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
+    UE_LOG(LogFBCGameMode, Log, TEXT("Starting FBC GameMode"));
 #if WITH_GAMELIFT
+    UE_LOG(LogFBCGameMode, Log, TEXT("..with game lift!"));
 	InitGameLift();
 #endif
 }
@@ -28,19 +30,19 @@ void AFBCGameMode::ConfigureServerParameters(FServerParameters& ServerParameters
     UE_LOG(LogFBCGameMode, Log, TEXT("Configuring server parameters for Anywhere..."));
 
     FString GlAnywhereWebSocketUrl = "";
-    if (FParse::Value(FCommandLine::Get(), TEXT("GlAnywhereWebSocketUrl="), GlAnywhereWebSocketUrl))
+    if (FParse::Value(FCommandLine::Get(), TEXT("-glAnywhereWebSocketUrl="), GlAnywhereWebSocketUrl))
     {
         ServerParametersForAnywhere.m_webSocketUrl = TCHAR_TO_UTF8(*GlAnywhereWebSocketUrl);
     }
 
     FString GlAnywhereFleetId = "";
-    if (FParse::Value(FCommandLine::Get(), TEXT("GlAnywhereFleetId="), GlAnywhereFleetId))
+    if (FParse::Value(FCommandLine::Get(), TEXT("-glAnywhereFleetId="), GlAnywhereFleetId))
     {
         ServerParametersForAnywhere.m_fleetId = TCHAR_TO_UTF8(*GlAnywhereFleetId);
     }
 
     FString GlAnywhereProcessId = "";
-    if (FParse::Value(FCommandLine::Get(), TEXT("GlAnywhereProcessId="), GlAnywhereProcessId))
+    if (FParse::Value(FCommandLine::Get(), TEXT("-glAnywhereProcessId="), GlAnywhereProcessId))
     {
         ServerParametersForAnywhere.m_processId = TCHAR_TO_UTF8(*GlAnywhereProcessId);
     }
@@ -53,37 +55,37 @@ void AFBCGameMode::ConfigureServerParameters(FServerParameters& ServerParameters
     }
 
     FString GlAnywhereHostId = "";
-    if (FParse::Value(FCommandLine::Get(), TEXT("GlAnywhereHostId="), GlAnywhereHostId))
+    if (FParse::Value(FCommandLine::Get(), TEXT("-glAnywhereHostId="), GlAnywhereHostId))
     {
         ServerParametersForAnywhere.m_hostId = TCHAR_TO_UTF8(*GlAnywhereHostId);
     }
 
     FString GlAnywhereAuthToken = "";
-    if (FParse::Value(FCommandLine::Get(), TEXT("GlAnywhereAuthToken="), GlAnywhereAuthToken))
+    if (FParse::Value(FCommandLine::Get(), TEXT("-glAnywhereAuthToken="), GlAnywhereAuthToken))
     {
         ServerParametersForAnywhere.m_authToken = TCHAR_TO_UTF8(*GlAnywhereAuthToken);
     }
 
     FString GlAnywhereAwsRegion = "";
-    if (FParse::Value(FCommandLine::Get(), TEXT("GlAnywhereAwsRegion="), GlAnywhereAwsRegion))
+    if (FParse::Value(FCommandLine::Get(), TEXT("-glAnywhereAwsRegion="), GlAnywhereAwsRegion))
     {
         ServerParametersForAnywhere.m_awsRegion = TCHAR_TO_UTF8(*GlAnywhereAwsRegion);
     }
 
     FString GlAnywhereAccessKey = "";
-    if (FParse::Value(FCommandLine::Get(), TEXT("GlAnywhereAccessKey="), GlAnywhereAccessKey))
+    if (FParse::Value(FCommandLine::Get(), TEXT("-glAnywhereAccessKey="), GlAnywhereAccessKey))
     {
         ServerParametersForAnywhere.m_accessKey = TCHAR_TO_UTF8(*GlAnywhereAccessKey);
     }
 
     FString GlAnywhereSecretKey = "";
-    if (FParse::Value(FCommandLine::Get(), TEXT("GlAnywhereSecretKey="), GlAnywhereSecretKey))
+    if (FParse::Value(FCommandLine::Get(), TEXT("-glAnywhereSecretKey="), GlAnywhereSecretKey))
     {
         ServerParametersForAnywhere.m_secretKey = TCHAR_TO_UTF8(*GlAnywhereSecretKey);
     }
 
     FString GlAnywhereSessionToken = "";
-    if (FParse::Value(FCommandLine::Get(), TEXT("GlAnywhereSessionToken="), GlAnywhereSessionToken))
+    if (FParse::Value(FCommandLine::Get(), TEXT("-glAnywhereSessionToken="), GlAnywhereSessionToken))
     {
         ServerParametersForAnywhere.m_sessionToken = TCHAR_TO_UTF8(*GlAnywhereSessionToken);
     }
@@ -148,14 +150,19 @@ void AFBCGameMode::InitGameLift()
     FServerParameters ServerParametersForAnywhere;
 
     bool bIsAnywhereActive = false;
-    if (FParse::Param(FCommandLine::Get(), TEXT("GlAnywhere")))
+    if (FParse::Param(FCommandLine::Get(), TEXT("glAnywhere")))
     {
         bIsAnywhereActive = true;
     }
 
     if (bIsAnywhereActive)
     {
+        UE_LOG(LogFBCGameMode, Log, TEXT("Configuring server params for anywhere fleet"));
         ConfigureServerParameters(ServerParametersForAnywhere);
+    }
+    else
+    {
+        UE_LOG(LogFBCGameMode, Log, TEXT("Skipping Anywhere server param configuration"));
     }
 
     UE_LOG(LogFBCGameMode, Log, TEXT("Initializing the GameLift Server..."));
