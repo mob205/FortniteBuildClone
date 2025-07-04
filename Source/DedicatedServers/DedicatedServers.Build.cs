@@ -10,7 +10,9 @@ public class DedicatedServers : ModuleRules
             new string[]
             {
                 "Core",
-                "GameLiftServerSDK"
+                "GameLiftServerSDK",
+                "GameplayTags",
+                "HTTP"
             }
         );
 
@@ -20,7 +22,9 @@ public class DedicatedServers : ModuleRules
                 "CoreUObject",
                 "Engine",
                 "Slate",
-                "SlateCore"
+                "SlateCore",
+                "UMG",
+                "Json", "JsonUtilities"
             }
         );
     }
