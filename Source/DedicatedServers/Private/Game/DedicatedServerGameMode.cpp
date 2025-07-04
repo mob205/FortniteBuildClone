@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Game/FBCGameMode.h"
+#include "Game/DedicatedServerGameMode.h"
 
 
 #if WITH_GAMELIFT
@@ -9,25 +9,23 @@
 #include "GameLiftServerSDKModels.h"
 #endif
 
-DEFINE_LOG_CATEGORY(LogFBCGameMode);
+DEFINE_LOG_CATEGORY(LogDedicatedServerGameMode);
 
-AFBCGameMode::AFBCGameMode() = default;
-
-void AFBCGameMode::BeginPlay()
+void ADedicatedServerGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-    UE_LOG(LogFBCGameMode, Log, TEXT("Starting FBC GameMode"));
+    UE_LOG(LogDedicatedServerGameMode, Log, TEXT("Starting FBC GameMode"));
 #if WITH_GAMELIFT
-    UE_LOG(LogFBCGameMode, Log, TEXT("..with game lift!"));
+    UE_LOG(LogDedicatedServerGameMode, Log, TEXT("..with game lift!"));
 	InitGameLift();
 #endif
 }
 
-void AFBCGameMode::ConfigureServerParameters(FServerParameters& ServerParametersForAnywhere)
+void ADedicatedServerGameMode::ConfigureServerParameters(FServerParameters& ServerParametersForAnywhere)
 {
 #if WITH_GAMELIFT
-    UE_LOG(LogFBCGameMode, Log, TEXT("Configuring server parameters for Anywhere..."));
+    UE_LOG(LogDedicatedServerGameMode, Log, TEXT("Configuring server parameters for Anywhere..."));
 
     FString GlAnywhereWebSocketUrl = "";
     if (FParse::Value(FCommandLine::Get(), TEXT("-glAnywhereWebSocketUrl="), GlAnywhereWebSocketUrl))
@@ -90,21 +88,21 @@ void AFBCGameMode::ConfigureServerParameters(FServerParameters& ServerParameters
         ServerParametersForAnywhere.m_sessionToken = TCHAR_TO_UTF8(*GlAnywhereSessionToken);
     }
 
-    UE_LOG(LogFBCGameMode, SetColor, TEXT("%s"), COLOR_YELLOW);
-    UE_LOG(LogFBCGameMode, Log, TEXT(">>>> WebSocket URL: %s"), *ServerParametersForAnywhere.m_webSocketUrl);
-    UE_LOG(LogFBCGameMode, Log, TEXT(">>>> Fleet ID: %s"), *ServerParametersForAnywhere.m_fleetId);
-    UE_LOG(LogFBCGameMode, Log, TEXT(">>>> Process ID: %s"), *ServerParametersForAnywhere.m_processId);
-    UE_LOG(LogFBCGameMode, Log, TEXT(">>>> Host ID (Compute Name): %s"), *ServerParametersForAnywhere.m_hostId);
-    UE_LOG(LogFBCGameMode, Log, TEXT(">>>> Auth Token: %s"), *ServerParametersForAnywhere.m_authToken);
-    UE_LOG(LogFBCGameMode, Log, TEXT(">>>> Aws Region: %s"), *ServerParametersForAnywhere.m_awsRegion);
-    UE_LOG(LogFBCGameMode, Log, TEXT(">>>> Access Key: %s"), *ServerParametersForAnywhere.m_accessKey);
-    UE_LOG(LogFBCGameMode, Log, TEXT(">>>> Secret Key: %s"), *ServerParametersForAnywhere.m_secretKey);
-    UE_LOG(LogFBCGameMode, Log, TEXT(">>>> Session Token: %s"), *ServerParametersForAnywhere.m_sessionToken);
-    UE_LOG(LogFBCGameMode, SetColor, TEXT("%s"), COLOR_NONE);
+    UE_LOG(LogDedicatedServerGameMode, SetColor, TEXT("%s"), COLOR_YELLOW);
+    UE_LOG(LogDedicatedServerGameMode, Log, TEXT(">>>> WebSocket URL: %s"), *ServerParametersForAnywhere.m_webSocketUrl);
+    UE_LOG(LogDedicatedServerGameMode, Log, TEXT(">>>> Fleet ID: %s"), *ServerParametersForAnywhere.m_fleetId);
+    UE_LOG(LogDedicatedServerGameMode, Log, TEXT(">>>> Process ID: %s"), *ServerParametersForAnywhere.m_processId);
+    UE_LOG(LogDedicatedServerGameMode, Log, TEXT(">>>> Host ID (Compute Name): %s"), *ServerParametersForAnywhere.m_hostId);
+    UE_LOG(LogDedicatedServerGameMode, Log, TEXT(">>>> Auth Token: %s"), *ServerParametersForAnywhere.m_authToken);
+    UE_LOG(LogDedicatedServerGameMode, Log, TEXT(">>>> Aws Region: %s"), *ServerParametersForAnywhere.m_awsRegion);
+    UE_LOG(LogDedicatedServerGameMode, Log, TEXT(">>>> Access Key: %s"), *ServerParametersForAnywhere.m_accessKey);
+    UE_LOG(LogDedicatedServerGameMode, Log, TEXT(">>>> Secret Key: %s"), *ServerParametersForAnywhere.m_secretKey);
+    UE_LOG(LogDedicatedServerGameMode, Log, TEXT(">>>> Session Token: %s"), *ServerParametersForAnywhere.m_sessionToken);
+    UE_LOG(LogDedicatedServerGameMode, SetColor, TEXT("%s"), COLOR_NONE);
 #endif
 }
 
-int32 AFBCGameMode::GetPort()
+int32 ADedicatedServerGameMode::GetPort()
 {
     // Search command line arguments for port
     TArray<FString> CommandLineTokens;
@@ -131,18 +129,18 @@ int32 AFBCGameMode::GetPort()
     return FURL::UrlConfig.DefaultPort;
 }
 
-void AFBCGameMode::InitGameLift()
+void ADedicatedServerGameMode::InitGameLift()
 {
 #if WITH_GAMELIFT
 
-	UE_LOG(LogFBCGameMode, Log, TEXT("Initializing the GameLift Server"));
+	UE_LOG(LogDedicatedServerGameMode, Log, TEXT("Initializing the GameLift Server"));
 
 	FGameLiftServerSDKModule* GameLiftSDKModule = &FModuleManager::LoadModuleChecked<FGameLiftServerSDKModule>(FName("GameLiftServerSDK"));
 
 	// Server Parameters are only needed for GameLift Anywhere fleets. Not needed for GameLift managed EC2 fleet
 	FServerParameters ServerParams{};
 
-    UE_LOG(LogFBCGameMode, Log, TEXT("Calling InitGameLift..."));
+    UE_LOG(LogDedicatedServerGameMode, Log, TEXT("Calling InitGameLift..."));
 
     FGameLiftServerSDKModule* GameLiftSdkModule = &FModuleManager::LoadModuleChecked<FGameLiftServerSDKModule>(FName("GameLiftServerSDK"));
 
@@ -157,31 +155,31 @@ void AFBCGameMode::InitGameLift()
 
     if (bIsAnywhereActive)
     {
-        UE_LOG(LogFBCGameMode, Log, TEXT("Configuring server params for anywhere fleet"));
+        UE_LOG(LogDedicatedServerGameMode, Log, TEXT("Configuring server params for anywhere fleet"));
         ConfigureServerParameters(ServerParametersForAnywhere);
     }
     else
     {
-        UE_LOG(LogFBCGameMode, Log, TEXT("Skipping Anywhere server param configuration"));
+        UE_LOG(LogDedicatedServerGameMode, Log, TEXT("Skipping Anywhere server param configuration"));
     }
 
-    UE_LOG(LogFBCGameMode, Log, TEXT("Initializing the GameLift Server..."));
+    UE_LOG(LogDedicatedServerGameMode, Log, TEXT("Initializing the GameLift Server..."));
 
     // InitSDK will establish a local connection with GameLift's agent to enable further communication.
     FGameLiftGenericOutcome InitSdkOutcome = GameLiftSdkModule->InitSDK(ServerParametersForAnywhere);
     if (InitSdkOutcome.IsSuccess())
     {
-        UE_LOG(LogFBCGameMode, SetColor, TEXT("%s"), COLOR_GREEN);
-        UE_LOG(LogFBCGameMode, Log, TEXT("GameLift InitSDK succeeded!"));
-        UE_LOG(LogFBCGameMode, SetColor, TEXT("%s"), COLOR_NONE);
+        UE_LOG(LogDedicatedServerGameMode, SetColor, TEXT("%s"), COLOR_GREEN);
+        UE_LOG(LogDedicatedServerGameMode, Log, TEXT("GameLift InitSDK succeeded!"));
+        UE_LOG(LogDedicatedServerGameMode, SetColor, TEXT("%s"), COLOR_NONE);
     }
     else
     {
-        UE_LOG(LogFBCGameMode, SetColor, TEXT("%s"), COLOR_RED);
-        UE_LOG(LogFBCGameMode, Log, TEXT("ERROR: InitSDK failed : ("));
+        UE_LOG(LogDedicatedServerGameMode, SetColor, TEXT("%s"), COLOR_RED);
+        UE_LOG(LogDedicatedServerGameMode, Log, TEXT("ERROR: InitSDK failed : ("));
         FGameLiftError GameLiftError = InitSdkOutcome.GetError();
-        UE_LOG(LogFBCGameMode, Log, TEXT("ERROR: %s"), *GameLiftError.m_errorMessage);
-        UE_LOG(LogFBCGameMode, SetColor, TEXT("%s"), COLOR_NONE);
+        UE_LOG(LogDedicatedServerGameMode, Log, TEXT("ERROR: %s"), *GameLiftError.m_errorMessage);
+        UE_LOG(LogDedicatedServerGameMode, SetColor, TEXT("%s"), COLOR_NONE);
         return;
     }
 
@@ -193,7 +191,7 @@ void AFBCGameMode::InitGameLift()
     ProcessParameters->OnStartGameSession.BindLambda([=](Aws::GameLift::Server::Model::GameSession InGameSession)
         {
             FString GameSessionId = FString(InGameSession.GetGameSessionId());
-            UE_LOG(LogFBCGameMode, Log, TEXT("GameSession Initializing: %s"), *GameSessionId);
+            UE_LOG(LogDedicatedServerGameMode, Log, TEXT("GameSession Initializing: %s"), *GameSessionId);
             GameLiftSdkModule->ActivateGameSession();
         });
 
@@ -202,7 +200,7 @@ void AFBCGameMode::InitGameLift()
     // In this case, we simply tell Amazon GameLift Servers we are indeed going to shutdown.
     ProcessParameters->OnTerminate.BindLambda([=]()
         {
-            UE_LOG(LogFBCGameMode, Log, TEXT("Game Server Process is terminating"));
+            UE_LOG(LogDedicatedServerGameMode, Log, TEXT("Game Server Process is terminating"));
             GameLiftSdkModule->ProcessEnding();
         });
 
@@ -214,7 +212,7 @@ void AFBCGameMode::InitGameLift()
     // In this case, we're always healthy!
     ProcessParameters->OnHealthCheck.BindLambda([]()
         {
-            UE_LOG(LogFBCGameMode, Log, TEXT("Performing Health Check"));
+            UE_LOG(LogDedicatedServerGameMode, Log, TEXT("Performing Health Check"));
             return true;
         });
     
@@ -228,24 +226,24 @@ void AFBCGameMode::InitGameLift()
     ProcessParameters->logParameters = Logfiles;
 
     // The game server calls ProcessReady() to tell Amazon GameLift Servers it's ready to host game sessions.
-    UE_LOG(LogFBCGameMode, Log, TEXT("Calling Process Ready..."));
+    UE_LOG(LogDedicatedServerGameMode, Log, TEXT("Calling Process Ready..."));
     FGameLiftGenericOutcome ProcessReadyOutcome = GameLiftSdkModule->ProcessReady(*ProcessParameters);
 
     if (ProcessReadyOutcome.IsSuccess())
     {
-        UE_LOG(LogFBCGameMode, SetColor, TEXT("%s"), COLOR_GREEN);
-        UE_LOG(LogFBCGameMode, Log, TEXT("Process Ready!"));
-        UE_LOG(LogFBCGameMode, SetColor, TEXT("%s"), COLOR_NONE);
+        UE_LOG(LogDedicatedServerGameMode, SetColor, TEXT("%s"), COLOR_GREEN);
+        UE_LOG(LogDedicatedServerGameMode, Log, TEXT("Process Ready!"));
+        UE_LOG(LogDedicatedServerGameMode, SetColor, TEXT("%s"), COLOR_NONE);
     }
     else
     {
-        UE_LOG(LogFBCGameMode, SetColor, TEXT("%s"), COLOR_RED);
-        UE_LOG(LogFBCGameMode, Log, TEXT("ERROR: Process Ready Failed!"));
+        UE_LOG(LogDedicatedServerGameMode, SetColor, TEXT("%s"), COLOR_RED);
+        UE_LOG(LogDedicatedServerGameMode, Log, TEXT("ERROR: Process Ready Failed!"));
         FGameLiftError ProcessReadyError = ProcessReadyOutcome.GetError();
-        UE_LOG(LogFBCGameMode, Log, TEXT("ERROR: %s"), *ProcessReadyError.m_errorMessage);
-        UE_LOG(LogFBCGameMode, SetColor, TEXT("%s"), COLOR_NONE);
+        UE_LOG(LogDedicatedServerGameMode, Log, TEXT("ERROR: %s"), *ProcessReadyError.m_errorMessage);
+        UE_LOG(LogDedicatedServerGameMode, SetColor, TEXT("%s"), COLOR_NONE);
     }
 
-    UE_LOG(LogFBCGameMode, Log, TEXT("InitGameLift completed!"));
+    UE_LOG(LogDedicatedServerGameMode, Log, TEXT("InitGameLift completed!"));
 #endif
 }

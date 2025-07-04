@@ -4,19 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameMode.h"
-#include "FBCGameMode.generated.h"
+#include "DedicatedServerGameMode.generated.h"
 
 struct FServerParameters;
 struct FProcessParameters;
-DECLARE_LOG_CATEGORY_EXTERN(LogFBCGameMode, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogDedicatedServerGameMode, Log, All);
 
 UCLASS()
-class FORTNITEBUILDCLONE_API AFBCGameMode : public AGameMode
+class DEDICATEDSERVERS_API ADedicatedServerGameMode : public AGameMode
 {
 	GENERATED_BODY()
-
-public:
-	AFBCGameMode();
 
 protected:
 	virtual void BeginPlay() override;
