@@ -4,8 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "GameplayTags/DedicatedServersTags.h"
+#include "GameplayTagContainer.h"
 #include "APIData.generated.h"
+
 
 UCLASS()
 class DEDICATEDSERVERS_API UAPIData : public UDataAsset
