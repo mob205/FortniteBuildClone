@@ -5,8 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Interfaces/IHttpRequest.h"
-#include "UI/Test/APITestOverlay.h"
-
 #include "HTTPRequestManager.generated.h"
 
 struct FInstancedStruct;

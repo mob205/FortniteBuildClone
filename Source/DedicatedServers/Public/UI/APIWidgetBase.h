@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "APITestOverlay.generated.h"
+#include "APIWidgetBase.generated.h"
 
 class UAPIData;
 class UHTTPRequestManager;
 
 UCLASS()
-class DEDICATEDSERVERS_API UAPITestOverlay : public UUserWidget
+class DEDICATEDSERVERS_API UAPIWidgetBase : public UUserWidget
 {
 	GENERATED_BODY()
 

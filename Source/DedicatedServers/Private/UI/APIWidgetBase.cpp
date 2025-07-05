@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/Test/APITestOverlay.h"
+#include "UI/APIWidgetBase.h"
 #include "HTTP/HTTPRequestManager.h"
 
-void UAPITestOverlay::NativeConstruct()
+void UAPIWidgetBase::NativeConstruct()
 {
 	Super::NativeConstruct();
 

@@ -4,12 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
-#include "APITestHUD.generated.h"
+#include "APIInterfaceHUD.generated.h"
 
-class UAPITestOverlay;
+class UAPIWidgetBase;
 
 UCLASS()
-class DEDICATEDSERVERS_API AAPITestHUD : public AHUD
+class DEDICATEDSERVERS_API AAPIInterfaceHUD : public AHUD
 {
 	GENERATED_BODY()
 
@@ -17,9 +17,9 @@ protected:
 	virtual void BeginPlay() override;
 	
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UAPITestOverlay> APITestOverlayClass;
+	TSubclassOf<UAPIWidgetBase> APITestOverlayClass;
 
 private:
 	UPROPERTY()
-	TObjectPtr<UAPITestOverlay> APITestOverlay;
+	TObjectPtr<UAPIWidgetBase> APITestOverlay;
 };
