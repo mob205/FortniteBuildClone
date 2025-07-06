@@ -4,9 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "APIWidgetBase.h"
+#include "GameplayTagContainer.h"
+#include "StructUtils/InstancedStruct.h"
+#include "Data/APIResponseTypes.h"
 #include "PortalManager.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnJoinStatusChangedSignature, const FString&, StatusMessage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnJoinStatusChangedSignature, const FString&, StatusMessage, bool, bIsJoining);
 
 UCLASS()
 class DEDICATEDSERVERS_API UPortalManager : public UAPIWidgetBase
@@ -14,9 +17,17 @@ class DEDICATEDSERVERS_API UPortalManager : public UAPIWidgetBase
 	GENERATED_BODY()
 
 public:
+	UPortalManager();
+	
 	UPROPERTY(BlueprintAssignable)
 	FOnJoinStatusChangedSignature OnJoinStatusChanged;
 
 	UFUNCTION(BlueprintCallable)
 	void JoinGameSession();
+
+private:
+	FGameplayTag FindOrCreateGameSessionTag;
+	FGameSessionResponse APIResponse{};
+
+	void OnGameSessionFound(bool bWasSuccessful, FInstancedStruct Response);
 };

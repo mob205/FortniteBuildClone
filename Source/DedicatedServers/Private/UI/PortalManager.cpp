@@ -3,7 +3,32 @@
 
 #include "UI/PortalManager.h"
 
+#include "HTTP/HTTPRequestManager.h"
+
+UPortalManager::UPortalManager()
+{
+	FindOrCreateGameSessionTag = FGameplayTag::RequestGameplayTag("API.FindOrCreateGameSession");
+}
+
 void UPortalManager::JoinGameSession()
 {
-	OnJoinStatusChanged.Broadcast("Searching for a game session...");
+ 	HTTPManager->StartAPIRequest(
+		FindOrCreateGameSessionTag,
+		FGameSessionResponse::StaticStruct(),
+		FOnResponseReceivedPayloadSignature::CreateUObject(this, &UPortalManager::OnGameSessionFound));	
+	OnJoinStatusChanged.Broadcast("Searching for a game session...", true);
 }
+
+void UPortalManager::OnGameSessionFound(bool bWasSuccessful, FInstancedStruct InstancedResponse)
+{
+	FGameSessionResponse Response = InstancedResponse.Get<FGameSessionResponse>();
+	if (!bWasSuccessful || Response.FleetId.IsEmpty())
+	{
+		OnJoinStatusChanged.Broadcast("An error occurred.", false);
+	}
+	else
+	{
+		OnJoinStatusChanged.Broadcast("Found a game session!", true);
+	}
+}
+

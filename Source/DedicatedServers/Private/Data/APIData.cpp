@@ -3,9 +3,22 @@
 
 #include "Data/APIData.h"
 
+UAPIData::UAPIData()
+{
+	Verbs.Add(EAPIVerb::EAPIVerb_GET, "GET");
+	Verbs.Add(EAPIVerb::EAPIVerb_POST, "POST");
+}
+
 FString UAPIData::GetAPIEndpoint(const FGameplayTag& EndpointTag)
 {
-	const FString ResourceName = Resources.FindChecked(EndpointTag);
+	const FAPIEndpointDescription Resource = Resources.FindChecked(EndpointTag);
 
-	return InvokeURL + "/" + Stage +"/" + ResourceName;
+	return InvokeURL + "/" + Stage + "/" + Resource.Endpoint;
+}
+
+FString UAPIData::GetVerb(const FGameplayTag& EndpointTag)
+{
+	const FAPIEndpointDescription Resource = Resources.FindChecked(EndpointTag);
+
+	return Verbs.FindChecked(Resource.Verb);
 }

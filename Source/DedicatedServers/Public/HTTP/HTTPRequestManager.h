@@ -12,6 +12,7 @@ class UAPIData;
 class FJsonObject;
 
 DECLARE_DELEGATE_OneParam(FOnResponseReceivedSignature, bool);
+DECLARE_DELEGATE_TwoParams(FOnResponseReceivedPayloadSignature, bool, FInstancedStruct);
 
 UCLASS(Blueprintable, BlueprintType)
 class DEDICATEDSERVERS_API UHTTPRequestManager : public UObject
@@ -20,6 +21,8 @@ class DEDICATEDSERVERS_API UHTTPRequestManager : public UObject
 
 public:
 	void StartAPIRequest(FGameplayTag EndpointTag, FInstancedStruct& OutputStruct, FOnResponseReceivedSignature Callback);
+	void StartAPIRequest(FGameplayTag EndpointTag, UScriptStruct* StructType, FOnResponseReceivedPayloadSignature Callback);
+
 	
 	void SetAPIData(UAPIData* Data) { APIData = Data; }
 
@@ -32,4 +35,5 @@ private:
 	
 	bool ParseResponse(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful, FInstancedStruct& OutResult);
 
+	void StartAPIRequestInternal(TSharedRef<IHttpRequest> Request, const FGameplayTag& EndpointTag) const;
 };
