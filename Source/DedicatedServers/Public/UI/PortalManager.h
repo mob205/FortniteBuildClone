@@ -29,5 +29,13 @@ private:
 	FGameplayTag FindOrCreateGameSessionTag;
 	FGameSessionResponse APIResponse{};
 
+	FString GetUniquePlayerID() const;
+
+	void HandleGameSessionStatus(const FGameSessionResponse& GameSessionInfo);
+	
 	void OnGameSessionFound(bool bWasSuccessful, FInstancedStruct Response);
+
+	void TryCreatePlayerSession(const FString& PlayerID, const FString& GameSessionID);
+
+	FTimerHandle WaitForSessionHandle{};
 };
