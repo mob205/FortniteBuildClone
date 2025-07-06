@@ -3,8 +3,11 @@
 
 #include "UI/PortalManager.h"
 
+#include "DedicatedServers/DedicatedServersLogs.h"
 #include "GameFramework/PlayerState.h"
+#include "GameplayTags/APITags.h"
 #include "HTTP/HTTPRequestManager.h"
+#include "Kismet/GameplayStatics.h"
 
 UPortalManager::UPortalManager()
 {
@@ -65,5 +68,37 @@ FString UPortalManager::GetUniquePlayerID() const
 
 void UPortalManager::TryCreatePlayerSession(const FString& PlayerID, const FString& GameSessionID)
 {
+	FPlayerSessionRequest Request{PlayerID, GameSessionID};
+	FInstancedStruct RequestInstance = FInstancedStruct::Make<FPlayerSessionRequest>(Request);
 	
+	HTTPManager->StartAPIRequest(
+		APITags::CreatePlayerSession,
+		FPlayerSessionResponse::StaticStruct(),
+		FOnResponseReceivedPayloadSignature::CreateUObject(this, &UPortalManager::OnPlayerSessionCreated),
+		&RequestInstance
+		);
+}
+
+void UPortalManager::OnPlayerSessionCreated(bool bWasSuccessful, FInstancedStruct InstancedResponse)
+{
+	if (!bWasSuccessful)
+	{
+		UE_LOG(LogDedicatedServers, Error, TEXT("PortalManager: Invalid player session created response"));
+		return;
+	}
+	FPlayerSessionResponse Response = InstancedResponse.Get<FPlayerSessionResponse>();
+
+
+	// Reset player input mode
+	// Maybe do this when we actually get to the level?
+	APlayerController* PC = GEngine->GetFirstLocalPlayerController(GetWorld());
+	if (IsValid(PC))
+	{
+		FInputModeGameOnly InputMode{};
+		PC->SetInputMode(InputMode);
+		PC->SetShowMouseCursor(false);
+	}
+	
+	const FName Address = *(Response.IpAddress + TEXT(":") + FString::FromInt(Response.Port)); 
+	UGameplayStatics::OpenLevel(this, Address);
 }

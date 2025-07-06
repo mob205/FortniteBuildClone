@@ -25,7 +25,7 @@ void UHTTPRequestManager::StartAPIRequest(FGameplayTag EndpointTag, FInstancedSt
 	StartAPIRequestInternal(Request, EndpointTag);
 }
 
-void UHTTPRequestManager::StartAPIRequest(FGameplayTag EndpointTag, UScriptStruct* StructType, FOnResponseReceivedPayloadSignature Callback)
+void UHTTPRequestManager::StartAPIRequest(FGameplayTag EndpointTag, UScriptStruct* StructType, FOnResponseReceivedPayloadSignature Callback, const FInstancedStruct* RequestBody)
 {
 	TSharedRef<IHttpRequest> Request = FHttpModule::Get().CreateRequest();
 	Request->OnProcessRequestComplete().BindLambda([this, Callback, StructType]
@@ -36,10 +36,10 @@ void UHTTPRequestManager::StartAPIRequest(FGameplayTag EndpointTag, UScriptStruc
 		Callback.ExecuteIfBound(bResult, OutputStruct);
 	});
 
-	StartAPIRequestInternal(Request, EndpointTag);
+	StartAPIRequestInternal(Request, EndpointTag, RequestBody);
 }
 
-void UHTTPRequestManager::StartAPIRequestInternal(TSharedRef<IHttpRequest> Request, const FGameplayTag& EndpointTag) const
+void UHTTPRequestManager::StartAPIRequestInternal(TSharedRef<IHttpRequest> Request, const FGameplayTag& EndpointTag, const FInstancedStruct* RequestBody) const
 {
 	check(APIData);
 
@@ -48,6 +48,14 @@ void UHTTPRequestManager::StartAPIRequestInternal(TSharedRef<IHttpRequest> Reque
 	Request->SetURL(APIUrl);
 	Request->SetVerb(Verb);
 	Request->SetHeader("Content-Type", "application/json");
+	
+	if (RequestBody)
+	{
+		FString Content{};
+		FJsonObjectConverter::UStructToJsonObjectString(*RequestBody, Content);
+		Request->SetContentAsString(Content);
+	}
+	
 	Request->ProcessRequest();
 }
 

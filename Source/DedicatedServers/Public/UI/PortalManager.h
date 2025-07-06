@@ -37,5 +37,7 @@ private:
 
 	void TryCreatePlayerSession(const FString& PlayerID, const FString& GameSessionID);
 
+	void OnPlayerSessionCreated(bool bWasSuccessful, FInstancedStruct Response);
+	
 	FTimerHandle WaitForSessionHandle{};
 };

@@ -67,3 +67,57 @@ struct FGameSessionResponse
 	UPROPERTY()
 	double TerminationTime{};
 };
+
+USTRUCT()
+struct FPlayerSessionRequest
+{
+	GENERATED_BODY()
+	
+	UPROPERTY()
+	FString PlayerId{};
+
+	UPROPERTY()
+	FString GameSessionId{};
+};
+
+USTRUCT()
+struct FPlayerSessionResponse
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	double CreationTime{};
+
+	UPROPERTY()
+	FString DnsName{};
+
+	UPROPERTY()
+	FString FleetArn{};
+
+	UPROPERTY()
+	FString FleetId{};
+
+	UPROPERTY()
+	FString GameSessionId{};
+
+	UPROPERTY()
+	FString IpAddress{};
+
+	UPROPERTY()
+	FString PlayerData{};
+
+	UPROPERTY()
+	FString PlayerId{};
+
+	UPROPERTY()
+	FString PlayerSessionId{};
+
+	UPROPERTY()
+	int32 Port{};
+
+	UPROPERTY()
+	FString Status{};
+
+	UPROPERTY()
+	double TerminationTime{};
+};
