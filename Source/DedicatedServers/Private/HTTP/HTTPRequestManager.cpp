@@ -52,7 +52,7 @@ void UHTTPRequestManager::StartAPIRequestInternal(TSharedRef<IHttpRequest> Reque
 	if (RequestBody)
 	{
 		FString Content{};
-		FJsonObjectConverter::UStructToJsonObjectString(*RequestBody, Content);
+		FJsonObjectConverter::UStructToJsonObjectString(RequestBody->GetScriptStruct(), RequestBody->GetMemory(), Content);
 		Request->SetContentAsString(Content);
 	}
 	

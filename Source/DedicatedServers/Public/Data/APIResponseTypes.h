@@ -86,7 +86,7 @@ struct FPlayerSessionResponse
 	GENERATED_BODY()
 
 	UPROPERTY()
-	double CreationTime{};
+	FString CreationTime{};
 
 	UPROPERTY()
 	FString DnsName{};
@@ -119,5 +119,5 @@ struct FPlayerSessionResponse
 	FString Status{};
 
 	UPROPERTY()
-	double TerminationTime{};
+	FString TerminationTime{};
 };
