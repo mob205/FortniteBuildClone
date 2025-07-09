@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "Data/APIData.h"
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "StructUtils/InstancedStruct.h"
 #include "AsyncActionSendHTTPRequest.generated.h"
@@ -18,8 +19,12 @@ class DEDICATEDSERVERS_API UAsyncActionSendHTTPRequest : public UBlueprintAsyncA
 	GENERATED_BODY()
 
 public:
+	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true", WorldContext="WorldContextObject"))
+	static UAsyncActionSendHTTPRequest* AsyncSendAPIRequestWithContent(UObject* WorldContextObject, FGameplayTag EndpointTag, const UAPIData* APIData, UStruct* OutputStructType, const
+	                                                                   FInstancedStruct& RequestContent);
+	
 	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true"))
-	static UAsyncActionSendHTTPRequest* AsyncSendAPIRequest(UHTTPRequestManager* HTTPManager, FGameplayTag EndpointTag, UStruct* StructType);
+	static UAsyncActionSendHTTPRequest* AsyncSendAPIRequest(UObject* WorldContextObject, FGameplayTag EndpointTag, const UAPIData* APIData, UStruct* OutputStructType);
 
 	UPROPERTY(BlueprintAssignable)
 	FOnRequestCompleteSignature OnCompleted;
@@ -29,9 +34,11 @@ public:
 private:
 	FGameplayTag EndpointTag;
 
-	TObjectPtr<UHTTPRequestManager> HTTPManager{};
+	TObjectPtr<const UAPIData> APIData{};
 
-	FInstancedStruct Result{};
-
-	void OnResponseReceived(bool bWasSuccessful);
+	UScriptStruct* OutputStructType{};
+	
+	const FInstancedStruct* InputStruct{};
+	
+	void OnResponseReceived(bool bWasSuccessful, FInstancedStruct&& Result);
 };

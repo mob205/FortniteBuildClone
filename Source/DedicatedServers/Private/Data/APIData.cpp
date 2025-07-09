@@ -9,14 +9,14 @@ UAPIData::UAPIData()
 	Verbs.Add(EAPIVerb::EAPIVerb_POST, "POST");
 }
 
-FString UAPIData::GetAPIEndpoint(const FGameplayTag& EndpointTag)
+FString UAPIData::GetAPIEndpoint(const FGameplayTag& EndpointTag) const
 {
 	const FAPIEndpointDescription Resource = Resources.FindChecked(EndpointTag);
 
 	return InvokeURL + "/" + Stage + "/" + Resource.Endpoint;
 }
 
-FString UAPIData::GetVerb(const FGameplayTag& EndpointTag)
+FString UAPIData::GetVerb(const FGameplayTag& EndpointTag) const
 {
 	const FAPIEndpointDescription Resource = Resources.FindChecked(EndpointTag);
 

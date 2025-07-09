@@ -33,9 +33,8 @@ class DEDICATEDSERVERS_API UAPIData : public UDataAsset
 
 public:
 	UAPIData();
-	
-	FString GetAPIEndpoint(const FGameplayTag& EndpointTag);
-	FString GetVerb(const FGameplayTag& EndpointTag);
+	FString GetAPIEndpoint(const FGameplayTag& EndpointTag) const;
+	FString GetVerb(const FGameplayTag& EndpointTag) const;
 	
 protected:
 	UPROPERTY(EditDefaultsOnly)

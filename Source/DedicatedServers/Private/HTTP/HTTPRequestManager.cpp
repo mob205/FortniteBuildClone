@@ -12,39 +12,37 @@
 #include "StructUtils/InstancedStruct.h"
 
 
-void UHTTPRequestManager::StartAPIRequest(FGameplayTag EndpointTag, FInstancedStruct& OutputStruct, FOnResponseReceivedSignature Callback)
+void UHTTPRequestManager::StartAPIRequest(const FGameplayTag& EndpointTag, const UAPIData& APIData, FInstancedStruct& OutputStruct, FOnResponseReceivedSignature Callback)
 {
 	TSharedRef<IHttpRequest> Request = FHttpModule::Get().CreateRequest();
-	Request->OnProcessRequestComplete().BindLambda([this, Callback, &OutputStruct]
+	Request->OnProcessRequestComplete().BindLambda([Callback, &OutputStruct]
 		(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 		{
 			bool bResult = ParseResponse(Request, Response, bWasSuccessful, OutputStruct);
 			Callback.ExecuteIfBound(bResult);
 		});
 
-	StartAPIRequestInternal(Request, EndpointTag);
+	StartAPIRequestInternal(Request, EndpointTag, APIData);
 }
 
-void UHTTPRequestManager::StartAPIRequest(FGameplayTag EndpointTag, UScriptStruct* StructType, FOnResponseReceivedPayloadSignature Callback, const FInstancedStruct* RequestBody)
+void UHTTPRequestManager::StartAPIRequest(const FGameplayTag& EndpointTag, const UAPIData& APIData, UScriptStruct* StructType, FOnResponseReceivedPayloadSignature Callback, const FInstancedStruct* RequestBody)
 {
 	TSharedRef<IHttpRequest> Request = FHttpModule::Get().CreateRequest();
-	Request->OnProcessRequestComplete().BindLambda([this, Callback, StructType]
+	Request->OnProcessRequestComplete().BindLambda([Callback, StructType]
 	(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 	{
 		FInstancedStruct OutputStruct{StructType};
 		bool bResult = ParseResponse(Request, Response, bWasSuccessful, OutputStruct);
-		Callback.ExecuteIfBound(bResult, OutputStruct);
+		Callback.ExecuteIfBound(bResult, MoveTemp(OutputStruct));
 	});
 
-	StartAPIRequestInternal(Request, EndpointTag, RequestBody);
+	StartAPIRequestInternal(Request, EndpointTag, APIData, RequestBody);
 }
 
-void UHTTPRequestManager::StartAPIRequestInternal(TSharedRef<IHttpRequest> Request, const FGameplayTag& EndpointTag, const FInstancedStruct* RequestBody) const
+void UHTTPRequestManager::StartAPIRequestInternal(TSharedRef<IHttpRequest> Request, const FGameplayTag& EndpointTag, const UAPIData& APIData, const FInstancedStruct* RequestBody)
 {
-	check(APIData);
-
-	const FString APIUrl = APIData->GetAPIEndpoint(EndpointTag);
-	const FString Verb = APIData->GetVerb(EndpointTag);
+	const FString APIUrl = APIData.GetAPIEndpoint(EndpointTag);
+	const FString Verb = APIData.GetVerb(EndpointTag);
 	Request->SetURL(APIUrl);
 	Request->SetVerb(Verb);
 	Request->SetHeader("Content-Type", "application/json");

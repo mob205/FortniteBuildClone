@@ -5,34 +5,26 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Interfaces/IHttpRequest.h"
-#include "HTTPRequestManager.generated.h"
 
 struct FInstancedStruct;
 class UAPIData;
 class FJsonObject;
 
 DECLARE_DELEGATE_OneParam(FOnResponseReceivedSignature, bool);
-DECLARE_DELEGATE_TwoParams(FOnResponseReceivedPayloadSignature, bool, FInstancedStruct);
+DECLARE_DELEGATE_TwoParams(FOnResponseReceivedPayloadSignature, bool, FInstancedStruct&&);
 
-UCLASS(Blueprintable, BlueprintType)
-class DEDICATEDSERVERS_API UHTTPRequestManager : public UObject
+class DEDICATEDSERVERS_API UHTTPRequestManager
 {
-	GENERATED_BODY()
-
 public:
-	void StartAPIRequest(FGameplayTag EndpointTag, FInstancedStruct& OutputStruct, FOnResponseReceivedSignature Callback);
-	void StartAPIRequest(FGameplayTag EndpointTag, UScriptStruct* StructType, FOnResponseReceivedPayloadSignature Callback, const FInstancedStruct* RequestBody = nullptr);
+	static void StartAPIRequest(const FGameplayTag& EndpointTag, const UAPIData& APIData, FInstancedStruct& OutputStruct,
+		FOnResponseReceivedSignature Callback);
+	static void StartAPIRequest(const FGameplayTag& EndpointTag, const UAPIData& APIData, UScriptStruct* OutputStructType,
+		FOnResponseReceivedPayloadSignature Callback, const FInstancedStruct* RequestBody = nullptr);
 	
-	void SetAPIData(UAPIData* Data) { APIData = Data; }
-
-protected:
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UAPIData> APIData;
-
 private:
-	bool ContainsError(TSharedPtr<FJsonObject> JsonObject);
+	static bool ContainsError(TSharedPtr<FJsonObject> JsonObject);
 	
-	bool ParseResponse(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful, FInstancedStruct& OutResult);
+	static bool ParseResponse(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful, FInstancedStruct& OutResult);
 
-	void StartAPIRequestInternal(TSharedRef<IHttpRequest> Request, const FGameplayTag& EndpointTag, const FInstancedStruct* RequestBody = nullptr) const;
+	static void StartAPIRequestInternal(TSharedRef<IHttpRequest> Request, const FGameplayTag& EndpointTag, const UAPIData& APIData, const FInstancedStruct* RequestBody = nullptr);
 };

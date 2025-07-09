@@ -24,20 +24,17 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void JoinGameSession();
-
+	
 private:
-	FGameplayTag FindOrCreateGameSessionTag;
-	FGameSessionResponse APIResponse{};
-
 	FString GetUniquePlayerID() const;
 
 	void HandleGameSessionStatus(const FGameSessionResponse& GameSessionInfo);
 	
-	void OnGameSessionFound(bool bWasSuccessful, FInstancedStruct Response);
+	void OnGameSessionFound(bool bWasSuccessful, FInstancedStruct&& InstancedResponse);
 
 	void TryCreatePlayerSession(const FString& PlayerID, const FString& GameSessionID);
 
-	void OnPlayerSessionCreated(bool bWasSuccessful, FInstancedStruct Response);
+	void OnPlayerSessionCreated(bool bWasSuccessful, FInstancedStruct&& InstancedResponse);
 	
 	FTimerHandle WaitForSessionHandle{};
 };

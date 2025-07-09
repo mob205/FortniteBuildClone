@@ -8,16 +8,26 @@
 #include "StructUtils/InstancedStruct.h"
 
 
-UAsyncActionSendHTTPRequest* UAsyncActionSendHTTPRequest::AsyncSendAPIRequest(UHTTPRequestManager* HTTPManager, FGameplayTag EndpointTag, UStruct* StructType)
+UAsyncActionSendHTTPRequest* UAsyncActionSendHTTPRequest::AsyncSendAPIRequestWithContent(UObject* WorldContextObject,
+	FGameplayTag EndpointTag, const UAPIData* APIData, UStruct* OutputStructType, const FInstancedStruct& RequestContent)
+{
+	UAsyncActionSendHTTPRequest* Action = AsyncSendAPIRequest(WorldContextObject, EndpointTag, APIData, OutputStructType);
+	Action->InputStruct = &RequestContent;
+	
+	return Action;
+}
+
+UAsyncActionSendHTTPRequest* UAsyncActionSendHTTPRequest::AsyncSendAPIRequest(
+	UObject* WorldContextObject, FGameplayTag EndpointTag, const UAPIData* APIData, UStruct* OutputStructType)
 {
 	UAsyncActionSendHTTPRequest* Action = NewObject<UAsyncActionSendHTTPRequest>();
-	Action->RegisterWithGameInstance(HTTPManager);
+	Action->RegisterWithGameInstance(WorldContextObject);
 
 	// We need our data to be outputted as a FInstancedStruct for compatibility with Blueprints, which uses UScriptStruct,
 	// but the Blueprint dropdown for UStruct is nicer than UScriptStruct
-	Action->Result.InitializeAs(Cast<UScriptStruct>(StructType), nullptr);
+	Action->OutputStructType = Cast<UScriptStruct>(OutputStructType);
 	Action->EndpointTag = EndpointTag;
-	Action->HTTPManager = HTTPManager;
+	Action->APIData = APIData;
 	
 	return Action;
 }
@@ -26,15 +36,17 @@ void UAsyncActionSendHTTPRequest::Activate()
 {
 	Super::Activate();
 
-	HTTPManager->StartAPIRequest(
+	UHTTPRequestManager::StartAPIRequest(
 		EndpointTag,
-		Result,
-		FOnResponseReceivedSignature::CreateUObject(this, &UAsyncActionSendHTTPRequest::OnResponseReceived));
+		*APIData,
+		OutputStructType,
+		FOnResponseReceivedPayloadSignature::CreateUObject(this, &UAsyncActionSendHTTPRequest::OnResponseReceived),
+		InputStruct);
 }
 
-void UAsyncActionSendHTTPRequest::OnResponseReceived(bool bWasSuccessful)
+void UAsyncActionSendHTTPRequest::OnResponseReceived(bool bWasSuccessful, FInstancedStruct&& Result)
 {
-	OnCompleted.Broadcast(bWasSuccessful, Result);
+	OnCompleted.Broadcast(bWasSuccessful, MoveTemp(Result));
 
 	SetReadyToDestroy();
 	MarkAsGarbage();

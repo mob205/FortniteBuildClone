@@ -11,19 +11,19 @@
 
 UPortalManager::UPortalManager()
 {
-	FindOrCreateGameSessionTag = FGameplayTag::RequestGameplayTag("API.FindOrCreateGameSession");
 }
 
 void UPortalManager::JoinGameSession()
 {
- 	HTTPManager->StartAPIRequest(
-		FindOrCreateGameSessionTag,
-		FGameSessionResponse::StaticStruct(),
-		FOnResponseReceivedPayloadSignature::CreateUObject(this, &UPortalManager::OnGameSessionFound));	
+ 	UHTTPRequestManager::StartAPIRequest(
+	    APITags::FindOrCreateGameSession,
+	    *APIData,
+	    FGameSessionResponse::StaticStruct(),
+	    FOnResponseReceivedPayloadSignature::CreateUObject(this, &UPortalManager::OnGameSessionFound));	
 	OnJoinStatusChanged.Broadcast("Searching for a game session...", true);
 }
 
-void UPortalManager::OnGameSessionFound(bool bWasSuccessful, FInstancedStruct InstancedResponse)
+void UPortalManager::OnGameSessionFound(bool bWasSuccessful, FInstancedStruct&& InstancedResponse)
 {
 	FGameSessionResponse Response = InstancedResponse.Get<FGameSessionResponse>();
 	if (!bWasSuccessful || Response.FleetId.IsEmpty())
@@ -71,15 +71,15 @@ void UPortalManager::TryCreatePlayerSession(const FString& PlayerID, const FStri
 	FPlayerSessionRequest Request{PlayerID, GameSessionID};
 	FInstancedStruct RequestInstance = FInstancedStruct::Make<FPlayerSessionRequest>(Request);
 	
-	HTTPManager->StartAPIRequest(
+	UHTTPRequestManager::StartAPIRequest(
 		APITags::CreatePlayerSession,
+		*APIData,
 		FPlayerSessionResponse::StaticStruct(),
-		FOnResponseReceivedPayloadSignature::CreateUObject(this, &UPortalManager::OnPlayerSessionCreated),
-		&RequestInstance
-		);
+		FOnResponseReceivedPayloadSignature::CreateUObject(this, &UPortalManager::OnPlayerSessionCreated), &RequestInstance
+	);
 }
 
-void UPortalManager::OnPlayerSessionCreated(bool bWasSuccessful, FInstancedStruct InstancedResponse)
+void UPortalManager::OnPlayerSessionCreated(bool bWasSuccessful, FInstancedStruct&& InstancedResponse)
 {
 	if (!bWasSuccessful)
 	{

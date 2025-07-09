@@ -17,12 +17,4 @@ class DEDICATEDSERVERS_API UAPIWidgetBase : public UUserWidget
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UAPIData> APIData;
-	
-	UPROPERTY(BlueprintReadOnly)
-	TObjectPtr<UHTTPRequestManager> HTTPManager{};
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnHTTPManagerSet();
-	
-	virtual void NativeConstruct() override;
 };
