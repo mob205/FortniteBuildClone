@@ -9,7 +9,7 @@
 
 
 UAsyncActionSendHTTPRequest* UAsyncActionSendHTTPRequest::AsyncSendAPIRequestWithContent(UObject* WorldContextObject,
-	FGameplayTag EndpointTag, const UAPIData* APIData, UStruct* OutputStructType, const FInstancedStruct& RequestContent)
+	FGameplayTag EndpointTag, const UAPIData* APIData, UScriptStruct* OutputStructType, const FInstancedStruct& RequestContent)
 {
 	UAsyncActionSendHTTPRequest* Action = AsyncSendAPIRequest(WorldContextObject, EndpointTag, APIData, OutputStructType);
 	Action->InputStruct = &RequestContent;
@@ -18,13 +18,11 @@ UAsyncActionSendHTTPRequest* UAsyncActionSendHTTPRequest::AsyncSendAPIRequestWit
 }
 
 UAsyncActionSendHTTPRequest* UAsyncActionSendHTTPRequest::AsyncSendAPIRequest(
-	UObject* WorldContextObject, FGameplayTag EndpointTag, const UAPIData* APIData, UStruct* OutputStructType)
+	UObject* WorldContextObject, FGameplayTag EndpointTag, const UAPIData* APIData, UScriptStruct* OutputStructType)
 {
 	UAsyncActionSendHTTPRequest* Action = NewObject<UAsyncActionSendHTTPRequest>();
 	Action->RegisterWithGameInstance(WorldContextObject);
-
-	// We need our data to be outputted as a FInstancedStruct for compatibility with Blueprints, which uses UScriptStruct,
-	// but the Blueprint dropdown for UStruct is nicer than UScriptStruct
+	
 	Action->OutputStructType = Cast<UScriptStruct>(OutputStructType);
 	Action->EndpointTag = EndpointTag;
 	Action->APIData = APIData;

@@ -11,7 +11,8 @@ UENUM(BlueprintType)
 enum class EAPIVerb : uint8
 {
 	EAPIVerb_GET UMETA(DisplayName = "GET"),
-	EAPIVerb_POST UMETA(DisplayName = "POST")
+	EAPIVerb_POST UMETA(DisplayName = "POST"),
+	EAPIVerb_PUT UMETA(DisplayName = "PUT"),
 };
 
 USTRUCT(BlueprintType)

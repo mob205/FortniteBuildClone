@@ -7,6 +7,7 @@ UAPIData::UAPIData()
 {
 	Verbs.Add(EAPIVerb::EAPIVerb_GET, "GET");
 	Verbs.Add(EAPIVerb::EAPIVerb_POST, "POST");
+	Verbs.Add(EAPIVerb::EAPIVerb_PUT, "PUT");
 }
 
 FString UAPIData::GetAPIEndpoint(const FGameplayTag& EndpointTag) const
