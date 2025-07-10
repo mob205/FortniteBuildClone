@@ -5,19 +5,35 @@
 
 #include "UI/APIWidgetBase.h"
 
-void AAPIInterfaceHUD::BeginPlay()
+void APortalHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
 	APlayerController* PC = GetOwningPlayerController();
 	
-	if (IsValid(PC) && APITestOverlayClass)
+	if (IsValid(PC) && SignInOverlayClass)
 	{
-		APITestOverlay = CreateWidget<UAPIWidgetBase>(PC, APITestOverlayClass);
-		APITestOverlay->AddToViewport();
+		SignInOverlay = CreateWidget<UAPIWidgetBase>(PC, SignInOverlayClass);
+		SignInOverlay->AddToViewport();
 
 		FInputModeGameAndUI InputModeData;
 		PC->SetInputMode(InputModeData);
 		PC->SetShowMouseCursor(true);
+	}
+}
+
+void APortalHUD::OnSignIn()
+{
+	if (IsValid(SignInOverlay))
+	{
+		SignInOverlay->RemoveFromParent();
+		SignInOverlay = nullptr;
+	}
+	
+	APlayerController* PC = GetOwningPlayerController();
+	if (IsValid(PC) && DashboardOverlayClass)
+	{
+		DashboardOverlay = CreateWidget<UAPIWidgetBase>(PC, DashboardOverlayClass);
+		DashboardOverlay->AddToViewport();
 	}
 }

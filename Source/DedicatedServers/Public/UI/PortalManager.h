@@ -24,7 +24,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void JoinGameSession();
-	
+
 private:
 	FString GetUniquePlayerID() const;
 

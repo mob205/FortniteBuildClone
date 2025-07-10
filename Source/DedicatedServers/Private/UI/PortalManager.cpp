@@ -8,6 +8,7 @@
 #include "GameplayTags/APITags.h"
 #include "HTTP/HTTPRequestManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/CredentialLocalPlayerSubsystem.h"
 
 UPortalManager::UPortalManager()
 {

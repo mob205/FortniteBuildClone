@@ -235,3 +235,12 @@ struct FConfirmSignUpRequest
 	UPROPERTY(BlueprintReadWrite)
 	FString ConfirmationCode{};
 };
+
+USTRUCT()
+struct FRefreshAuthenticationRequest
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FString RefreshToken;
+};
