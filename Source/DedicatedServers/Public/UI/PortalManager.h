@@ -17,7 +17,6 @@ class DEDICATEDSERVERS_API UPortalManager : public UAPIWidgetBase
 	GENERATED_BODY()
 
 public:
-	UPortalManager();
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnJoinStatusChangedSignature OnJoinStatusChanged;

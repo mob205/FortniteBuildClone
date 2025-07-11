@@ -8,4 +8,5 @@ namespace APITags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(SignUp, "API.Portal.SignUp", "Sign up for a new player account");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(ConfirmSignUp, "API.Portal.ConfirmSignUp", "Confirms a new account using verification code");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(SignIn, "API.Portal.SignIn", "Retrieves auth tokens for user");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(SignOut, "API.Portal.SignOut", "Invalidates auth tokens for the user");
 }

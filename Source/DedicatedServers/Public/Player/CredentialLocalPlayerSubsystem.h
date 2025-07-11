@@ -19,6 +19,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void InitializeAuthTokens(const FAuthenticationResult& Result, const UAPIData* RefreshAPIData);
 
+	UFUNCTION(BlueprintCallable)
+	const FAuthenticationResult& GetAuthTokens() const;
+
+	UFUNCTION(BlueprintCallable)
+	void SetUsername(const FString& InUsername) { Username = InUsername; }
+
+	UFUNCTION(BlueprintCallable)
+	const FString& GetUsername() const { return Username;}
 protected:
 	float TokenRefreshInterval = 2700.f;
 
@@ -28,6 +36,8 @@ private:
 	void OnTokensRefreshed(bool bWasSuccessful, FInstancedStruct&& Response);
 
 	TObjectPtr<const UAPIData> APIData{};
+
+	FString Username{};
 
 	FAuthenticationResult AuthTokens;
 	

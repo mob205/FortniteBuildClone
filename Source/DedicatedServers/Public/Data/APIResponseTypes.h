@@ -244,3 +244,12 @@ struct FRefreshAuthenticationRequest
 	UPROPERTY()
 	FString RefreshToken;
 };
+
+USTRUCT(BlueprintType)
+struct FSignOutRequest
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite)
+	FString AccessToken;
+};

@@ -10,10 +10,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Player/CredentialLocalPlayerSubsystem.h"
 
-UPortalManager::UPortalManager()
-{
-}
-
 void UPortalManager::JoinGameSession()
 {
  	UHTTPRequestManager::StartAPIRequest(

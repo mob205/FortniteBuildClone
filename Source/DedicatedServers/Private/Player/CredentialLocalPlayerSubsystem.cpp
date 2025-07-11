@@ -22,6 +22,11 @@ void UCredentialLocalPlayerSubsystem::InitializeAuthTokens(const FAuthentication
 	}
 }
 
+const FAuthenticationResult& UCredentialLocalPlayerSubsystem::GetAuthTokens() const
+{
+	return AuthTokens;
+}
+
 void UCredentialLocalPlayerSubsystem::RefreshTokens()
 {
 	FRefreshAuthenticationRequest Request{ AuthTokens.RefreshToken };
@@ -32,8 +37,7 @@ void UCredentialLocalPlayerSubsystem::RefreshTokens()
 		*APIData,
 		FSignInResponse::StaticStruct(),
 		FOnResponseReceivedPayloadSignature::CreateUObject(this, &UCredentialLocalPlayerSubsystem::OnTokensRefreshed),
-		&InstancedRequest
-		);
+		&InstancedRequest);
 }
 
 void UCredentialLocalPlayerSubsystem::OnTokensRefreshed(bool bWasSuccessful, FInstancedStruct&& InstancedResponse)

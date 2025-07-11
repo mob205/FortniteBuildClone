@@ -12,7 +12,8 @@
 #include "StructUtils/InstancedStruct.h"
 
 
-void UHTTPRequestManager::StartAPIRequest(const FGameplayTag& EndpointTag, const UAPIData& APIData, FInstancedStruct& OutputStruct, FOnResponseReceivedSignature Callback)
+void UHTTPRequestManager::StartAPIRequest(const FGameplayTag& EndpointTag, const UAPIData& APIData,
+	FInstancedStruct& OutputStruct, FOnResponseReceivedSignature Callback, const FString* AccessToken)
 {
 	TSharedRef<IHttpRequest> Request = FHttpModule::Get().CreateRequest();
 	Request->OnProcessRequestComplete().BindLambda([Callback, &OutputStruct]
@@ -25,7 +26,9 @@ void UHTTPRequestManager::StartAPIRequest(const FGameplayTag& EndpointTag, const
 	StartAPIRequestInternal(Request, EndpointTag, APIData);
 }
 
-void UHTTPRequestManager::StartAPIRequest(const FGameplayTag& EndpointTag, const UAPIData& APIData, UScriptStruct* StructType, FOnResponseReceivedPayloadSignature Callback, const FInstancedStruct* RequestBody)
+void UHTTPRequestManager::StartAPIRequest(const FGameplayTag& EndpointTag, const UAPIData& APIData,
+	UScriptStruct* StructType, FOnResponseReceivedPayloadSignature Callback, const FInstancedStruct* RequestBody,
+	const FString* AccessToken)
 {
 	TSharedRef<IHttpRequest> Request = FHttpModule::Get().CreateRequest();
 	Request->OnProcessRequestComplete().BindLambda([Callback, StructType]
@@ -39,13 +42,19 @@ void UHTTPRequestManager::StartAPIRequest(const FGameplayTag& EndpointTag, const
 	StartAPIRequestInternal(Request, EndpointTag, APIData, RequestBody);
 }
 
-void UHTTPRequestManager::StartAPIRequestInternal(TSharedRef<IHttpRequest> Request, const FGameplayTag& EndpointTag, const UAPIData& APIData, const FInstancedStruct* RequestBody)
+void UHTTPRequestManager::StartAPIRequestInternal(TSharedRef<IHttpRequest> Request, const FGameplayTag& EndpointTag,
+	const UAPIData& APIData, const FInstancedStruct* RequestBody, const FString* AccessToken)
 {
 	const FString APIUrl = APIData.GetAPIEndpoint(EndpointTag);
 	const FString Verb = APIData.GetVerb(EndpointTag);
 	Request->SetURL(APIUrl);
 	Request->SetVerb(Verb);
 	Request->SetHeader("Content-Type", "application/json");
+
+	if (AccessToken)
+	{
+		Request->SetHeader("Authorization", *AccessToken);
+	}
 	
 	if (RequestBody)
 	{

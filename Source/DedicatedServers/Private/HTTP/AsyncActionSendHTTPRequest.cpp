@@ -9,16 +9,17 @@
 
 
 UAsyncActionSendHTTPRequest* UAsyncActionSendHTTPRequest::AsyncSendAPIRequestWithContent(UObject* WorldContextObject,
-	FGameplayTag EndpointTag, const UAPIData* APIData, UScriptStruct* OutputStructType, const FInstancedStruct& RequestContent)
+	FGameplayTag EndpointTag, const UAPIData* APIData, UScriptStruct* OutputStructType, const FInstancedStruct& RequestContent,
+	const FString& AccessToken)
 {
-	UAsyncActionSendHTTPRequest* Action = AsyncSendAPIRequest(WorldContextObject, EndpointTag, APIData, OutputStructType);
+	UAsyncActionSendHTTPRequest* Action = AsyncSendAPIRequest(WorldContextObject, EndpointTag, APIData, OutputStructType, AccessToken);
 	Action->InputStruct = &RequestContent;
 	
 	return Action;
 }
 
 UAsyncActionSendHTTPRequest* UAsyncActionSendHTTPRequest::AsyncSendAPIRequest(
-	UObject* WorldContextObject, FGameplayTag EndpointTag, const UAPIData* APIData, UScriptStruct* OutputStructType)
+	UObject* WorldContextObject, FGameplayTag EndpointTag, const UAPIData* APIData, UScriptStruct* OutputStructType, const FString& AccessToken)
 {
 	UAsyncActionSendHTTPRequest* Action = NewObject<UAsyncActionSendHTTPRequest>();
 	Action->RegisterWithGameInstance(WorldContextObject);
@@ -26,6 +27,11 @@ UAsyncActionSendHTTPRequest* UAsyncActionSendHTTPRequest::AsyncSendAPIRequest(
 	Action->OutputStructType = Cast<UScriptStruct>(OutputStructType);
 	Action->EndpointTag = EndpointTag;
 	Action->APIData = APIData;
+
+	if (!AccessToken.IsEmpty())
+	{
+		Action->AccessToken = &AccessToken;
+	}
 	
 	return Action;
 }
@@ -39,7 +45,8 @@ void UAsyncActionSendHTTPRequest::Activate()
 		*APIData,
 		OutputStructType,
 		FOnResponseReceivedPayloadSignature::CreateUObject(this, &UAsyncActionSendHTTPRequest::OnResponseReceived),
-		InputStruct);
+		InputStruct,
+		AccessToken);
 }
 
 void UAsyncActionSendHTTPRequest::OnResponseReceived(bool bWasSuccessful, FInstancedStruct&& Result)

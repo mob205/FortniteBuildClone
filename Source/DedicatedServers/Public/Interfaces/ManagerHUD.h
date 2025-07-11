@@ -20,4 +20,7 @@ class DEDICATEDSERVERS_API IManagerHUD
 public:
 	UFUNCTION(BlueprintCallable)
 	virtual void OnSignIn() = 0;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void OnSignOut() = 0;
 };

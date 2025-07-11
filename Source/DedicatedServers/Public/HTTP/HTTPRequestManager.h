@@ -16,15 +16,18 @@ DECLARE_DELEGATE_TwoParams(FOnResponseReceivedPayloadSignature, bool, FInstanced
 class DEDICATEDSERVERS_API UHTTPRequestManager
 {
 public:
-	static void StartAPIRequest(const FGameplayTag& EndpointTag, const UAPIData& APIData, FInstancedStruct& OutputStruct,
-		FOnResponseReceivedSignature Callback);
-	static void StartAPIRequest(const FGameplayTag& EndpointTag, const UAPIData& APIData, UScriptStruct* OutputStructType,
-		FOnResponseReceivedPayloadSignature Callback, const FInstancedStruct* RequestBody = nullptr);
+	static void StartAPIRequest(const FGameplayTag& EndpointTag, const UAPIData& APIData,
+		UScriptStruct* StructType, FOnResponseReceivedPayloadSignature Callback, const FInstancedStruct* RequestBody = nullptr,
+		const FString* AccessToken = nullptr);
+	
+	static void StartAPIRequest(const FGameplayTag& EndpointTag, const UAPIData& APIData,
+		FInstancedStruct& OutputStruct, FOnResponseReceivedSignature Callback, const FString* AccessToken = nullptr);
 	
 private:
 	static bool ContainsError(TSharedPtr<FJsonObject> JsonObject);
 	
 	static bool ParseResponse(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful, FInstancedStruct& OutResult);
 
-	static void StartAPIRequestInternal(TSharedRef<IHttpRequest> Request, const FGameplayTag& EndpointTag, const UAPIData& APIData, const FInstancedStruct* RequestBody = nullptr);
+	static void StartAPIRequestInternal(TSharedRef<IHttpRequest> Request, const FGameplayTag& EndpointTag,
+		const UAPIData& APIData, const FInstancedStruct* RequestBody = nullptr, const FString* AccessToken = nullptr);
 };

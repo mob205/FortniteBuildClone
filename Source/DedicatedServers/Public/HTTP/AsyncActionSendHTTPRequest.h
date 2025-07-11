@@ -21,10 +21,10 @@ class DEDICATEDSERVERS_API UAsyncActionSendHTTPRequest : public UBlueprintAsyncA
 public:
 	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true", WorldContext="WorldContextObject"))
 	static UAsyncActionSendHTTPRequest* AsyncSendAPIRequestWithContent(UObject* WorldContextObject, FGameplayTag EndpointTag, const UAPIData* APIData, UScriptStruct* OutputStructType, const
-	                                                                   FInstancedStruct& RequestContent);
+	                                                                   FInstancedStruct& RequestContent, const FString& AccessToken);
 	
 	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true"))
-	static UAsyncActionSendHTTPRequest* AsyncSendAPIRequest(UObject* WorldContextObject, FGameplayTag EndpointTag, const UAPIData* APIData, UScriptStruct* OutputStructType);
+	static UAsyncActionSendHTTPRequest* AsyncSendAPIRequest(UObject* WorldContextObject, FGameplayTag EndpointTag, const UAPIData* APIData, UScriptStruct* OutputStructType, const FString& AccessToken);
 
 	UPROPERTY(BlueprintAssignable)
 	FOnRequestCompleteSignature OnCompleted;
@@ -39,6 +39,8 @@ private:
 	UScriptStruct* OutputStructType{};
 	
 	const FInstancedStruct* InputStruct{};
+
+	const FString* AccessToken{};
 	
 	void OnResponseReceived(bool bWasSuccessful, FInstancedStruct&& Result);
 };

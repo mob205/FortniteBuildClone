@@ -18,6 +18,9 @@ public:
 	// IHudManagement
 	UFUNCTION(BlueprintCallable)
 	virtual void OnSignIn() override;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void OnSignOut() override;
 	
 protected:
 	virtual void BeginPlay() override;
