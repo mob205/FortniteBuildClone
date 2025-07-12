@@ -3,7 +3,7 @@
 
 #include "UI/APIInterfaceHUD.h"
 
-#include "UI/APIWidgetBase.h"
+#include "Blueprint/UserWidget.h"
 
 void APortalHUD::BeginPlay()
 {
@@ -13,7 +13,7 @@ void APortalHUD::BeginPlay()
 	
 	if (IsValid(PC) && SignInOverlayClass)
 	{
-		SignInOverlay = CreateWidget<UAPIWidgetBase>(PC, SignInOverlayClass);
+		SignInOverlay = CreateWidget<UUserWidget>(PC, SignInOverlayClass);
 		SignInOverlay->AddToViewport();
 
 		FInputModeGameAndUI InputModeData;
@@ -33,7 +33,7 @@ void APortalHUD::OnSignIn()
 	APlayerController* PC = GetOwningPlayerController();
 	if (IsValid(PC) && DashboardOverlayClass)
 	{
-		DashboardOverlay = CreateWidget<UAPIWidgetBase>(PC, DashboardOverlayClass);
+		DashboardOverlay = CreateWidget<UUserWidget>(PC, DashboardOverlayClass);
 		DashboardOverlay->AddToViewport();
 	}
 }
@@ -49,7 +49,7 @@ void APortalHUD::OnSignOut()
 	APlayerController* PC = GetOwningPlayerController();
 	if (IsValid(PC) && SignInOverlayClass)
 	{
-		SignInOverlay = CreateWidget<UAPIWidgetBase>(PC, SignInOverlayClass);
+		SignInOverlay = CreateWidget<UUserWidget>(PC, SignInOverlayClass);
 		SignInOverlay->AddToViewport();
 	}
 }

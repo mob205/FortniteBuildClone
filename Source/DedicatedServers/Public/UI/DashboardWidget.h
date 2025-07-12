@@ -3,16 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "APIWidgetBase.h"
-#include "GameplayTagContainer.h"
+#include "Blueprint/UserWidget.h"
 #include "StructUtils/InstancedStruct.h"
 #include "Data/APIResponseTypes.h"
-#include "PortalManager.generated.h"
+#include "DashboardWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnJoinStatusChangedSignature, const FString&, StatusMessage, bool, bIsJoining);
 
+class UAPIData;
+
 UCLASS()
-class DEDICATEDSERVERS_API UPortalManager : public UAPIWidgetBase
+class DEDICATEDSERVERS_API UDashboardWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
@@ -24,6 +25,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void JoinGameSession();
 
+protected:
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UAPIData> GameSessionsAPIData{};
+	
 private:
 	FString GetUniquePlayerID() const;
 

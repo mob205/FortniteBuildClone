@@ -26,16 +26,16 @@ protected:
 	virtual void BeginPlay() override;
 	
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UAPIWidgetBase> SignInOverlayClass;
+	TSubclassOf<UUserWidget> SignInOverlayClass;
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UAPIWidgetBase> DashboardOverlayClass;
+	TSubclassOf<UUserWidget> DashboardOverlayClass;
 
 	
 private:
 	UPROPERTY()
-	TObjectPtr<UAPIWidgetBase> SignInOverlay;
+	TObjectPtr<UUserWidget> SignInOverlay;
 
 	UPROPERTY()
-	TObjectPtr<UAPIWidgetBase> DashboardOverlay;
+	TObjectPtr<UUserWidget> DashboardOverlay;
 };

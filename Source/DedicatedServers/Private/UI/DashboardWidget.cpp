@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/PortalManager.h"
+#include "UI/DashboardWidget.h"
 
 #include "DedicatedServers/DedicatedServersLogs.h"
 #include "GameFramework/PlayerState.h"
@@ -10,17 +10,29 @@
 #include "Kismet/GameplayStatics.h"
 #include "Player/CredentialLocalPlayerSubsystem.h"
 
-void UPortalManager::JoinGameSession()
+void UDashboardWidget::JoinGameSession()
 {
+	const FString* AccessToken{};
+	APlayerController* PC = GEngine->GetFirstLocalPlayerController(GetWorld());
+	if (IsValid(PC))
+	{
+		if (auto* CredSubsystem = PC->GetLocalPlayer()->GetSubsystem<UCredentialLocalPlayerSubsystem>())
+		{
+			AccessToken = &CredSubsystem->GetAuthTokens().AccessToken;
+		}
+	}
+	
  	UHTTPRequestManager::StartAPIRequest(
 	    APITags::FindOrCreateGameSession,
-	    *APIData,
+	    *GameSessionsAPIData,
 	    FGameSessionResponse::StaticStruct(),
-	    FOnResponseReceivedPayloadSignature::CreateUObject(this, &UPortalManager::OnGameSessionFound));	
+	    FOnResponseReceivedPayloadSignature::CreateUObject(this, &UDashboardWidget::OnGameSessionFound),
+	    nullptr,
+	    AccessToken);	
 	OnJoinStatusChanged.Broadcast("Searching for a game session...", true);
 }
 
-void UPortalManager::OnGameSessionFound(bool bWasSuccessful, FInstancedStruct&& InstancedResponse)
+void UDashboardWidget::OnGameSessionFound(bool bWasSuccessful, FInstancedStruct&& InstancedResponse)
 {
 	FGameSessionResponse Response = InstancedResponse.Get<FGameSessionResponse>();
 	if (!bWasSuccessful || Response.FleetId.IsEmpty())
@@ -31,7 +43,7 @@ void UPortalManager::OnGameSessionFound(bool bWasSuccessful, FInstancedStruct&& 
 	HandleGameSessionStatus(Response);
 }
 
-void UPortalManager::HandleGameSessionStatus(const FGameSessionResponse& GameSessionInfo)
+void UDashboardWidget::HandleGameSessionStatus(const FGameSessionResponse& GameSessionInfo)
 {
 	if (GameSessionInfo.Status.Equals(TEXT("ACTIVE")))
 	{
@@ -40,7 +52,7 @@ void UPortalManager::HandleGameSessionStatus(const FGameSessionResponse& GameSes
 	}
 	else if (GameSessionInfo.Status.Equals(TEXT("ACTIVATING")))
 	{
-		FTimerDelegate CreateSessionDelegate = FTimerDelegate::CreateUObject(this, &UPortalManager::JoinGameSession);
+		FTimerDelegate CreateSessionDelegate = FTimerDelegate::CreateUObject(this, &UDashboardWidget::JoinGameSession);
 		GetWorld()->GetTimerManager().SetTimer(WaitForSessionHandle, CreateSessionDelegate, 0.5f, false);
 	}
 	else
@@ -49,7 +61,7 @@ void UPortalManager::HandleGameSessionStatus(const FGameSessionResponse& GameSes
 	}
 }
 
-FString UPortalManager::GetUniquePlayerID() const
+FString UDashboardWidget::GetUniquePlayerID() const
 {
 	APlayerController* PC = GEngine->GetFirstLocalPlayerController(GetWorld());
 	if (IsValid(PC))
@@ -63,20 +75,20 @@ FString UPortalManager::GetUniquePlayerID() const
 	return {};
 }
 
-void UPortalManager::TryCreatePlayerSession(const FString& PlayerID, const FString& GameSessionID)
+void UDashboardWidget::TryCreatePlayerSession(const FString& PlayerID, const FString& GameSessionID)
 {
 	FPlayerSessionRequest Request{PlayerID, GameSessionID};
 	FInstancedStruct RequestInstance = FInstancedStruct::Make<FPlayerSessionRequest>(Request);
 	
 	UHTTPRequestManager::StartAPIRequest(
 		APITags::CreatePlayerSession,
-		*APIData,
+		*GameSessionsAPIData,
 		FPlayerSessionResponse::StaticStruct(),
-		FOnResponseReceivedPayloadSignature::CreateUObject(this, &UPortalManager::OnPlayerSessionCreated), &RequestInstance
+		FOnResponseReceivedPayloadSignature::CreateUObject(this, &UDashboardWidget::OnPlayerSessionCreated), &RequestInstance
 	);
 }
 
-void UPortalManager::OnPlayerSessionCreated(bool bWasSuccessful, FInstancedStruct&& InstancedResponse)
+void UDashboardWidget::OnPlayerSessionCreated(bool bWasSuccessful, FInstancedStruct&& InstancedResponse)
 {
 	if (!bWasSuccessful)
 	{

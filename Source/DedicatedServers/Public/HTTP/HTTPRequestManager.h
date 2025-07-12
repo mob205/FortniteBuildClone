@@ -30,4 +30,6 @@ private:
 
 	static void StartAPIRequestInternal(TSharedRef<IHttpRequest> Request, const FGameplayTag& EndpointTag,
 		const UAPIData& APIData, const FInstancedStruct* RequestBody = nullptr, const FString* AccessToken = nullptr);
+	
+	static bool GetRequestString(const FInstancedStruct& RequestBody, FString& OutString);
 };
