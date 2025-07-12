@@ -3,17 +3,16 @@
 
 #include "HTTP/AsyncActionSendHTTPRequest.h"
 
-#include "DedicatedServers/DedicatedServersLogs.h"
 #include "HTTP/HTTPRequestManager.h"
 #include "StructUtils/InstancedStruct.h"
 
 
 UAsyncActionSendHTTPRequest* UAsyncActionSendHTTPRequest::AsyncSendAPIRequestWithContent(UObject* WorldContextObject,
-	FGameplayTag EndpointTag, const UAPIData* APIData, UScriptStruct* OutputStructType, const FInstancedStruct& RequestContent,
-	const FString& AccessToken)
+	FGameplayTag EndpointTag, const UAPIData* APIData, UScriptStruct* OutputStructType,
+	const TMap<FString, FString>& RequestContent, const FString& AccessToken)
 {
 	UAsyncActionSendHTTPRequest* Action = AsyncSendAPIRequest(WorldContextObject, EndpointTag, APIData, OutputStructType, AccessToken);
-	Action->InputStruct = &RequestContent;
+	Action->RequestContent = RequestContent;
 	
 	return Action;
 }
@@ -45,7 +44,7 @@ void UAsyncActionSendHTTPRequest::Activate()
 		*APIData,
 		OutputStructType,
 		FOnResponseReceivedPayloadSignature::CreateUObject(this, &UAsyncActionSendHTTPRequest::OnResponseReceived),
-		InputStruct,
+		RequestContent,
 		AccessToken);
 }
 

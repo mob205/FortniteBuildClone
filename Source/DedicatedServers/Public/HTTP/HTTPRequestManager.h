@@ -17,8 +17,8 @@ class DEDICATEDSERVERS_API UHTTPRequestManager
 {
 public:
 	static void StartAPIRequest(const FGameplayTag& EndpointTag, const UAPIData& APIData,
-		UScriptStruct* StructType, FOnResponseReceivedPayloadSignature Callback, const FInstancedStruct* RequestBody = nullptr,
-		const FString* AccessToken = nullptr);
+	                            UScriptStruct* StructType, FOnResponseReceivedPayloadSignature Callback,
+	                            const TMap<FString, FString>& RequestContent, const FString* AccessToken = nullptr);
 	
 	static void StartAPIRequest(const FGameplayTag& EndpointTag, const UAPIData& APIData,
 		FInstancedStruct& OutputStruct, FOnResponseReceivedSignature Callback, const FString* AccessToken = nullptr);
@@ -29,7 +29,7 @@ private:
 	static bool ParseResponse(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful, FInstancedStruct& OutResult);
 
 	static void StartAPIRequestInternal(TSharedRef<IHttpRequest> Request, const FGameplayTag& EndpointTag,
-		const UAPIData& APIData, const FInstancedStruct* RequestBody = nullptr, const FString* AccessToken = nullptr);
+	                                    const UAPIData& APIData, const TMap<FString, FString>& RequestContent, const FString* AccessToken = nullptr);
 	
-	static bool GetRequestString(const FInstancedStruct& RequestBody, FString& OutString);
+	static void GetRequestString(const TMap<FString, FString>& Request, FString& OutString);
 };

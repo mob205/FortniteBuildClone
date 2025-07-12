@@ -29,15 +29,15 @@ const FAuthenticationResult& UCredentialLocalPlayerSubsystem::GetAuthTokens() co
 
 void UCredentialLocalPlayerSubsystem::RefreshTokens()
 {
-	FRefreshAuthenticationRequest Request{ AuthTokens.RefreshToken };
-	FInstancedStruct InstancedRequest = FInstancedStruct::Make<FRefreshAuthenticationRequest>(Request);
-	
+	TMap<FString, FString> RequestContent = {{ "refreshToken", AuthTokens.RefreshToken }};
+
 	UHTTPRequestManager::StartAPIRequest(
 		APITags::SignIn,
 		*APIData,
 		FSignInResponse::StaticStruct(),
 		FOnResponseReceivedPayloadSignature::CreateUObject(this, &UCredentialLocalPlayerSubsystem::OnTokensRefreshed),
-		&InstancedRequest);
+		RequestContent
+		);
 }
 
 void UCredentialLocalPlayerSubsystem::OnTokensRefreshed(bool bWasSuccessful, FInstancedStruct&& InstancedResponse)

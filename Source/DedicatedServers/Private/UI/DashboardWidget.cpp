@@ -18,7 +18,7 @@ void UDashboardWidget::JoinGameSession()
 	{
 		if (auto* CredSubsystem = PC->GetLocalPlayer()->GetSubsystem<UCredentialLocalPlayerSubsystem>())
 		{
-			AccessToken = &CredSubsystem->GetAuthTokens().AccessToken;
+			AccessToken = &CredSubsystem->GetAuthTokens().IdToken;
 		}
 	}
 	
@@ -27,7 +27,7 @@ void UDashboardWidget::JoinGameSession()
 	    *GameSessionsAPIData,
 	    FGameSessionResponse::StaticStruct(),
 	    FOnResponseReceivedPayloadSignature::CreateUObject(this, &UDashboardWidget::OnGameSessionFound),
-	    nullptr,
+	    {},
 	    AccessToken);	
 	OnJoinStatusChanged.Broadcast("Searching for a game session...", true);
 }
@@ -77,14 +77,17 @@ FString UDashboardWidget::GetUniquePlayerID() const
 
 void UDashboardWidget::TryCreatePlayerSession(const FString& PlayerID, const FString& GameSessionID)
 {
-	FPlayerSessionRequest Request{PlayerID, GameSessionID};
-	FInstancedStruct RequestInstance = FInstancedStruct::Make<FPlayerSessionRequest>(Request);
+	TMap<FString, FString> RequestContent = {
+		{ "playerId", PlayerID},
+		{ "gameSessionId", GameSessionID }
+	};
 	
 	UHTTPRequestManager::StartAPIRequest(
 		APITags::CreatePlayerSession,
 		*GameSessionsAPIData,
 		FPlayerSessionResponse::StaticStruct(),
-		FOnResponseReceivedPayloadSignature::CreateUObject(this, &UDashboardWidget::OnPlayerSessionCreated), &RequestInstance
+		FOnResponseReceivedPayloadSignature::CreateUObject(this, &UDashboardWidget::OnPlayerSessionCreated),
+		RequestContent
 	);
 }
 

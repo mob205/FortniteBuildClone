@@ -21,7 +21,7 @@ class DEDICATEDSERVERS_API UAsyncActionSendHTTPRequest : public UBlueprintAsyncA
 public:
 	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true", WorldContext="WorldContextObject"))
 	static UAsyncActionSendHTTPRequest* AsyncSendAPIRequestWithContent(UObject* WorldContextObject, FGameplayTag EndpointTag, const UAPIData* APIData, UScriptStruct* OutputStructType, const
-	                                                                   FInstancedStruct& RequestContent, const FString& AccessToken);
+	                                                                   TMap<FString, FString>& RequestContent, const FString& AccessToken);
 	
 	UFUNCTION(BlueprintCallable, meta=(BlueprintInternalUseOnly="true"))
 	static UAsyncActionSendHTTPRequest* AsyncSendAPIRequest(UObject* WorldContextObject, FGameplayTag EndpointTag, const UAPIData* APIData, UScriptStruct* OutputStructType, const FString& AccessToken);
@@ -37,9 +37,8 @@ private:
 	TObjectPtr<const UAPIData> APIData{};
 
 	UScriptStruct* OutputStructType{};
-	
-	const FInstancedStruct* InputStruct{};
 
+	TMap<FString, FString> RequestContent{};
 	const FString* AccessToken{};
 	
 	void OnResponseReceived(bool bWasSuccessful, FInstancedStruct&& Result);

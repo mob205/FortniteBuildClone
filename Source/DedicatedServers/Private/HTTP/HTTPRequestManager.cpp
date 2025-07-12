@@ -23,12 +23,12 @@ void UHTTPRequestManager::StartAPIRequest(const FGameplayTag& EndpointTag, const
 			Callback.ExecuteIfBound(bResult);
 		});
 
-	StartAPIRequestInternal(Request, EndpointTag, APIData);
+	StartAPIRequestInternal(Request, EndpointTag, APIData, {}, AccessToken);
 }
 
 void UHTTPRequestManager::StartAPIRequest(const FGameplayTag& EndpointTag, const UAPIData& APIData,
-	UScriptStruct* StructType, FOnResponseReceivedPayloadSignature Callback, const FInstancedStruct* RequestBody,
-	const FString* AccessToken)
+	UScriptStruct* StructType, FOnResponseReceivedPayloadSignature Callback,
+	const TMap<FString, FString>& RequestContent, const FString* AccessToken)
 {
 	TSharedRef<IHttpRequest> Request = FHttpModule::Get().CreateRequest();
 	Request->OnProcessRequestComplete().BindLambda([Callback, StructType]
@@ -39,11 +39,11 @@ void UHTTPRequestManager::StartAPIRequest(const FGameplayTag& EndpointTag, const
 		Callback.ExecuteIfBound(bResult, MoveTemp(OutputStruct));
 	});
 
-	StartAPIRequestInternal(Request, EndpointTag, APIData, RequestBody);
+	StartAPIRequestInternal(Request, EndpointTag, APIData, RequestContent, AccessToken);
 }
 
 void UHTTPRequestManager::StartAPIRequestInternal(TSharedRef<IHttpRequest> Request, const FGameplayTag& EndpointTag,
-	const UAPIData& APIData, const FInstancedStruct* RequestBody, const FString* AccessToken)
+	const UAPIData& APIData, const TMap<FString, FString>& RequestContent, const FString* AccessToken)
 {
 	const FString APIUrl = APIData.GetAPIEndpoint(EndpointTag);
 	const FString Verb = APIData.GetVerb(EndpointTag);
@@ -55,15 +55,28 @@ void UHTTPRequestManager::StartAPIRequestInternal(TSharedRef<IHttpRequest> Reque
 	{
 		Request->SetHeader("Authorization", *AccessToken);
 	}
-	
-	if (RequestBody)
+
+	if (!RequestContent.IsEmpty())
 	{
-		FString Content{};
-		FJsonObjectConverter::UStructToJsonObjectString(RequestBody->GetScriptStruct(), RequestBody->GetMemory(), Content);
-		Request->SetContentAsString(Content);
+		FString StringContent{};
+		GetRequestString(RequestContent, StringContent);
+		Request->SetContentAsString(StringContent);
 	}
 	
 	Request->ProcessRequest();
+}
+
+void UHTTPRequestManager::GetRequestString(const TMap<FString, FString>& RequestContent, FString& OutString)
+{
+	TSharedRef<FJsonObject> JsonObject = MakeShared<FJsonObject>();
+
+	for (const auto& Param : RequestContent)
+	{
+		JsonObject->SetStringField(Param.Key, Param.Value);
+	}
+
+	TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&OutString);
+	FJsonSerializer::Serialize(JsonObject, JsonWriter);
 }
 
 bool UHTTPRequestManager::ParseResponse(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful, FInstancedStruct& OutResult)

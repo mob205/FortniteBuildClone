@@ -69,18 +69,6 @@ struct FGameSessionResponse
 };
 
 USTRUCT()
-struct FPlayerSessionRequest
-{
-	GENERATED_BODY()
-	
-	UPROPERTY()
-	FString PlayerId{};
-
-	UPROPERTY()
-	FString GameSessionId{};
-};
-
-USTRUCT()
 struct FPlayerSessionResponse
 {
 	GENERATED_BODY()
@@ -224,32 +212,3 @@ struct FSignInResponse
 	FString Session{};
 };
 
-USTRUCT(BlueprintType)
-struct FConfirmSignUpRequest
-{
-	GENERATED_BODY()
-
-	UPROPERTY(BlueprintReadWrite)
-	FString Username{};
-
-	UPROPERTY(BlueprintReadWrite)
-	FString ConfirmationCode{};
-};
-
-USTRUCT()
-struct FRefreshAuthenticationRequest
-{
-	GENERATED_BODY()
-
-	UPROPERTY()
-	FString RefreshToken;
-};
-
-USTRUCT(BlueprintType)
-struct FSignOutRequest
-{
-	GENERATED_BODY()
-
-	UPROPERTY(BlueprintReadWrite)
-	FString AccessToken;
-};
