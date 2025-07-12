@@ -48,7 +48,7 @@ void UDashboardWidget::HandleGameSessionStatus(const FGameSessionResponse& GameS
 	if (GameSessionInfo.Status.Equals(TEXT("ACTIVE")))
 	{
 		OnJoinStatusChanged.Broadcast("Found a game session, creating player session...", false);
-		TryCreatePlayerSession(GetUniquePlayerID(), GameSessionInfo.GameSessionId);
+		TryCreatePlayerSession(GetPlayerUsername(), GameSessionInfo.GameSessionId);
 	}
 	else if (GameSessionInfo.Status.Equals(TEXT("ACTIVATING")))
 	{
@@ -61,15 +61,14 @@ void UDashboardWidget::HandleGameSessionStatus(const FGameSessionResponse& GameS
 	}
 }
 
-FString UDashboardWidget::GetUniquePlayerID() const
+FString UDashboardWidget::GetPlayerUsername() const
 {
 	APlayerController* PC = GEngine->GetFirstLocalPlayerController(GetWorld());
 	if (IsValid(PC))
 	{
-		APlayerState* PS = PC->GetPlayerState<APlayerState>();
-		if (IsValid(PS))
+		if (auto* Subsystem = PC->GetLocalPlayer()->GetSubsystem<UCredentialLocalPlayerSubsystem>())
 		{
-			return TEXT("Player_") + FString::FromInt(PS->GetUniqueID());
+			return Subsystem->GetUsername();
 		}
 	}
 	return {};
@@ -110,7 +109,9 @@ void UDashboardWidget::OnPlayerSessionCreated(bool bWasSuccessful, FInstancedStr
 		PC->SetInputMode(InputMode);
 		PC->SetShowMouseCursor(false);
 	}
+
+	const FString Options = "?PlayerSessionId=" + Response.PlayerSessionId + "?Username=" + Response.PlayerId;
 	
 	const FName Address = *(Response.IpAddress + TEXT(":") + FString::FromInt(Response.Port)); 
-	UGameplayStatics::OpenLevel(this, Address);
+	UGameplayStatics::OpenLevel(this, Address, true, Options);
 }

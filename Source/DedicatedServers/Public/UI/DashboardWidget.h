@@ -30,7 +30,7 @@ protected:
 	TObjectPtr<UAPIData> GameSessionsAPIData{};
 	
 private:
-	FString GetUniquePlayerID() const;
+	FString GetPlayerUsername() const;
 
 	void HandleGameSessionStatus(const FGameSessionResponse& GameSessionInfo);
 	

@@ -3,6 +3,8 @@
 
 #include "Game/DedicatedServerGameMode.h"
 
+#include "Kismet/GameplayStatics.h"
+
 
 #if WITH_GAMELIFT
 #include "GameLiftServerSDK.h"
@@ -21,6 +23,104 @@ void ADedicatedServerGameMode::BeginPlay()
 	InitGameLift();
 #endif
 }
+
+void ADedicatedServerGameMode::PreLogin(const FString& Options, const FString& Address,
+    const FUniqueNetIdRepl& UniqueId, FString& OutErrorMessage)
+{
+    Super::PreLogin(Options, Address, UniqueId, OutErrorMessage);
+
+    const FString PlayerSessionId = UGameplayStatics::ParseOption(Options, TEXT("PlayerSessionId"));
+    const FString Username = UGameplayStatics::ParseOption(Options, TEXT("Username"));
+
+    TryAcceptPlayerSession(PlayerSessionId, Username, OutErrorMessage);
+}
+
+FString ADedicatedServerGameMode::InitNewPlayer(APlayerController* NewPlayerController,
+    const FUniqueNetIdRepl& UniqueId, const FString& Options, const FString& Portal)
+{
+    FString Error = Super::InitNewPlayer(NewPlayerController, UniqueId, Options, Portal);
+
+    
+    FString PlayerSessionId = UGameplayStatics::ParseOption(Options, TEXT("PlayerSessionId"));
+    FString Username = UGameplayStatics::ParseOption(Options, TEXT("Username"));
+    
+    PlayerSessions.Add(NewPlayerController, { MoveTemp(Username), MoveTemp(PlayerSessionId) });
+
+    return Error;
+}
+
+void ADedicatedServerGameMode::Logout(AController* Exiting)
+{
+    Super::Logout(Exiting);
+
+#if WITH_GAMELIFT
+    APlayerController* PC = Cast<APlayerController>(Exiting);
+    if (!PlayerSessions.Contains(PC)) { return; }
+    
+    const TPair<FString, FString>& ExitingPlayerSession = PlayerSessions.FindChecked(PC);
+
+    Aws::GameLift::Server::RemovePlayerSession(TCHAR_TO_ANSI(*ExitingPlayerSession.Value));
+    
+#endif
+}
+
+void ADedicatedServerGameMode::TryAcceptPlayerSession(const FString& PlayerSessionId, const FString& Username,
+                                                      FString& OutErrorMessage)
+{
+    if (PlayerSessionId.IsEmpty() || Username.IsEmpty())
+    {
+        OutErrorMessage = TEXT("Invalid session ID or username!");
+        return;
+    }
+
+#if WITH_GAMELIFT
+    using namespace Aws::GameLift;
+    using namespace Server::Model;
+    
+    DescribePlayerSessionsRequest Request;
+    Request.SetPlayerSessionId(TCHAR_TO_ANSI(*PlayerSessionId));
+
+    const DescribePlayerSessionsOutcome& DescribeOutcome = Server::DescribePlayerSessions(Request);
+    if (!DescribeOutcome.IsSuccess())
+    {
+        OutErrorMessage = TEXT("Failed to describe player sessions.");
+        return;
+    }
+
+    const DescribePlayerSessionsResult& Result = DescribeOutcome.GetResult();
+
+    int32 Count{};
+    const PlayerSession* Sessions = Result.GetPlayerSessions(Count);
+
+    if (Sessions == nullptr || Count == 0)
+    {
+        OutErrorMessage = TEXT("Failed to get player sessions.");
+        return;
+    }
+
+    for (int32 i = 0; i < Count; ++i)
+    {
+        const PlayerSession& PlayerSession = Sessions[i];
+        if (!Username.Equals(PlayerSession.GetPlayerId())) { continue; }
+
+        // Matching player session found
+        if (PlayerSession.GetStatus() != PlayerSessionStatus::RESERVED)
+        {
+            OutErrorMessage = FString::Printf(TEXT("Player session for %s is not reserved."), *Username);
+            return;
+        }
+
+        const GenericOutcome& AcceptOutcome = Server::AcceptPlayerSession(TCHAR_TO_ANSI(*PlayerSessionId));
+
+        if (!AcceptOutcome.IsSuccess())
+        {
+            OutErrorMessage = FString::Printf(TEXT("Failed to accept player session for %s"), *Username);
+            return;
+        }
+    }
+#endif
+}
+
 
 void ADedicatedServerGameMode::ConfigureServerParameters(FServerParameters& ServerParametersForAnywhere)
 {
