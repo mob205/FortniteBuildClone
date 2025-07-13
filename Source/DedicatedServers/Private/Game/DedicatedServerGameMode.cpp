@@ -29,10 +29,12 @@ void ADedicatedServerGameMode::PreLogin(const FString& Options, const FString& A
 {
     Super::PreLogin(Options, Address, UniqueId, OutErrorMessage);
 
+#if WITH_GAMELIFT
     const FString PlayerSessionId = UGameplayStatics::ParseOption(Options, TEXT("PlayerSessionId"));
     const FString Username = UGameplayStatics::ParseOption(Options, TEXT("Username"));
 
     TryAcceptPlayerSession(PlayerSessionId, Username, OutErrorMessage);
+#endif
 }
 
 FString ADedicatedServerGameMode::InitNewPlayer(APlayerController* NewPlayerController,
@@ -40,12 +42,12 @@ FString ADedicatedServerGameMode::InitNewPlayer(APlayerController* NewPlayerCont
 {
     FString Error = Super::InitNewPlayer(NewPlayerController, UniqueId, Options, Portal);
 
-    
+#if WITH_GAMELIFT
     FString PlayerSessionId = UGameplayStatics::ParseOption(Options, TEXT("PlayerSessionId"));
     FString Username = UGameplayStatics::ParseOption(Options, TEXT("Username"));
     
     PlayerSessions.Add(NewPlayerController, { MoveTemp(Username), MoveTemp(PlayerSessionId) });
-
+#endif
     return Error;
 }
 
@@ -67,13 +69,13 @@ void ADedicatedServerGameMode::Logout(AController* Exiting)
 void ADedicatedServerGameMode::TryAcceptPlayerSession(const FString& PlayerSessionId, const FString& Username,
                                                       FString& OutErrorMessage)
 {
+#if WITH_GAMELIFT
     if (PlayerSessionId.IsEmpty() || Username.IsEmpty())
     {
         OutErrorMessage = TEXT("Invalid session ID or username!");
         return;
     }
-
-#if WITH_GAMELIFT
+    
     using namespace Aws::GameLift;
     using namespace Server::Model;
     
