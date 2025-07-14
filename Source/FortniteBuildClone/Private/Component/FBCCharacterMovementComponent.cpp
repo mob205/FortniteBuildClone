@@ -11,6 +11,7 @@ void UFBCCharacterMovementComponent::FSavedMove_FBC::Clear()
 {
 	FSavedMove_Character::Clear();
 
+	bWantsToSprint = 0;
 	bPrevWantsToCrouch = 0;
 }
 
@@ -21,6 +22,7 @@ void UFBCCharacterMovementComponent::FSavedMove_FBC::SetMoveFor(ACharacter* C, f
 
 	UFBCCharacterMovementComponent* CharacterMovement = Cast<UFBCCharacterMovementComponent>(C->GetCharacterMovement());
 
+	bWantsToSprint = CharacterMovement->bWantsToSprint;
 	bPrevWantsToCrouch = CharacterMovement->bPrevWantsToCrouch;
 }
 
@@ -30,7 +32,41 @@ void UFBCCharacterMovementComponent::FSavedMove_FBC::PrepMoveFor(ACharacter* C)
 
 	UFBCCharacterMovementComponent* CharacterMovement = Cast<UFBCCharacterMovementComponent>(C->GetCharacterMovement());
 
+	CharacterMovement->bWantsToSprint = bWantsToSprint;
 	CharacterMovement->bPrevWantsToCrouch = bPrevWantsToCrouch;
+}
+
+bool UFBCCharacterMovementComponent::FSavedMove_FBC::CanCombineWith(const FSavedMovePtr& NewMove,
+	ACharacter* InCharacter, float MaxDelta) const
+{
+	FSavedMove_FBC* NewFBCMove = static_cast<FSavedMove_FBC*>(NewMove.Get());
+	
+	if (bWantsToSprint != NewFBCMove->bWantsToSprint)
+	{
+		return false;
+	}
+
+	return Super::CanCombineWith(NewMove, InCharacter, MaxDelta);
+}
+
+void UFBCCharacterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
+{
+	Super::UpdateFromCompressedFlags(Flags);
+
+	bWantsToSprint = (Flags & FSavedMove_Character::FLAG_Custom_0) != 0;
+}
+
+
+uint8 UFBCCharacterMovementComponent::FSavedMove_FBC::GetCompressedFlags() const
+{
+	uint8 Result = Super::GetCompressedFlags();
+
+	if (bWantsToSprint)
+	{
+		Result |= FLAG_Custom_0;
+	}
+
+	return Result;
 }
 
 UFBCCharacterMovementComponent::FNetworkPredictionData_Client_FBC::FNetworkPredictionData_Client_FBC(
@@ -62,12 +98,68 @@ bool UFBCCharacterMovementComponent::IsCustomMovementMode(ECustomMovementMode In
 	return MovementMode == MOVE_Custom && CustomMovementMode == InCustomMovementMode;
 }
 
+void UFBCCharacterMovementComponent::ToggleWantsToSprint(bool bNewWantsToSprint)
+{
+	bWantsToSprint = bNewWantsToSprint;
+}
+
+void UFBCCharacterMovementComponent::ToggleCanSprint(bool bNewCanSprint)
+{
+	bCanSprint = bNewCanSprint;
+}
+
 void UFBCCharacterMovementComponent::OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation,
-	const FVector& OldVelocity)
+                                                       const FVector& OldVelocity)
 {
 	Super::OnMovementUpdated(DeltaSeconds, OldLocation, OldVelocity);
-
+	
 	bPrevWantsToCrouch = bWantsToCrouch;
+}
+
+float UFBCCharacterMovementComponent::GetWalkSpeed() const
+{
+	const FRotator Rotation = CharacterOwner->GetActorRotation();
+	
+	float VelocityAngle{};
+	
+	if (!Velocity.IsNearlyZero())
+	{
+		const FMatrix RotMatrix = FRotationMatrix(Rotation);
+		const FVector ForwardVector = RotMatrix.GetScaledAxis(EAxis::X);
+		const FVector RightVector = RotMatrix.GetScaledAxis(EAxis::Y);
+		const FVector NormalizedVel = Velocity.GetSafeNormal2D();
+	
+		// get a cos(alpha) of forward vector vs velocity
+		const float ForwardCosAngle = static_cast<float>(FVector::DotProduct(ForwardVector, NormalizedVel));
+		// now get the alpha and convert to degree
+		float ForwardDeltaDegree = FMath::RadiansToDegrees(FMath::Acos(ForwardCosAngle));
+	
+		// depending on where right vector is, flip it
+		const float RightCosAngle = static_cast<float>(FVector::DotProduct(RightVector, NormalizedVel));
+		if (RightCosAngle < 0.f)
+		{
+			ForwardDeltaDegree *= -1.f;
+		}
+	
+		VelocityAngle = FMath::Abs(ForwardDeltaDegree);
+	}
+	
+	float StrafeSpeedMap = StrafeSpeedMapCurve->GetFloatValue(VelocityAngle);
+	
+	FVector Speeds = RunSpeeds;
+	if (bWantsToSprint && bCanSprint)
+	{
+		Speeds = SprintSpeeds;
+	}
+	
+	if (StrafeSpeedMap < 1.f)
+	{
+		return FMath::GetMappedRangeValueClamped(FVector2D{0, 1}, FVector2D{Speeds.X, Speeds.Y}, StrafeSpeedMap);
+	}
+	else
+	{
+		return FMath::GetMappedRangeValueClamped(FVector2D{1, 2}, FVector2D{Speeds.Y, Speeds.Z}, StrafeSpeedMap);
+	}
 }
 
 void UFBCCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSeconds)
@@ -80,8 +172,11 @@ void UFBCCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float De
 		{
 			EnterSlide();
 		}
+	} else if (MovementMode == MOVE_Walking)
+	{
+		MaxWalkSpeed = GetWalkSpeed();
 	}
-
+	
 	// We just stopped crouching - stop sliding
 	if (IsCustomMovementMode(CMOVE_Slide) && !bWantsToCrouch)
 	{

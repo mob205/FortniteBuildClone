@@ -42,6 +42,16 @@ public:
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+protected:
+	virtual void PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const override;
+
+	
+/*
+*	Attribute definitions
+*/
+public:
+	static TMap<EFBCResourceType, FGameplayAttribute> ResourceToAttributeMap;
+
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Wood, Category = "Material Count")
 	FGameplayAttributeData Wood;
 	
@@ -69,5 +79,21 @@ public:
 		GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, Metal, OldValue);
 	};
 
-	static TMap<EFBCResourceType, FGameplayAttribute> ResourceToAttributeMap;
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Stamina, Category = "Vital")
+	FGameplayAttributeData Stamina;
+	ATTRIBUTE_ACCESSORS(UFBCAttributeSet, Stamina);
+	UFUNCTION()
+	void OnRep_Stamina(const FGameplayAttributeData& OldValue)const
+	{
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, Stamina, OldValue);
+	}
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxStamina, Category = "Vitals")
+	FGameplayAttributeData MaxStamina;
+	ATTRIBUTE_ACCESSORS(UFBCAttributeSet, MaxStamina);
+	UFUNCTION()
+	void OnRep_MaxStamina(const FGameplayAttributeData& OldValue) const
+	{
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, MaxStamina, OldValue);
+	}
 };
