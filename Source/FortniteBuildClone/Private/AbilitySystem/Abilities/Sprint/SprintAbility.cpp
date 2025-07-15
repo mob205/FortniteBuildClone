@@ -20,7 +20,7 @@ void USprintAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 
 	FGameplayEffectContextHandle EffectContext = ASC->MakeEffectContext();
 	FGameplayEffectSpecHandle StartEffectHandle = ASC->MakeOutgoingSpec(StartEffectClass, 1, EffectContext);
-	ASC->ApplyGameplayEffectSpecToSelf(*StartEffectHandle.Data);
+	ASC->ApplyGameplayEffectSpecToSelf(*StartEffectHandle.Data, ASC->GetPredictionKeyForNewAction());
 
 	CMC = GetAvatarActorFromActorInfo()->GetComponentByClass<UFBCCharacterMovementComponent>();
 	

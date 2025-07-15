@@ -162,6 +162,17 @@ float UFBCCharacterMovementComponent::GetWalkSpeed() const
 	}
 }
 
+float UFBCCharacterMovementComponent::GetMaxAcceleration() const
+{
+	if (bWantsToSprint && bCanSprint)
+	{
+		return SprintAccelerationRange.Y;
+		//FVector Velocity2d = { Velocity.X, Velocity.Y, 0};
+		//return FMath::GetMappedRangeValueClamped({RunSpeeds.Z, SprintSpeeds.X}, SprintAccelerationRange, Velocity2d.Length());
+	}
+	return WalkAcceleration;
+}
+
 void UFBCCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSeconds)
 {
 	// We just started crouching - check if we can start sliding
@@ -172,9 +183,11 @@ void UFBCCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float De
 		{
 			EnterSlide();
 		}
-	} else if (MovementMode == MOVE_Walking)
+	}
+	else if (MovementMode == MOVE_Walking)
 	{
 		MaxWalkSpeed = GetWalkSpeed();
+		MaxAcceleration = GetMaxAcceleration();
 	}
 	
 	// We just stopped crouching - stop sliding

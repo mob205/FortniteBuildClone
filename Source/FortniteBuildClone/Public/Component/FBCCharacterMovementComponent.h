@@ -72,6 +72,15 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Character Movement: Walking")
 	FVector SprintSpeeds{700, 700, 700};
+
+	UPROPERTY(EditDefaultsOnly, Category = "Character Movement: Walking")
+	float WalkAcceleration{800};
+
+	UPROPERTY(EditDefaultsOnly, Category = "Character Movement: Sprinting")
+	FVector2D SprintAccelerationRange{800, 300};
+
+	UPROPERTY(EditDefaultsOnly, Category = "Character Movement: Sprinting")
+	float NetworkStaminaCorrectionThreshold;
 	
 	UPROPERTY(Transient)
 	TObjectPtr<AFBCCharacter> FBCCharacterOwner;
@@ -112,4 +121,5 @@ private:
 	bool GetSlideSurface(FHitResult& Hit) const;
 
 	float GetWalkSpeed() const;
+	float GetMaxAcceleration() const override;
 };
