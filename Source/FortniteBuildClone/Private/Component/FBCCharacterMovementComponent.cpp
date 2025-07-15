@@ -119,48 +119,56 @@ void UFBCCharacterMovementComponent::OnMovementUpdated(float DeltaSeconds, const
 
 float UFBCCharacterMovementComponent::GetWalkSpeed() const
 {
-	const FRotator Rotation = CharacterOwner->GetActorRotation();
-	
-	float VelocityAngle{};
-	
-	if (!Velocity.IsNearlyZero())
-	{
-		const FMatrix RotMatrix = FRotationMatrix(Rotation);
-		const FVector ForwardVector = RotMatrix.GetScaledAxis(EAxis::X);
-		const FVector RightVector = RotMatrix.GetScaledAxis(EAxis::Y);
-		const FVector NormalizedVel = Velocity.GetSafeNormal2D();
-	
-		// get a cos(alpha) of forward vector vs velocity
-		const float ForwardCosAngle = static_cast<float>(FVector::DotProduct(ForwardVector, NormalizedVel));
-		// now get the alpha and convert to degree
-		float ForwardDeltaDegree = FMath::RadiansToDegrees(FMath::Acos(ForwardCosAngle));
-	
-		// depending on where right vector is, flip it
-		const float RightCosAngle = static_cast<float>(FVector::DotProduct(RightVector, NormalizedVel));
-		if (RightCosAngle < 0.f)
-		{
-			ForwardDeltaDegree *= -1.f;
-		}
-	
-		VelocityAngle = FMath::Abs(ForwardDeltaDegree);
-	}
-	
-	float StrafeSpeedMap = StrafeSpeedMapCurve->GetFloatValue(VelocityAngle);
-	
-	FVector Speeds = RunSpeeds;
 	if (bWantsToSprint && bCanSprint)
 	{
-		Speeds = SprintSpeeds;
-	}
-	
-	if (StrafeSpeedMap < 1.f)
-	{
-		return FMath::GetMappedRangeValueClamped(FVector2D{0, 1}, FVector2D{Speeds.X, Speeds.Y}, StrafeSpeedMap);
+		return SprintSpeeds.X;
 	}
 	else
 	{
-		return FMath::GetMappedRangeValueClamped(FVector2D{1, 2}, FVector2D{Speeds.Y, Speeds.Z}, StrafeSpeedMap);
+		return RunSpeeds.X;
 	}
+	// const FRotator Rotation = CharacterOwner->GetActorRotation();
+	//
+	// float VelocityAngle{};
+	//
+	// if (!Velocity.IsNearlyZero())
+	// {
+	// 	const FMatrix RotMatrix = FRotationMatrix(Rotation);
+	// 	const FVector ForwardVector = RotMatrix.GetScaledAxis(EAxis::X);
+	// 	const FVector RightVector = RotMatrix.GetScaledAxis(EAxis::Y);
+	// 	const FVector NormalizedVel = Velocity.GetSafeNormal2D();
+	//
+	// 	// get a cos(alpha) of forward vector vs velocity
+	// 	const float ForwardCosAngle = static_cast<float>(FVector::DotProduct(ForwardVector, NormalizedVel));
+	// 	// now get the alpha and convert to degree
+	// 	float ForwardDeltaDegree = FMath::RadiansToDegrees(FMath::Acos(ForwardCosAngle));
+	//
+	// 	// depending on where right vector is, flip it
+	// 	const float RightCosAngle = static_cast<float>(FVector::DotProduct(RightVector, NormalizedVel));
+	// 	if (RightCosAngle < 0.f)
+	// 	{
+	// 		ForwardDeltaDegree *= -1.f;
+	// 	}
+	//
+	// 	VelocityAngle = FMath::Abs(ForwardDeltaDegree);
+	// }
+	//
+	// float StrafeSpeedMap = StrafeSpeedMapCurve->GetFloatValue(VelocityAngle);
+	//
+	// FVector Speeds = RunSpeeds;
+	// if (bWantsToSprint && bCanSprint)
+	// {
+	// 	Speeds = SprintSpeeds;
+	// }
+	//
+	// if (StrafeSpeedMap < 1.f)
+	// {
+	// 	return FMath::GetMappedRangeValueClamped(FVector2D{0, 1}, FVector2D{Speeds.X, Speeds.Y}, StrafeSpeedMap);
+	// }
+	// else
+	// {
+	// 	return FMath::GetMappedRangeValueClamped(FVector2D{1, 2}, FVector2D{Speeds.Y, Speeds.Z}, StrafeSpeedMap);
+	// }
 }
 
 float UFBCCharacterMovementComponent::GetMaxAcceleration() const
