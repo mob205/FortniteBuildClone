@@ -18,7 +18,6 @@ void AFBCPlayerController::RemovePredictedStructure_Implementation(uint8 Predict
 {
 	if (APlacedStructure** Structure = ClientPredictedStructures.Find(PredictionId))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Removing predicted structure at %s"), *(*Structure)->GetActorLocation().ToString());
 		(*Structure)->GetGroundingComponent()->UnregisterFromNeighbors();
 		(*Structure)->Destroy();
 	}

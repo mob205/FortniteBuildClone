@@ -148,10 +148,6 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 	{
 		PC->RemovePredictedStructure(PredictionId);
 	}
-	else if (HasAuthority(&CurrentActivationInfo))
-	{
-		PC->GetPawn()->GetComponentByClass<UFBCCharacterMovementComponent>()->SuperTest();
-	}
 }
 
 APlacedStructure* UBuildAbility::PlaceStructureInternal(const FGameplayAbilityTargetDataHandle& Data, uint8& OutPredictionId)
@@ -159,13 +155,6 @@ APlacedStructure* UBuildAbility::PlaceStructureInternal(const FGameplayAbilityTa
 	const FBuildTargetData* BuildData = static_cast<const FBuildTargetData*>(Data.Get(0));
 
 	OutPredictionId = BuildData->PredictionId;
-
-	// static int PredictionTest{};
-	// if (HasAuthority(&CurrentActivationInfo) && PredictionTest++ % 2 == 0)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("Rejecting structure on server"));
-	// 	return nullptr;
-	// }
 	
 	FTransform BuildingTransform{BuildData->Rotation.Quaternion(), BuildData->Location};
 	BuildingTransform = UFBCBlueprintLibrary::SnapTransformToGrid(BuildingTransform);

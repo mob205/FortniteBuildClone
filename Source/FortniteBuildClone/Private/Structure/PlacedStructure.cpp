@@ -47,7 +47,6 @@ void APlacedStructure::BeginPlay()
 	{
 		if (AFBCPlayerController* PC = Cast<AFBCPlayerController>(GEngine->GetFirstLocalPlayerController(GetWorld())))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("I am at %s"), *GetActorLocation().ToString());
 			PC->RemovePredictedStructure(PredictionId);
 		}
 	}

@@ -109,7 +109,10 @@ void UFBCCharacterMovementComponent::PhysCustom(float DeltaTime, int32 Iteration
 
 void UFBCCharacterMovementComponent::SetBase(UPrimitiveComponent* NewBase, const FName BoneName, bool bNotifyActor)
 {
-	Super::SetBase(NewBase, BoneName, bNotifyActor);
+	// This project currently doesn't need base functionality
+	// However, it can interfere with building prediction, since the base must be replicated
+	// If needed, a more robust solution can be used (i.e. checking if the base is predicted or not)
+	Super::SetBase(nullptr, {}, bNotifyActor);
 }
 
 bool UFBCCharacterMovementComponent::IsMovingOnGround() const
@@ -234,6 +237,5 @@ bool UFBCCharacterMovementComponent::GetSlideSurface(FHitResult& Hit) const
 void UFBCCharacterMovementComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
-
 	FBCCharacterOwner = Cast<AFBCCharacter>(GetOwner());
 }
