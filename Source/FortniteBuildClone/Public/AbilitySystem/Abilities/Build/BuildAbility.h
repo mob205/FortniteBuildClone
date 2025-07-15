@@ -14,10 +14,8 @@ class UEnhancedInputLocalPlayerSubsystem;
 class AStructureTargetingActor;
 class UStructureInfoDataAsset;
 class UBuildResourceComponent;
+class APlacedStructure;
 
-/**
- * 
- */
 UCLASS()
 class FORTNITEBUILDCLONE_API UBuildAbility : public UFBCGameplayAbility
 {
@@ -44,12 +42,16 @@ protected:
 private:
 	TObjectPtr<AStructureTargetingActor> TargetingActor{};
 	TObjectPtr<UStructureStrategyWorldSubsystem> StrategyWorldSubsystem{};
-
+	
 	EFBCResourceType CachedMaterialType{};
 
-	int32 GetCurrentStructureEdit(FGameplayTag StructureTag);
-	
 	TMap<FGameplayTag, FBitGrid> CurrentStructureEdits{};
+
+	// Places a structure if the structure placement is valid
+	APlacedStructure* PlaceStructureInternal(const FGameplayAbilityTargetDataHandle& Data, uint8& OutPredictionId);
+
+	// Gets the last selected edit for a structure type
+	int32 GetCurrentStructureEdit(FGameplayTag StructureTag);
 	
 	// Places a structure after target data is received
 	UFUNCTION()

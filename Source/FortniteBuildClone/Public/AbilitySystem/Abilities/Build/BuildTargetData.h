@@ -30,9 +30,13 @@ struct FBuildTargetData : public FGameplayAbilityTargetData
 	UPROPERTY()
 	int32 Edit{};
 
+	// An identifier to help with structure prediction
+	UPROPERTY()
+	uint8 PredictionId{};
+
 	FBuildTargetData() {}
-	FBuildTargetData(const FGameplayTag& StructureTag, EFBCResourceType MaterialType, const FVector& Location, const FRotator& Rotation, int32 Edit)
-		: StructureTag(StructureTag), MaterialType(MaterialType), Location(Location), Rotation(Rotation), Edit(Edit)
+	FBuildTargetData(const FGameplayTag& StructureTag, EFBCResourceType MaterialType, const FVector& Location, const FRotator& Rotation, int32 Edit, uint8 PredictionId)
+		: StructureTag(StructureTag), MaterialType(MaterialType), Location(Location), Rotation(Rotation), Edit(Edit), PredictionId(PredictionId)
 	{}
 
 	virtual UScriptStruct* GetScriptStruct() const override
@@ -52,6 +56,7 @@ struct FBuildTargetData : public FGameplayAbilityTargetData
 		Ar << Location;
 		Ar << Rotation;
 		Ar << Edit;
+		Ar << PredictionId;
 	
 		bOutSuccess = true;
 		return true;
@@ -61,7 +66,7 @@ struct FBuildTargetData : public FGameplayAbilityTargetData
 	{
 		return Location == Other.Location && Rotation == Other.Rotation
 			&& StructureTag == Other.StructureTag && MaterialType == Other.MaterialType
-			&& Edit == Other.Edit;
+			&& Edit == Other.Edit && PredictionId == Other.PredictionId;
 	}
 };
 

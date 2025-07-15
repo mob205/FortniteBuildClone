@@ -7,6 +7,7 @@
 #include "Component/BuildResourceComponent.h"
 #include "Structure/PlacementStrategy/PlacementStrategy.h"
 
+uint8 AStructureTargetingActor::StructurePredictionId = 1;
 
 AStructureTargetingActor::AStructureTargetingActor()
 {
@@ -95,7 +96,8 @@ void AStructureTargetingActor::ConfirmTargetingAndContinue()
 			MaterialType,
 			GetActorLocation(),
 			GetActorRotation(),
-			CurrentStructureEdit
+			CurrentStructureEdit,
+			StructurePredictionId++
 		}
 	};
 	

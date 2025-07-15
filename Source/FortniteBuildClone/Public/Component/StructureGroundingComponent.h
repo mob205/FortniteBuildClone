@@ -38,10 +38,16 @@ public:
 	// Begins local destruction process of this structure on clients
 	UFUNCTION(NetMulticast, Reliable, BlueprintCallable)
 	void DestroyOnClients();
+
+	 void UnregisterFromNeighbors();
+	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-
+	
+	// Immediately begins the destruction process
+	// Notifies a ground update on all neighbors
+	void FinishStructureDestruction();
 
 private:
 	// Placed structure that owns this component
@@ -51,10 +57,6 @@ private:
 
 	// Returns true if the structure is connected to ground
 	bool IsGrounded();
-	
-	// Immediately begins the destruction process
-	// Notifies a ground update on all neighbors
-	void FinishStructureDestruction();
 
 	// If true, this structure is directly in contact with ground
 	bool bIsGroundingStructure{};

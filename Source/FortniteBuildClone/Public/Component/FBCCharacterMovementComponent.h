@@ -87,9 +87,8 @@ protected:
 
 	bool bWantsToSprint;
 	bool bPrevWantsToCrouch;
-	
 	bool bCanSprint;
-	
+
 public:
 	virtual FNetworkPredictionData_Client* GetPredictionData_Client() const override;
 
@@ -114,6 +113,8 @@ protected:
 	virtual void UpdateCharacterStateBeforeMovement(float DeltaSeconds) override;
 	virtual void PhysCustom(float DeltaTime, int32 Iterations) override;
 	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
+	virtual float GetMaxAcceleration() const override;
+	virtual void SetBase(UPrimitiveComponent* NewBase, const FName BoneName = NAME_None, bool bNotifyActor = true) override;
 private:
 	void EnterSlide();
 	void ExitSlide();
@@ -121,5 +122,4 @@ private:
 	bool GetSlideSurface(FHitResult& Hit) const;
 
 	float GetWalkSpeed() const;
-	float GetMaxAcceleration() const override;
 };

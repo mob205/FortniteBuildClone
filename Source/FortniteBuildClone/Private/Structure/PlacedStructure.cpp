@@ -5,6 +5,7 @@
 
 #include "Component/StructureGroundingComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/FBCPlayerController.h"
 
 APlacedStructure::APlacedStructure()
 {
@@ -23,6 +24,11 @@ APlacedStructure::APlacedStructure()
 	NetDormancy = ENetDormancy::DORM_DormantAll;
 }
 
+void APlacedStructure::PreInitDisableReplication()
+{
+	bReplicates = false;
+}
+
 void APlacedStructure::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -30,6 +36,20 @@ void APlacedStructure::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME_CONDITION(APlacedStructure, StructureTag, COND_InitialOnly);
 	DOREPLIFETIME_CONDITION(APlacedStructure, EditBitfield, COND_InitialOnly);
 	DOREPLIFETIME_CONDITION(APlacedStructure, ResourceType, COND_InitialOnly);
+	DOREPLIFETIME_CONDITION(APlacedStructure, PredictionId, COND_InitialOnly);
+}
+
+void APlacedStructure::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (PredictionId != 0)
+	{
+		if (AFBCPlayerController* PC = Cast<AFBCPlayerController>(GEngine->GetFirstLocalPlayerController(GetWorld())))
+		{
+			PC->RemovePredictedStructure(PredictionId);
+		}
+	}
 }
 
 void APlacedStructure::DisableStructure()

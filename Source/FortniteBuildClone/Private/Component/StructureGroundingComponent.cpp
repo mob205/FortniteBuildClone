@@ -101,28 +101,25 @@ void UStructureGroundingComponent::AddNeighbor(UStructureGroundingComponent* Str
 
 void UStructureGroundingComponent::FinishStructureDestruction()
 {
-	TRACE_CPUPROFILER_EVENT_SCOPE_STR("FinishDestruction");
+	UnregisterFromNeighbors();
+	
+	// Disabling structures is comparable to the grounding check itself
+	// Defer this to next frame for smoother performance
+	Owner->SetIsStructureDisabled(true);
+	FTimerHandle DelayedDisable{};
+	GetWorld()->GetTimerManager().SetTimer(DelayedDisable, FTimerDelegate::CreateUObject(Owner, &APlacedStructure::DisableStructure), .01, false);
 
-	{
-		TRACE_CPUPROFILER_EVENT_SCOPE_STR("Neighbors");
-		for (auto Neighbor: Neighbors)
-		{
-			Neighbor->RemoveNeighbor(this, NRG_Local);
-		}
-	}
-
-	{
-		TRACE_CPUPROFILER_EVENT_SCOPE_STR("Disable Timer");
-
-		// Disabling structures is comparable to the grounding check itself
-		// Defer this to next frame for smoother performance
-		Owner->SetIsStructureDisabled(true);
-		FTimerHandle DelayedDisable{};
-		GetWorld()->GetTimerManager().SetTimer(DelayedDisable, FTimerDelegate::CreateUObject(Owner, &APlacedStructure::DisableStructure), .01, false);
-	}
 	if (DestructionSubsystem)
 	{
 		DestructionSubsystem->QueueDestruction(Owner);
+	}
+}
+
+void UStructureGroundingComponent::UnregisterFromNeighbors()
+{
+	for (auto Neighbor: Neighbors)
+	{
+		Neighbor->RemoveNeighbor(this, NRG_Local);
 	}
 }
 
