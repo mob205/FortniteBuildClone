@@ -24,7 +24,7 @@ class FORTNITEBUILDCLONE_API UFBCCharacterMovementComponent : public UCharacterM
 	{
 		typedef FSavedMove_Character Super;
 
-		uint8 bPrevWantsToCrouch:1;
+		uint8 bPrevWantsToCrouch:1{};
 
 	public:
 		virtual void Clear() override;
@@ -60,7 +60,7 @@ protected:
 	AFBCCharacter* FBCCharacterOwner;
 
 	bool bPrevWantsToCrouch;
-	
+
 public:
 	virtual FNetworkPredictionData_Client* GetPredictionData_Client() const override;
 
@@ -75,6 +75,8 @@ protected:
 	virtual void OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity) override;
 	virtual void UpdateCharacterStateBeforeMovement(float DeltaSeconds) override;
 	virtual void PhysCustom(float DeltaTime, int32 Iterations) override;
+
+	virtual void SetBase(UPrimitiveComponent* NewBase, const FName BoneName = NAME_None, bool bNotifyActor = true) override;
 private:
 	void EnterSlide();
 	void ExitSlide();

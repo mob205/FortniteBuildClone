@@ -3,9 +3,26 @@
 #include "Player/FBCPlayerController.h"
 #include "EnhancedInputSubsystems.h"
 #include "Blueprint/UserWidget.h"
+#include "Component/StructureGroundingComponent.h"
 #include "Interface/Interactable.h"
 #include "Player/FBCPlayerState.h"
+#include "Structure/PlacedStructure.h"
 #include "UI/FBCHUDWidget.h"
+
+void AFBCPlayerController::AddPredictedStructure(uint8 PredictionId, APlacedStructure* Structure)
+{
+	ClientPredictedStructures.Add(PredictionId, Structure);
+}
+
+void AFBCPlayerController::RemovePredictedStructure_Implementation(uint8 PredictionId)
+{
+	if (APlacedStructure** Structure = ClientPredictedStructures.Find(PredictionId))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Removing predicted structure at %s"), *(*Structure)->GetActorLocation().ToString());
+		(*Structure)->GetGroundingComponent()->UnregisterFromNeighbors();
+		(*Structure)->Destroy();
+	}
+}
 
 void AFBCPlayerController::OnRep_PlayerState()
 {
@@ -20,7 +37,6 @@ void AFBCPlayerController::OnPossess(APawn* InPawn)
 
 	InitializeHUD();
 }
-
 
 void AFBCPlayerController::InitializeHUD()
 {

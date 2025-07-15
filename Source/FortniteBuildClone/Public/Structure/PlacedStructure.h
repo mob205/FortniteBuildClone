@@ -53,6 +53,8 @@ public:
 	bool IsStructureDisabled() const { return bIsDisabled; }
 	void SetIsStructureDisabled(bool bNewIsDisabled) { bIsDisabled = bNewIsDisabled; }
 
+	void SetPredictionId(uint8 NewPredictionId) { PredictionId = NewPredictionId; }
+	void PreInitDisableReplication();
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Ability System")
 	FGameplayTag StructureTag{};
@@ -61,6 +63,7 @@ protected:
 	TMap<EFBCResourceType, UMaterialInstance*> MaterialMap{};
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void BeginPlay() override;
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated, Category = "Editing")
 	FBitGrid EditBitfield{};
@@ -94,4 +97,7 @@ private:
 	void UpdateMeshMaterial();
 
 	bool bIsDisabled{};
+
+	UPROPERTY(Replicated)
+	uint8 PredictionId{};
 };

@@ -9,6 +9,8 @@
 class UFBCHUDWidget;
 class IInteractable;
 class UInputMappingContext;
+class APlacedStructure;
+
 /**
  * 
  */
@@ -17,6 +19,12 @@ class FORTNITEBUILDCLONE_API AFBCPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
+public:
+	void AddPredictedStructure(uint8 PredictionId, APlacedStructure* Structure);
+
+	UFUNCTION(Client, Reliable)
+	void RemovePredictedStructure(uint8 PredictionId);
+	
 protected:
 	virtual void OnRep_PlayerState() override;
 
@@ -35,14 +43,16 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UFBCHUDWidget> HUDWidgetClass{};
-
-	// Interaction 
+	
+	/**
+	 * Interaction
+	 */
 	UPROPERTY(EditDefaultsOnly, Category = "Interact")
 	float InteractRange{768.f};
 
 	UPROPERTY()
 	TObjectPtr<AActor> SelectedInteractable;
-
+	
 	UFUNCTION(Server, Reliable)
 	void ServerStartInteract(AActor* Interactable);
 
@@ -58,4 +68,7 @@ private:
 	// End interaction
 
 	void InitializeHUD();
+
+	// List of structures that are currently locally predicted by this player
+	TMap<uint8, APlacedStructure*> ClientPredictedStructures{};
 };

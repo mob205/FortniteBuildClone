@@ -244,7 +244,6 @@ void UEditAbility::EditStructure(int32 EditBitfield, int Yaw) const
 	
 	// Save current structure info
 	UStructureGroundingComponent* SelectedGroundingComponent = SelectedStructure->GetGroundingComponent();
-	//const TSet<UStructureGroundingComponent*> OldNeighbors = SelectedGroundingComponent->GetNeighbors(); 
 	EFBCResourceType SelectedMaterial = SelectedStructure->GetResourceType();
 
 	// Replace old structure with new structure

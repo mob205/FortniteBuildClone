@@ -73,9 +73,10 @@ private:
 	TObjectPtr<UBuildResourceComponent> ResourceComponent;
 	
 	FGameplayTag CurrentStructureTag{};
-	
 
 	void ValidateGhost() const;
 	void InvalidateGhost() const;
 	void HideGhost() const;
+
+	static uint8 StructurePredictionId;
 };

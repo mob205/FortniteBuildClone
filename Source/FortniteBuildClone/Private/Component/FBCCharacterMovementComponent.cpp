@@ -6,6 +6,7 @@
 #include "Components/CapsuleComponent.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "GameFramework/Character.h"
+#include "Structure/PlacedStructure.h"
 
 void UFBCCharacterMovementComponent::FSavedMove_FBC::Clear()
 {
@@ -106,6 +107,11 @@ void UFBCCharacterMovementComponent::PhysCustom(float DeltaTime, int32 Iteration
 	}
 }
 
+void UFBCCharacterMovementComponent::SetBase(UPrimitiveComponent* NewBase, const FName BoneName, bool bNotifyActor)
+{
+	Super::SetBase(NewBase, BoneName, bNotifyActor);
+}
+
 bool UFBCCharacterMovementComponent::IsMovingOnGround() const
 {
 	return Super::IsMovingOnGround() || IsCustomMovementMode(CMOVE_Slide);
@@ -166,7 +172,7 @@ void UFBCCharacterMovementComponent::PhysSlide(float DeltaTime, int32 Iterations
 	// Strafe - we are accelerating orthogonally to where we're moving. Steering only
 	if (FMath::Abs(FVector::DotProduct(Acceleration.GetSafeNormal(), UpdatedComponent->GetRightVector())) > .5)
 	{
-		Acceleration = Acceleration.ProjectOnTo(UpdatedComponent->GetRightVector());
+		Acceleration = .5 * Acceleration.ProjectOnTo(UpdatedComponent->GetRightVector());
 	}
 	else
 	{

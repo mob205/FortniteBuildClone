@@ -13,8 +13,10 @@
 #include "GameplayTagContainer.h"
 #include "AbilitySystem/Abilities/Build/BuildTargetData.h"
 #include "Component/BuildResourceComponent.h"
+#include "Component/FBCCharacterMovementComponent.h"
 #include "Structure/PlacementStrategy/PlacementStrategy.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
+#include "Player/FBCPlayerController.h"
 
 UBuildAbility::UBuildAbility()
 {
@@ -125,10 +127,45 @@ void UBuildAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FG
 
 void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 {
-	// Only the server should place structures
-	if (!HasAuthority(&CurrentActivationInfo)) { return; }
+	uint8 PredictionId;
+	APlacedStructure* PlacedStructure = PlaceStructureInternal(Data, PredictionId);
+	
+	AFBCPlayerController* PC{};
+	if (APawn* AsPawn = Cast<APawn>(GetAvatarActorFromActorInfo()))
+	{
+		PC = Cast<AFBCPlayerController>(AsPawn->GetController());
+	}
+	// May need to try other ways of getting PC if something other than a possessed pawn can use the ability
+	check(PC);
+	
+	// Predict placement on client
+	if (!HasAuthority(&CurrentActivationInfo) && PlacedStructure != nullptr)
+	{
+		PC->AddPredictedStructure(PredictionId, PlacedStructure);
+	}
+	// No structure was spawned - alert the player that its prediction may've been wrong
+	else if (HasAuthority(&CurrentActivationInfo) && PlacedStructure == nullptr)
+	{
+		PC->RemovePredictedStructure(PredictionId);
+	}
+	else if (HasAuthority(&CurrentActivationInfo))
+	{
+		PC->GetPawn()->GetComponentByClass<UFBCCharacterMovementComponent>()->SuperTest();
+	}
+}
 
+APlacedStructure* UBuildAbility::PlaceStructureInternal(const FGameplayAbilityTargetDataHandle& Data, uint8& OutPredictionId)
+{
 	const FBuildTargetData* BuildData = static_cast<const FBuildTargetData*>(Data.Get(0));
+
+	OutPredictionId = BuildData->PredictionId;
+
+	// static int PredictionTest{};
+	// if (HasAuthority(&CurrentActivationInfo) && PredictionTest++ % 2 == 0)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("Rejecting structure on server"));
+	// 	return nullptr;
+	// }
 	
 	FTransform BuildingTransform{BuildData->Rotation.Quaternion(), BuildData->Location};
 	BuildingTransform = UFBCBlueprintLibrary::SnapTransformToGrid(BuildingTransform);
@@ -148,14 +185,14 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 	if (!PlacementStrategy->CanPlace(BuildingTransform, BuildData->Edit))
 	{
 		UE_LOG(LogFBC, Warning, TEXT("BuildAbility: Requested placement is invalid (not supported by structures or ground)"));
-		return;
+		return nullptr;
 	}
 
 	// Check nothing is already occupying that spot
 	if (PlacementStrategy->IsOccupied(BuildingTransform))
 	{
 		UE_LOG(LogFBC, Warning, TEXT("BuildAbility: Request placement is in an occupied location."))
-		return;
+		return nullptr;
 	}
 
 	// Ensure we can find the class to spawn through edit data 
@@ -163,7 +200,7 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 	if (!EditMapDataAsset)
 	{
 		UE_LOG(LogFBC, Error, TEXT("BuildAbility: No edit map found for structure tag %s"), *BuildData->StructureTag.GetTagName().ToString());
-		return;
+		return nullptr;
 	}
 
 	if (!EditMapDataAsset->GetEditMap().Contains(BuildData->Edit))
@@ -171,7 +208,7 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 		UE_LOG(LogFBC, Error, TEXT("BuildAbility: Received invalid edit %d for structure type %s"),
 			BuildData->Edit,
 			*BuildData->StructureTag.GetTagName().ToString());
-		return;
+		return nullptr;
 	}
 
 	TSubclassOf<APlacedStructure> StructureActorClass = EditMapDataAsset->GetEditMap()[BuildData->Edit].StructureClass;
@@ -180,7 +217,7 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 		UE_LOG(LogFBC, Error,
 			TEXT("BuildAbility: No valid structure classes found for structure tag %s. Could not spawn structure."),
 			*BuildData->StructureTag.GetTagName().ToString());
-		return;
+		return nullptr;
 	}
 
 	// Finally, make sure we have enough materials
@@ -188,7 +225,7 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 	if (!CommitAbility(GetCurrentAbilitySpecHandle(), CurrentActorInfo, GetCurrentActivationInfo()))
 	{
 		UE_LOG(LogFBC, Warning, TEXT("BuildAbility: Insufficient materials"));
-		return;
+		return nullptr;
 	}
 	
 	// Build request validated
@@ -198,10 +235,21 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 
 	// Things that need to happen before actor is spawned
 	
-	UGameplayStatics::FinishSpawningActor(PlacedStructure, BuildingTransform);
-	
 	PlacedStructure->SetResourceType(CachedMaterialType);
 	PlacedStructure->SetEditBitfield(BuildData->Edit);
+
+	if (!HasAuthority(&CurrentActivationInfo))
+	{
+		PlacedStructure->PreInitDisableReplication();
+	}
+	else
+	{
+		PlacedStructure->SetPredictionId(OutPredictionId);
+	}
+	
+	UGameplayStatics::FinishSpawningActor(PlacedStructure, BuildingTransform);
+
+	return PlacedStructure;
 }
 
 void UBuildAbility::CallEndAbility(const FGameplayAbilityTargetDataHandle& Data)
