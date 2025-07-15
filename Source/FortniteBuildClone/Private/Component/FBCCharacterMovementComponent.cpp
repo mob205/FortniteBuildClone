@@ -7,18 +7,65 @@
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "GameFramework/Character.h"
 
-void UFBCCharacterMovementComponent::FSavedMove_FBC::Clear()
+void FFBCMoveResponseDataContainer::ServerFillResponseData(const UCharacterMovementComponent& CharacterMovement,
+	const FClientAdjustment& PendingAdjustment)
+{
+	FCharacterMoveResponseDataContainer::ServerFillResponseData(CharacterMovement, PendingAdjustment);
+
+	const UFBCCharacterMovementComponent* MoveComp = Cast<UFBCCharacterMovementComponent>(&CharacterMovement);
+	bStaminaDrained = MoveComp->IsStaminaDrained();
+	Stamina = MoveComp->GetStamina();
+}
+
+bool FFBCMoveResponseDataContainer::Serialize(UCharacterMovementComponent& CharacterMovementComponent, FArchive& Ar,
+	UPackageMap* PackageMap)
+{
+	if (!Super::Serialize(CharacterMovementComponent, Ar, PackageMap))
+	{
+		return false;
+	}
+
+	if (IsCorrection())
+	{
+		Ar << Stamina;
+		Ar << bStaminaDrained;
+	}
+
+	return !Ar.IsError();
+}
+
+void FFBCNetworkMoveData::ClientFillNetworkMoveData(const FSavedMove_Character& ClientMove, ENetworkMoveType MoveType)
+{
+	FCharacterNetworkMoveData::ClientFillNetworkMoveData(ClientMove, MoveType);
+
+	Stamina = static_cast<const FSavedMove_FBC&>(ClientMove).EndStamina;
+}
+
+bool FFBCNetworkMoveData::Serialize(UCharacterMovementComponent& CharacterMovement, FArchive& Ar,
+	UPackageMap* PackageMap, ENetworkMoveType MoveType)
+{
+	Super::Serialize(CharacterMovement, Ar, PackageMap, MoveType);
+
+	SerializeOptionalValue<float>(Ar.IsSaving(), Ar, Stamina, 0.f);
+	return !Ar.IsError();
+}
+
+void FSavedMove_FBC::Clear()
 {
 	FSavedMove_Character::Clear();
 
 	bWantsToSprint = 0;
 	bPrevWantsToCrouch = 0;
+
+	bStaminaDrained = false;
+	StartStamina = 0.f;
+	EndStamina = 0.f;
 }
 
-void UFBCCharacterMovementComponent::FSavedMove_FBC::SetMoveFor(ACharacter* C, float InDeltaTime,
+void FSavedMove_FBC::SetMoveFor(ACharacter* C, float InDeltaTime,
 	FVector const& NewAccel, FNetworkPredictionData_Client_Character& ClientData)
 {
-	FSavedMove_Character::SetMoveFor(C, InDeltaTime, NewAccel, ClientData);
+	Super::SetMoveFor(C, InDeltaTime, NewAccel, ClientData);
 
 	UFBCCharacterMovementComponent* CharacterMovement = Cast<UFBCCharacterMovementComponent>(C->GetCharacterMovement());
 
@@ -26,7 +73,7 @@ void UFBCCharacterMovementComponent::FSavedMove_FBC::SetMoveFor(ACharacter* C, f
 	bPrevWantsToCrouch = CharacterMovement->bPrevWantsToCrouch;
 }
 
-void UFBCCharacterMovementComponent::FSavedMove_FBC::PrepMoveFor(ACharacter* C)
+void FSavedMove_FBC::PrepMoveFor(ACharacter* C)
 {
 	FSavedMove_Character::PrepMoveFor(C);
 
@@ -34,19 +81,6 @@ void UFBCCharacterMovementComponent::FSavedMove_FBC::PrepMoveFor(ACharacter* C)
 
 	CharacterMovement->bWantsToSprint = bWantsToSprint;
 	CharacterMovement->bPrevWantsToCrouch = bPrevWantsToCrouch;
-}
-
-bool UFBCCharacterMovementComponent::FSavedMove_FBC::CanCombineWith(const FSavedMovePtr& NewMove,
-	ACharacter* InCharacter, float MaxDelta) const
-{
-	FSavedMove_FBC* NewFBCMove = static_cast<FSavedMove_FBC*>(NewMove.Get());
-	
-	if (bWantsToSprint != NewFBCMove->bWantsToSprint)
-	{
-		return false;
-	}
-
-	return Super::CanCombineWith(NewMove, InCharacter, MaxDelta);
 }
 
 void UFBCCharacterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
@@ -57,7 +91,7 @@ void UFBCCharacterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
 }
 
 
-uint8 UFBCCharacterMovementComponent::FSavedMove_FBC::GetCompressedFlags() const
+uint8 FSavedMove_FBC::GetCompressedFlags() const
 {
 	uint8 Result = Super::GetCompressedFlags();
 
@@ -69,13 +103,170 @@ uint8 UFBCCharacterMovementComponent::FSavedMove_FBC::GetCompressedFlags() const
 	return Result;
 }
 
-UFBCCharacterMovementComponent::FNetworkPredictionData_Client_FBC::FNetworkPredictionData_Client_FBC(
+bool FSavedMove_FBC::CanCombineWith(const FSavedMovePtr& NewMove,
+	ACharacter* InCharacter, float MaxDelta) const
+{
+	FSavedMove_FBC* NewFBCMove = static_cast<FSavedMove_FBC*>(NewMove.Get());
+	
+	if (bWantsToSprint != NewFBCMove->bWantsToSprint)
+	{
+		return false;
+	}
+
+	if (bStaminaDrained != NewFBCMove->bStaminaDrained)
+	{
+		return false;
+	}
+
+	return Super::CanCombineWith(NewMove, InCharacter, MaxDelta);
+}
+
+void FSavedMove_FBC::CombineWith(const FSavedMove_Character* OldMove, ACharacter* InCharacter, APlayerController* PC,
+	const FVector& OldStartLocation)
+{
+	FSavedMove_Character::CombineWith(OldMove, InCharacter, PC, OldStartLocation);
+
+	const FSavedMove_FBC* SavedOldMove = static_cast<const FSavedMove_FBC*>(OldMove);
+
+	if (UFBCCharacterMovementComponent* CMC = InCharacter ? Cast<UFBCCharacterMovementComponent>(InCharacter->GetCharacterMovement()) : nullptr)
+	{
+		CMC->SetStamina(SavedOldMove->StartStamina);
+		CMC->SetStaminaDrained(SavedOldMove->bStaminaDrained);
+	}
+}
+
+void FSavedMove_FBC::SetInitialPosition(ACharacter* C)
+{
+	Super::SetInitialPosition(C);
+
+	if (const UFBCCharacterMovementComponent* MoveComp = C ? Cast<UFBCCharacterMovementComponent>(C->GetCharacterMovement()) : nullptr)
+	{
+		bStaminaDrained = MoveComp->IsStaminaDrained();
+		StartStamina = MoveComp->GetStamina();
+	}
+}
+
+void FSavedMove_FBC::PostUpdate(ACharacter* C, EPostUpdateMode PostUpdateMode)
+{
+	if (UFBCCharacterMovementComponent* MoveComp = C ? Cast<UFBCCharacterMovementComponent>(C->GetCharacterMovement()) : nullptr)
+	{
+		EndStamina = MoveComp->GetStamina();
+
+		if (PostUpdateMode == PostUpdate_Record)
+		{
+			if (bStaminaDrained != MoveComp->IsStaminaDrained())
+			{
+				bForceNoCombine = true;
+			}
+		}
+	}
+	FSavedMove_Character::PostUpdate(C, PostUpdateMode);
+}
+
+FNetworkPredictionData_Client_FBC::FNetworkPredictionData_Client_FBC(
  	const UCharacterMovementComponent& ClientMovement) : Super(ClientMovement)
 {}
 
-FSavedMovePtr UFBCCharacterMovementComponent::FNetworkPredictionData_Client_FBC::AllocateNewMove()
+FSavedMovePtr FNetworkPredictionData_Client_FBC::AllocateNewMove()
 {
 	return FSavedMovePtr{new FSavedMove_FBC};
+}
+
+UFBCCharacterMovementComponent::UFBCCharacterMovementComponent()
+{
+	SetMoveResponseDataContainer(FBCMoveResponseDataContainer);
+	SetNetworkMoveDataContainer(FBCNetworkMoveDataContainer);
+
+	NetworkStaminaCorrectionThreshold = 2.f;
+}
+
+void UFBCCharacterMovementComponent::OnClientCorrectionReceived(
+	class FNetworkPredictionData_Client_Character& ClientData, float TimeStamp, FVector NewLocation,
+	FVector NewVelocity, UPrimitiveComponent* NewBase, FName NewBaseBoneName, bool bHasBase, bool bBaseRelativePosition,
+	uint8 ServerMovementMode, FVector ServerGravityDirection)
+{
+	const FFBCMoveResponseDataContainer& MoveResponse = static_cast<const FFBCMoveResponseDataContainer&>(GetMoveResponseDataContainer());
+
+	SetStamina(MoveResponse.Stamina);
+	SetStaminaDrained(MoveResponse.bStaminaDrained);
+	
+	Super::OnClientCorrectionReceived(ClientData, TimeStamp, NewLocation, NewVelocity, NewBase, NewBaseBoneName,
+	                                  bHasBase, bBaseRelativePosition,
+	                                  ServerMovementMode, ServerGravityDirection);
+}
+
+bool UFBCCharacterMovementComponent::ServerCheckClientError(float ClientTimeStamp, float DeltaTime,
+	const FVector& Accel, const FVector& ClientWorldLocation, const FVector& RelativeClientLocation,
+	UPrimitiveComponent* ClientMovementBase, FName ClientBaseBoneName, uint8 ClientMovementMode)
+{
+	if (Super::ServerCheckClientError(ClientTimeStamp, DeltaTime, Accel, ClientWorldLocation, RelativeClientLocation, ClientMovementBase, ClientBaseBoneName, ClientMovementMode)
+	{
+		return true;
+	}
+
+	// Check for desyncs above tolerance threshold
+	const FFBCNetworkMoveData* CurrentMoveData = static_cast<const FFBCNetworkMoveData*>(GetCurrentNetworkMoveData());
+	if (!FMath::IsNearlyEqual(CurrentMoveData->Stamina, Stamina, NetworkStaminaCorrectionThreshold))
+	{
+		return true;
+	}
+	return false;
+}
+
+void UFBCCharacterMovementComponent::SetStamina(float NewStamina)
+{
+	const float PrevStamina = Stamina;
+	Stamina = FMath::Clamp(NewStamina, 0.f, MaxStamina);
+	if (CharacterOwner != nullptr)
+	{
+		if (!FMath::IsNearlyEqual(PrevStamina, Stamina))
+		{
+			OnStaminaChanged(PrevStamina, Stamina);
+		}
+	}
+}
+
+void UFBCCharacterMovementComponent::SetMaxStamina(float NewMaxStamina)
+{
+	const float PrevMaxStamina = MaxStamina;
+	MaxStamina = FMath::Max(0.f, NewMaxStamina);
+	if (CharacterOwner != nullptr)
+	{
+		if (!FMath::IsNearlyEqual(PrevMaxStamina, MaxStamina))
+		{
+			OnMaxStaminaChanged(PrevMaxStamina, MaxStamina);
+		}
+	}
+}
+
+void UFBCCharacterMovementComponent::SetStaminaDrained(bool bNewValue)
+{
+	bStaminaDrained = bNewValue;
+}
+
+void UFBCCharacterMovementComponent::OnStaminaChanged(float PrevValue, float NewValue)
+{
+	if (FMath::IsNearlyZero(Stamina))
+	{
+		Stamina = 0.f;
+		if (!bStaminaDrained)
+		{
+			SetStaminaDrained(true);
+		}
+	}
+	else if (bStaminaDrained && Stamina >= MaxStamina * 0.25f)
+	{
+		Stamina = MaxStamina;
+		if (bStaminaDrained)
+		{
+			SetStaminaDrained(false);
+		}
+	}
+}
+
+void UFBCCharacterMovementComponent::OnMaxStaminaChanged(float PrevValue, float NewValue)
+{
+	SetStamina(GetStamina());
 }
 
 FNetworkPredictionData_Client* UFBCCharacterMovementComponent::GetPredictionData_Client() const
@@ -112,7 +303,7 @@ void UFBCCharacterMovementComponent::OnMovementUpdated(float DeltaSeconds, const
                                                        const FVector& OldVelocity)
 {
 	Super::OnMovementUpdated(DeltaSeconds, OldLocation, OldVelocity);
-	
+
 	bPrevWantsToCrouch = bWantsToCrouch;
 }
 

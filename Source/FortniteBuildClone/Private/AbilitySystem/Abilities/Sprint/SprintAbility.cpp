@@ -49,6 +49,10 @@ void USprintAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const F
 
 void USprintAbility::CheckStamina(const FOnAttributeChangeData& Data)
 {
+	if (IsValid(CMC))
+	{
+		CMC->SetStamina(Data.NewValue);
+	}
 	if (Data.NewValue <= 0)
 	{
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
