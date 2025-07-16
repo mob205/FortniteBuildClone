@@ -140,6 +140,11 @@ bool FSavedMove_FBC::CanCombineWith(const FSavedMovePtr& NewMove,
 	{
 		return false;
 	}
+	
+	if (bPrevWasSprinting != NewFBCMove->bPrevWasSprinting)
+	{
+		return false;
+	}
 
 	return Super::CanCombineWith(NewMove, InCharacter, MaxDelta);
 }
@@ -468,8 +473,14 @@ void UFBCCharacterMovementComponent::SetBase(UPrimitiveComponent* NewBase, const
 {
 	// This project currently doesn't need base functionality
 	// However, it can interfere with building prediction, since the base must be replicated
-	// If needed, a more robust solution can be used (i.e. checking if the base is predicted or not)
-	Super::SetBase(nullptr, {}, bNotifyActor);
+	if (NewBase && NewBase->GetOwner() && NewBase->GetOwner()->GetIsReplicated())
+	{
+		Super::SetBase(NewBase, BoneName, bNotifyActor);
+	}
+	else
+	{
+		Super::SetBase(nullptr, {}, bNotifyActor);
+	}
 }
 
 bool UFBCCharacterMovementComponent::IsMovingOnGround() const
