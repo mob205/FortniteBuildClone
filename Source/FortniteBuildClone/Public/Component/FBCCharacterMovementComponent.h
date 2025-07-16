@@ -72,6 +72,7 @@ public:
 	uint8 bWantsToSprint:1;
 	uint8 bPrevWantsToCrouch:1;
 	uint8 bStaminaDrained:1;
+	uint8 bPrevWasSprinting:1;
 
 	float StartStamina;
 	float EndStamina;
@@ -115,31 +116,33 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ToggleWantsToSprint(bool bNewWantsToSprint);
-
-	UFUNCTION(BlueprintCallable)
-	void ToggleCanSprint(bool bNewCanSprint);
-
+	
 	UFUNCTION(BlueprintCallable)
 	bool GetWantsToSprint() const { return bWantsToSprint; }
+
+	UFUNCTION(BlueprintCallable)
+	bool CanSprint() const { return !IsStaminaDrained(); }
+
+	UFUNCTION(BlueprintCallable)
+	bool IsSprinting() const { return bWantsToSprint && CanSprint();}
 	
 	virtual bool IsMovingOnGround() const override;
-    virtual bool CanCrouchInCurrentState() const override;
-public:
+	virtual bool CanCrouchInCurrentState() const override;
+	
 	float GetStamina() const { return Stamina; }
 	float GetMaxStamina() const { return MaxStamina; }
-	float IsStaminaDrained() const { return bStaminaDrained; }
+	bool IsStaminaDrained() const { return bStaminaDrained; }
 
 	void SetStamina(float NewStamina);
 	void SetMaxStamina(float NewMaxStamina);
 	void SetStaminaDrained(bool bNewValue);
-protected:
-	virtual void OnStaminaChanged(float PrevValue, float NewValue);
-	virtual void OnMaxStaminaChanged(float PrevValue, float NewValue);
 
-private:
-	FFBCMoveResponseDataContainer FBCMoveResponseDataContainer;
-	FFBCNetworkMoveDataContainer FBCNetworkMoveDataContainer;
+	void OnStaminaDrained();
+	void OnStaminaDrainRecovered();
 	
+	bool bWantsToSprint;
+	bool bPrevWantsToCrouch;
+	bool bPrevWasSprinting;
 protected:
 	// Parameters
 	UPROPERTY(EditDefaultsOnly, Category = "Character Movement: Sliding")
@@ -165,37 +168,43 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Character Movement: Sprinting")
 	FVector SprintSpeeds{700, 700, 700};
-	UPROPERTY(EditDefaultsOnly, Category = "Character Movement: Sprinting")
+	UPROPERTY(EditDefaultsOnly, Category = "Character Movement: Stamina")
 	float NetworkStaminaCorrectionThreshold;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Character Movement: Stamina")
+	float StaminaDrainRate;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Character Movement: Stamina")
+	float StaminaRegenRate;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Character Movement: Stamina")
+	float StaminaRegenDelay{};
 	
-	UPROPERTY(Transient)
-	TObjectPtr<AFBCCharacter> FBCCharacterOwner;
+	virtual void OnStaminaChanged(float PrevValue, float NewValue);
+	virtual void OnMaxStaminaChanged(float PrevValue, float NewValue);
 
-	bool bWantsToSprint;
-	bool bPrevWantsToCrouch;
-	
-	bool bCanSprint;
-	UPROPERTY()
-	float Stamina;
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UFUNCTION(BlueprintCallable)
-	void ToggleWantsToSprint(bool bNewWantsToSprint);
-
-	UFUNCTION(BlueprintCallable)
-	void ToggleCanSprint(bool bNewCanSprint);
-
-	UFUNCTION(BlueprintCallable)
-	bool GetWantsToSprint() const { return bWantsToSprint; }
-	
-	virtual bool IsMovingOnGround() const override;
-    virtual bool CanCrouchInCurrentState() const override;
+private:
+	FFBCMoveResponseDataContainer FBCMoveResponseDataContainer;
+	FFBCNetworkMoveDataContainer FBCNetworkMoveDataContainer;
 	
 protected:
+	UPROPERTY(Transient)
+	TObjectPtr<AFBCCharacter> FBCCharacterOwner;
+	
+	UPROPERTY()
+	float Stamina;
+	
+	UPROPERTY(EditDefaultsOnly)
+	float DefaultMaxStamina{};
+	
 	virtual void InitializeComponent() override;
 	virtual void OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity) override;
 	virtual void UpdateCharacterStateBeforeMovement(float DeltaSeconds) override;
 	virtual void PhysCustom(float DeltaTime, int32 Iterations) override;
 	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
+	virtual void CalcVelocity(float DeltaTime, float Friction, bool bFluid, float BrakingDeceleration) override;
 private:
 	void EnterSlide();
 	void ExitSlide();
@@ -209,4 +218,6 @@ private:
 
 	UPROPERTY()
 	bool bStaminaDrained;
+
+	float CurrentStaminaRegenDelay{};
 };

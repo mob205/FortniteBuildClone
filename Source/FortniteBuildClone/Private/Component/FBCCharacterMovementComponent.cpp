@@ -8,7 +8,7 @@
 #include "GameFramework/Character.h"
 
 void FFBCMoveResponseDataContainer::ServerFillResponseData(const UCharacterMovementComponent& CharacterMovement,
-	const FClientAdjustment& PendingAdjustment)
+                                                           const FClientAdjustment& PendingAdjustment)
 {
 	FCharacterMoveResponseDataContainer::ServerFillResponseData(CharacterMovement, PendingAdjustment);
 
@@ -56,6 +56,7 @@ void FSavedMove_FBC::Clear()
 
 	bWantsToSprint = 0;
 	bPrevWantsToCrouch = 0;
+	bPrevWasSprinting = 0;
 
 	bStaminaDrained = false;
 	StartStamina = 0.f;
@@ -71,6 +72,7 @@ void FSavedMove_FBC::SetMoveFor(ACharacter* C, float InDeltaTime,
 
 	bWantsToSprint = CharacterMovement->bWantsToSprint;
 	bPrevWantsToCrouch = CharacterMovement->bPrevWantsToCrouch;
+	bPrevWasSprinting = CharacterMovement->bPrevWasSprinting;
 }
 
 void FSavedMove_FBC::PrepMoveFor(ACharacter* C)
@@ -81,6 +83,7 @@ void FSavedMove_FBC::PrepMoveFor(ACharacter* C)
 
 	CharacterMovement->bWantsToSprint = bWantsToSprint;
 	CharacterMovement->bPrevWantsToCrouch = bPrevWantsToCrouch;
+	CharacterMovement->bPrevWasSprinting = bPrevWasSprinting;
 }
 
 void UFBCCharacterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
@@ -88,6 +91,25 @@ void UFBCCharacterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
 	Super::UpdateFromCompressedFlags(Flags);
 
 	bWantsToSprint = (Flags & FSavedMove_Character::FLAG_Custom_0) != 0;
+}
+
+void UFBCCharacterMovementComponent::CalcVelocity(float DeltaTime, float Friction, bool bFluid,
+	float BrakingDeceleration)
+{
+	Super::CalcVelocity(DeltaTime, Friction, bFluid, BrakingDeceleration);
+
+	if (bWantsToSprint && !bStaminaDrained)
+	{
+		SetStamina(GetStamina() - StaminaDrainRate * DeltaTime);
+	}
+	else if (CurrentStaminaRegenDelay > 0.f)
+	{
+		CurrentStaminaRegenDelay -= DeltaTime;
+	}
+	else
+	{
+		SetStamina(GetStamina() + StaminaRegenRate * DeltaTime);
+	}
 }
 
 
@@ -199,7 +221,7 @@ bool UFBCCharacterMovementComponent::ServerCheckClientError(float ClientTimeStam
 	const FVector& Accel, const FVector& ClientWorldLocation, const FVector& RelativeClientLocation,
 	UPrimitiveComponent* ClientMovementBase, FName ClientBaseBoneName, uint8 ClientMovementMode)
 {
-	if (Super::ServerCheckClientError(ClientTimeStamp, DeltaTime, Accel, ClientWorldLocation, RelativeClientLocation, ClientMovementBase, ClientBaseBoneName, ClientMovementMode)
+	if (Super::ServerCheckClientError(ClientTimeStamp, DeltaTime, Accel, ClientWorldLocation, RelativeClientLocation, ClientMovementBase, ClientBaseBoneName, ClientMovementMode))
 	{
 		return true;
 	}
@@ -241,7 +263,33 @@ void UFBCCharacterMovementComponent::SetMaxStamina(float NewMaxStamina)
 
 void UFBCCharacterMovementComponent::SetStaminaDrained(bool bNewValue)
 {
+	const bool bWasStaminaDrained = bStaminaDrained;
 	bStaminaDrained = bNewValue;
+	if (IsValid(CharacterOwner))
+	{
+		if (bWasStaminaDrained != bStaminaDrained)
+		{
+			if (bStaminaDrained)
+			{
+				OnStaminaDrained();
+			}
+			else
+			{
+				OnStaminaDrainRecovered();
+			}
+		}
+	}
+}
+
+void UFBCCharacterMovementComponent::OnStaminaDrained()
+{
+	CurrentStaminaRegenDelay = StaminaRegenDelay;
+
+	ToggleWantsToSprint(false);
+}
+
+void UFBCCharacterMovementComponent::OnStaminaDrainRecovered()
+{
 }
 
 void UFBCCharacterMovementComponent::OnStaminaChanged(float PrevValue, float NewValue)
@@ -256,17 +304,19 @@ void UFBCCharacterMovementComponent::OnStaminaChanged(float PrevValue, float New
 	}
 	else if (bStaminaDrained && Stamina >= MaxStamina * 0.25f)
 	{
-		Stamina = MaxStamina;
-		if (bStaminaDrained)
-		{
-			SetStaminaDrained(false);
-		}
+		SetStaminaDrained(false);
 	}
 }
 
 void UFBCCharacterMovementComponent::OnMaxStaminaChanged(float PrevValue, float NewValue)
 {
 	SetStamina(GetStamina());
+}
+
+void UFBCCharacterMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
+	FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
 FNetworkPredictionData_Client* UFBCCharacterMovementComponent::GetPredictionData_Client() const
@@ -294,63 +344,71 @@ void UFBCCharacterMovementComponent::ToggleWantsToSprint(bool bNewWantsToSprint)
 	bWantsToSprint = bNewWantsToSprint;
 }
 
-void UFBCCharacterMovementComponent::ToggleCanSprint(bool bNewCanSprint)
-{
-	bCanSprint = bNewCanSprint;
-}
-
 void UFBCCharacterMovementComponent::OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation,
                                                        const FVector& OldVelocity)
 {
 	Super::OnMovementUpdated(DeltaSeconds, OldLocation, OldVelocity);
 
+	const bool bIsCurrentlySprinting = IsSprinting();
+
+	// We just stopped sprinting
+	if (bPrevWasSprinting && !bIsCurrentlySprinting)
+	{
+		CurrentStaminaRegenDelay = StaminaRegenDelay;
+	}
 	bPrevWantsToCrouch = bWantsToCrouch;
+	bPrevWasSprinting = bIsCurrentlySprinting;
 }
 
 float UFBCCharacterMovementComponent::GetWalkSpeed() const
 {
-	const FRotator Rotation = CharacterOwner->GetActorRotation();
-	
-	float VelocityAngle{};
-	
-	if (!Velocity.IsNearlyZero())
+	if (bWantsToSprint && !bStaminaDrained)
 	{
-		const FMatrix RotMatrix = FRotationMatrix(Rotation);
-		const FVector ForwardVector = RotMatrix.GetScaledAxis(EAxis::X);
-		const FVector RightVector = RotMatrix.GetScaledAxis(EAxis::Y);
-		const FVector NormalizedVel = Velocity.GetSafeNormal2D();
-	
-		// get a cos(alpha) of forward vector vs velocity
-		const float ForwardCosAngle = static_cast<float>(FVector::DotProduct(ForwardVector, NormalizedVel));
-		// now get the alpha and convert to degree
-		float ForwardDeltaDegree = FMath::RadiansToDegrees(FMath::Acos(ForwardCosAngle));
-	
-		// depending on where right vector is, flip it
-		const float RightCosAngle = static_cast<float>(FVector::DotProduct(RightVector, NormalizedVel));
-		if (RightCosAngle < 0.f)
-		{
-			ForwardDeltaDegree *= -1.f;
-		}
-	
-		VelocityAngle = FMath::Abs(ForwardDeltaDegree);
+		return SprintSpeeds.X;
 	}
-	
-	float StrafeSpeedMap = StrafeSpeedMapCurve->GetFloatValue(VelocityAngle);
-	
-	FVector Speeds = RunSpeeds;
-	if (bWantsToSprint && bCanSprint)
-	{
-		Speeds = SprintSpeeds;
-	}
-	
-	if (StrafeSpeedMap < 1.f)
-	{
-		return FMath::GetMappedRangeValueClamped(FVector2D{0, 1}, FVector2D{Speeds.X, Speeds.Y}, StrafeSpeedMap);
-	}
-	else
-	{
-		return FMath::GetMappedRangeValueClamped(FVector2D{1, 2}, FVector2D{Speeds.Y, Speeds.Z}, StrafeSpeedMap);
-	}
+	return RunSpeeds.X;
+	// const FRotator Rotation = CharacterOwner->GetActorRotation();
+	//
+	// float VelocityAngle{};
+	//
+	// if (!Velocity.IsNearlyZero())
+	// {
+	// 	const FMatrix RotMatrix = FRotationMatrix(Rotation);
+	// 	const FVector ForwardVector = RotMatrix.GetScaledAxis(EAxis::X);
+	// 	const FVector RightVector = RotMatrix.GetScaledAxis(EAxis::Y);
+	// 	const FVector NormalizedVel = Velocity.GetSafeNormal2D();
+	//
+	// 	// get a cos(alpha) of forward vector vs velocity
+	// 	const float ForwardCosAngle = static_cast<float>(FVector::DotProduct(ForwardVector, NormalizedVel));
+	// 	// now get the alpha and convert to degree
+	// 	float ForwardDeltaDegree = FMath::RadiansToDegrees(FMath::Acos(ForwardCosAngle));
+	//
+	// 	// depending on where right vector is, flip it
+	// 	const float RightCosAngle = static_cast<float>(FVector::DotProduct(RightVector, NormalizedVel));
+	// 	if (RightCosAngle < 0.f)
+	// 	{
+	// 		ForwardDeltaDegree *= -1.f;
+	// 	}
+	//
+	// 	VelocityAngle = FMath::Abs(ForwardDeltaDegree);
+	// }
+	//
+	// float StrafeSpeedMap = StrafeSpeedMapCurve->GetFloatValue(VelocityAngle);
+	//
+	// FVector Speeds = RunSpeeds;
+	// if (bWantsToSprint && bCanSprint)
+	// {
+	// 	Speeds = SprintSpeeds;
+	// }
+	//
+	// if (StrafeSpeedMap < 1.f)
+	// {
+	// 	return FMath::GetMappedRangeValueClamped(FVector2D{0, 1}, FVector2D{Speeds.X, Speeds.Y}, StrafeSpeedMap);
+	// }
+	// else
+	// {
+	// 	return FMath::GetMappedRangeValueClamped(FVector2D{1, 2}, FVector2D{Speeds.Y, Speeds.Z}, StrafeSpeedMap);
+	// }
 }
 
 void UFBCCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSeconds)
@@ -363,7 +421,8 @@ void UFBCCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float De
 		{
 			EnterSlide();
 		}
-	} else if (MovementMode == MOVE_Walking)
+	}
+	else if (MovementMode == MOVE_Walking)
 	{
 		MaxWalkSpeed = GetWalkSpeed();
 	}
@@ -516,4 +575,6 @@ void UFBCCharacterMovementComponent::InitializeComponent()
 	Super::InitializeComponent();
 
 	FBCCharacterOwner = Cast<AFBCCharacter>(GetOwner());
+	SetMaxStamina(DefaultMaxStamina);
+	SetStamina(GetMaxStamina());
 }

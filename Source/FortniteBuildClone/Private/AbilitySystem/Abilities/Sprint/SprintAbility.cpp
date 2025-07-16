@@ -61,16 +61,16 @@ void USprintAbility::CheckStamina(const FOnAttributeChangeData& Data)
 
 void USprintAbility::SetSprintStatus(bool bSprinting) const
 {
-	if (IsValid(CMC))
-	{
-		// Let the CMC handle sprinting the intent to sprint, which is client -> server only
-		if (IsPredictingClient())
-		{
-			CMC->ToggleWantsToSprint(bSprinting);
-		}
-		
-		// Server still maintains authority in whether sprinting is allowed 
-		CMC->ToggleCanSprint(bSprinting);
-	}
+	// if (IsValid(CMC))
+	// {
+	// 	// Let the CMC handle sprinting the intent to sprint, which is client -> server only
+	// 	if (IsPredictingClient())
+	// 	{
+	// 		CMC->ToggleWantsToSprint(bSprinting);
+	// 	}
+	// 	
+	// 	// Server still maintains authority in whether sprinting is allowed 
+	// 	CMC->ToggleCanSprint(bSprinting);
+	// }
 }
 
