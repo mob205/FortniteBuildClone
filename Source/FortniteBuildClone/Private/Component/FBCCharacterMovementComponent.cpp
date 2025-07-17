@@ -16,6 +16,7 @@ void FFBCMoveResponseDataContainer::ServerFillResponseData(const UCharacterMovem
 	const UFBCCharacterMovementComponent* MoveComp = Cast<UFBCCharacterMovementComponent>(&CharacterMovement);
 	bStaminaDrained = MoveComp->IsStaminaDrained();
 	Stamina = MoveComp->GetStamina();
+	CurrentStaminaRegenDelay = MoveComp->GetCurrentStaminaRegenDelay();
 }
 
 bool FFBCMoveResponseDataContainer::Serialize(UCharacterMovementComponent& CharacterMovementComponent, FArchive& Ar,
@@ -30,6 +31,7 @@ bool FFBCMoveResponseDataContainer::Serialize(UCharacterMovementComponent& Chara
 	{
 		Ar << Stamina;
 		Ar << bStaminaDrained;
+		Ar << CurrentStaminaRegenDelay;
 	}
 
 	return !Ar.IsError();
@@ -39,7 +41,9 @@ void FFBCNetworkMoveData::ClientFillNetworkMoveData(const FSavedMove_Character& 
 {
 	FCharacterNetworkMoveData::ClientFillNetworkMoveData(ClientMove, MoveType);
 
-	Stamina = static_cast<const FSavedMove_FBC&>(ClientMove).EndStamina;
+	const FSavedMove_FBC& FBCClientMove = static_cast<const FSavedMove_FBC&>(ClientMove);
+	Stamina = FBCClientMove.EndStamina;
+	CurrentStaminaRegenDelay = FBCClientMove.CurrentStaminaRegenDelay;
 }
 
 bool FFBCNetworkMoveData::Serialize(UCharacterMovementComponent& CharacterMovement, FArchive& Ar,
@@ -48,6 +52,7 @@ bool FFBCNetworkMoveData::Serialize(UCharacterMovementComponent& CharacterMoveme
 	Super::Serialize(CharacterMovement, Ar, PackageMap, MoveType);
 
 	SerializeOptionalValue<float>(Ar.IsSaving(), Ar, Stamina, 0.f);
+	SerializeOptionalValue<float>(Ar.IsSaving(), Ar, CurrentStaminaRegenDelay, 0.f);
 	return !Ar.IsError();
 }
 
@@ -62,6 +67,7 @@ void FSavedMove_FBC::Clear()
 	bStaminaDrained = false;
 	StartStamina = 0.f;
 	EndStamina = 0.f;
+	CurrentStaminaRegenDelay = 0.f;
 }
 
 void FSavedMove_FBC::SetMoveFor(ACharacter* C, float InDeltaTime,
@@ -103,14 +109,15 @@ void UFBCCharacterMovementComponent::CalcVelocity(float DeltaTime, float Frictio
 	{
 		SetStamina(GetStamina() - StaminaDrainRate * DeltaTime);
 	}
-	else if (CurrentStaminaRegenDelay > 0.f)
-	{
-		CurrentStaminaRegenDelay -= DeltaTime;
-	}
-	else
+	else if (CurrentStaminaRegenDelay <= 0.f)
 	{
 		SetStamina(GetStamina() + StaminaRegenRate * DeltaTime);
 	}
+}
+
+void UFBCCharacterMovementComponent::PerformMovement(float DeltaTime)
+{
+	Super::PerformMovement(DeltaTime);
 }
 
 
@@ -171,6 +178,7 @@ void FSavedMove_FBC::SetInitialPosition(ACharacter* C)
 	{
 		bStaminaDrained = MoveComp->IsStaminaDrained();
 		StartStamina = MoveComp->GetStamina();
+		CurrentStaminaRegenDelay = MoveComp->GetCurrentStaminaRegenDelay();
 	}
 }
 
@@ -217,6 +225,7 @@ void UFBCCharacterMovementComponent::OnClientCorrectionReceived(
 
 	SetStamina(MoveResponse.Stamina);
 	SetStaminaDrained(MoveResponse.bStaminaDrained);
+	SetCurrentStaminaRegenDelay(MoveResponse.CurrentStaminaRegenDelay);
 	
 	Super::OnClientCorrectionReceived(ClientData, TimeStamp, NewLocation, NewVelocity, NewBase, NewBaseBoneName,
 	                                  bHasBase, bBaseRelativePosition,
@@ -238,6 +247,11 @@ bool UFBCCharacterMovementComponent::ServerCheckClientError(float ClientTimeStam
 	{
 		return true;
 	}
+
+	// if (!FMath::IsNearlyEqual(CurrentMoveData->CurrentStaminaRegenDelay, CurrentStaminaRegenDelay, .1))
+	// {
+	// 	return true;
+	// }
 	return false;
 }
 
@@ -267,6 +281,11 @@ void UFBCCharacterMovementComponent::SetMaxStamina(float NewMaxStamina)
 	}
 }
 
+void UFBCCharacterMovementComponent::SetCurrentStaminaRegenDelay(float RegenDelay)
+{
+	CurrentStaminaRegenDelay = RegenDelay;
+}
+
 void UFBCCharacterMovementComponent::SetStaminaDrained(bool bNewValue)
 {
 	const bool bWasStaminaDrained = bStaminaDrained;
@@ -289,7 +308,7 @@ void UFBCCharacterMovementComponent::SetStaminaDrained(bool bNewValue)
 
 void UFBCCharacterMovementComponent::OnStaminaDrained()
 {
-	CurrentStaminaRegenDelay = StaminaRegenDelay;
+	SetCurrentStaminaRegenDelay(StaminaRegenDelay);
 
 	ToggleWantsToSprint(false);
 }
@@ -323,6 +342,12 @@ void UFBCCharacterMovementComponent::TickComponent(float DeltaTime, enum ELevelT
 	FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	// From testing, TickComponent seems to be the only place where DeltaTime is actually reliably framerate independent
+	if (CurrentStaminaRegenDelay > 0)
+	{
+		CurrentStaminaRegenDelay -= DeltaTime;
+	}
 }
 
 FNetworkPredictionData_Client* UFBCCharacterMovementComponent::GetPredictionData_Client() const
@@ -360,7 +385,7 @@ void UFBCCharacterMovementComponent::OnMovementUpdated(float DeltaSeconds, const
 	// We just stopped sprinting
 	if (bPrevWasSprinting && !bIsCurrentlySprinting)
 	{
-		CurrentStaminaRegenDelay = StaminaRegenDelay;
+		SetCurrentStaminaRegenDelay(StaminaRegenDelay);
 	}
 	bPrevWantsToCrouch = bWantsToCrouch;
 	bPrevWasSprinting = bIsCurrentlySprinting;

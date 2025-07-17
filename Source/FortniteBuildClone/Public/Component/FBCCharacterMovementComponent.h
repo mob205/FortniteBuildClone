@@ -26,6 +26,7 @@ struct FFBCMoveResponseDataContainer : FCharacterMoveResponseDataContainer
 	virtual bool Serialize(UCharacterMovementComponent& CharacterMovementComponent, FArchive& Ar, UPackageMap* PackageMap) override;
 
 	float Stamina;
+	float CurrentStaminaRegenDelay;
 	bool bStaminaDrained;
 };
 
@@ -35,13 +36,14 @@ struct FFBCNetworkMoveData : FCharacterNetworkMoveData
 	using Super = FCharacterNetworkMoveData;
 
 	FFBCNetworkMoveData()
-		: Stamina{0}
+		: Stamina{0}, CurrentStaminaRegenDelay{0}
 	{}
 
 	virtual void ClientFillNetworkMoveData(const FSavedMove_Character& ClientMove, ENetworkMoveType MoveType) override;
 	virtual bool Serialize(UCharacterMovementComponent& CharacterMovement, FArchive& Ar, UPackageMap* PackageMap, ENetworkMoveType MoveType) override;
 	
 	float Stamina;
+	float CurrentStaminaRegenDelay;
 };
 
 // Client to server. Used as network RPC parameter
@@ -76,6 +78,7 @@ public:
 
 	float StartStamina;
 	float EndStamina;
+	float CurrentStaminaRegenDelay;
 
 public:
 	virtual void Clear() override;
@@ -132,10 +135,12 @@ public:
 	float GetStamina() const { return Stamina; }
 	float GetMaxStamina() const { return MaxStamina; }
 	bool IsStaminaDrained() const { return bStaminaDrained; }
+	float GetCurrentStaminaRegenDelay() const { return CurrentStaminaRegenDelay; }
 
 	void SetStamina(float NewStamina);
 	void SetMaxStamina(float NewMaxStamina);
 	void SetStaminaDrained(bool bNewValue);
+	void SetCurrentStaminaRegenDelay(float RegenDelay);
 
 	void OnStaminaDrained();
 	void OnStaminaDrainRecovered();
@@ -143,6 +148,7 @@ public:
 	bool bWantsToSprint;
 	bool bPrevWantsToCrouch;
 	bool bPrevWasSprinting;
+	float CurrentStaminaRegenDelay{};
 protected:
 	// Parameters
 	UPROPERTY(EditDefaultsOnly, Category = "Character Movement: Sliding")
@@ -189,7 +195,6 @@ protected:
 	
 	virtual void OnStaminaChanged(float PrevValue, float NewValue);
 	virtual void OnMaxStaminaChanged(float PrevValue, float NewValue);
-
 public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -215,6 +220,7 @@ protected:
 	virtual float GetMaxAcceleration() const override;
 	virtual void SetBase(UPrimitiveComponent* NewBase, const FName BoneName = NAME_None, bool bNotifyActor = true) override;
 	virtual void CalcVelocity(float DeltaTime, float Friction, bool bFluid, float BrakingDeceleration) override;
+	virtual void PerformMovement(float DeltaTime) override;
 private:
 	void EnterSlide();
 	void ExitSlide();
@@ -229,5 +235,5 @@ private:
 	UPROPERTY()
 	bool bStaminaDrained;
 
-	float CurrentStaminaRegenDelay{};
+	float Test{};
 };
