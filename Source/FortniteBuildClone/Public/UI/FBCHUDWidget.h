@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Structure/Data/StructureResourceTypes.h"
 #include "Component/BuildResourceComponent.h"
+#include "Component/InventoryComponent.h"
 #include "FBCHUDWidget.generated.h"
 
 class UFBCAttributeSet;
@@ -44,6 +45,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Ability System")
 	TObjectPtr<UBuildResourceComponent> OwnerResourceComponent;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
+	TObjectPtr<UInventoryComponent> OwnerInventoryComponent;
+	
 	UFUNCTION(BlueprintCallable)
 	void BroadcastInitialValues();
 private:

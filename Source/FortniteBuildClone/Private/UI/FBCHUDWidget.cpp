@@ -16,6 +16,7 @@ void UFBCHUDWidget::InitializeHUD(AFBCPlayerState* PS, UFBCAbilitySystemComponen
 	if (Owner)
 	{
 		OwnerResourceComponent = Owner->GetComponentByClass<UBuildResourceComponent>();
+		OwnerInventoryComponent = Owner->GetComponentByClass<UInventoryComponent>();
 	}
 	
 	// Subscribe to material changes

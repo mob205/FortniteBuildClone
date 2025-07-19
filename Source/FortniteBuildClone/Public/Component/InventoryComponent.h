@@ -11,7 +11,7 @@
 class UItemSlot;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSlotRemovedSignature, int32, SlotIndex);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSlotAddedSignature, int32, SlotIndex);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSlotAddedSignature, int32, SlotIndex, UItemSlot*, ItemSlot);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FORTNITEBUILDCLONE_API UInventoryComponent : public UActorComponent
@@ -21,7 +21,10 @@ class FORTNITEBUILDCLONE_API UInventoryComponent : public UActorComponent
 public:	
 	UInventoryComponent();
 
+	UPROPERTY(BlueprintAssignable, Category="Inventory")
 	FOnSlotRemovedSignature OnSlotRemoved;
+	
+	UPROPERTY(BlueprintAssignable, Category="Inventory")
 	FOnSlotAddedSignature OnSlotAdded;
 	
 	// Returns true if any item can be added

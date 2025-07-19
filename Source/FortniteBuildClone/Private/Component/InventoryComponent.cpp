@@ -58,40 +58,17 @@ void UInventoryComponent::BeginPlay()
 
 void UInventoryComponent::OnItemRemoved(const FItemInstance& Item, AActor* Actor, int32 SlotIndex)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red,
-		FString::Printf(TEXT("%d removed item %s %s %d"),
-			UKismetSystemLibrary::IsServer(this),
-			*Item.ItemData->GetItemName().ToString(),
-			*Actor->GetName(),
-			SlotIndex));
+	
 }
 
 void UInventoryComponent::OnItemAdded(const FItemInstance& Item, AActor* Actor, int32 SlotIndex)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Green,
-		FString::Printf(TEXT("%d added item %s %s %d"),
-			UKismetSystemLibrary::IsServer(this),
-			*Item.ItemData->GetItemName().ToString(),
-			*Actor->GetName(),
-			SlotIndex));
+
 }
 
 void UInventoryComponent::OnItemChanged(const FItemInstance& Item, AActor* Actor, int32 SlotIndex)
 {
-	if (Item.ItemData == nullptr)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, FString::Printf(TEXT("Null item data")));
-	}
-	if (Actor == nullptr)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, FString::Printf(TEXT("Null actor")));
-	}
-	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Green,
-		FString::Printf(TEXT("%d changed item %s %s %d"),
-			UKismetSystemLibrary::IsServer(this),
-			*Item.ItemData->GetItemName().ToString(),
-			*Actor->GetName(),
-			SlotIndex));
+	UpdateSlots();
 }
 
 void UInventoryComponent::UpdateSlots()
@@ -128,6 +105,7 @@ void UInventoryComponent::AddSlot(int32 SlotIndex, const UClass* SlotClass, cons
 	UItemSlot* Slot = NewObject<UItemSlot>(this, SlotClass);
 	ItemSlots[SlotIndex] = Slot;
 	Slot->Initialize(Item);
+	OnSlotAdded.Broadcast(SlotIndex, Slot);
 }
 
 

@@ -6,6 +6,7 @@
 #include "Engine/DataAsset.h"
 #include "ItemData.generated.h"
 
+class UItemSlotWidget;
 class UItemSlot;
 
 USTRUCT()
@@ -23,12 +24,23 @@ class FORTNITEBUILDCLONE_API UItemData : public UPrimaryDataAsset
 	GENERATED_BODY()
 
 public:
-	const FText& GetItemName() const { return ItemName;}
-	TSoftObjectPtr<UStaticMesh> GetWorldDropMesh() const { return WorldDropMesh; }
-	UScriptStruct* GetItemInfoStruct() const { return ItemInstanceInfoStruct; }
-	TSubclassOf<UItemSlot> GetItemSlotClass() const { return ItemSlotClass; }
-	TSubclassOf<AActor> GetActorClass() const { return ActorClass.LoadSynchronous(); } // TODO: make this non-blocking
+	UFUNCTION(BlueprintCallable, Category = "ItemData")
+	const FText& GetItemName() const { return ItemName; }
 	
+	UFUNCTION(BlueprintCallable, Category = "ItemData")
+	TSoftObjectPtr<UStaticMesh> GetWorldDropMesh() const { return WorldDropMesh; }
+
+	UFUNCTION(BlueprintCallable, Category = "ItemData")
+	UScriptStruct* GetItemInfoStruct() const { return ItemInstanceInfoStruct; }
+
+	UFUNCTION(BlueprintCallable, Category = "ItemData")
+	TSubclassOf<UItemSlot> GetItemSlotClass() const { return ItemSlotClass; }
+
+	UFUNCTION(BlueprintCallable, Category = "ItemData")
+	TSubclassOf<AActor> GetActorClass() const { return ActorClass.LoadSynchronous(); } // TODO: make this non-blocking
+
+	UFUNCTION(BlueprintCallable, Category = "ItemData")
+	TSubclassOf<UItemSlotWidget> GetItemSlotWidget() const { return }
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	FText ItemName{};
@@ -44,6 +56,9 @@ protected:
 	// Type of item slot to use for this item
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UItemSlot> ItemSlotClass{};
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UItemSlotWidget> ItemSlotWidgetClass{};
 
 	// Actor that is used when the item is equipped. This is where the item's behavior is
 	UPROPERTY(EditDefaultsOnly)

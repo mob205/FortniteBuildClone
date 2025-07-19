@@ -17,6 +17,9 @@ struct FItemInstance
 
 	UPROPERTY(BlueprintReadWrite)
 	FInstancedStruct InstanceInfo{};
+
+	UPROPERTY(BlueprintReadWrite)
+	AActor* AssociatedActor{};
 	
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<UItemData> ItemData{};
