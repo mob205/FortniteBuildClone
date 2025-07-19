@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerState.h"
 #include "FBCPlayerState.generated.h"
 
+class UInventoryComponent;
 class UFBCAbilitySystemComponent;
 class UFBCAttributeSet;
 class UBuildResourceComponent;
@@ -23,11 +24,16 @@ public:
 
 	UFBCAbilitySystemComponent* GetAbilitySystemComponent() const { return ASC; }
 	UFBCAttributeSet* GetAttributeSet() const { return AS; }
-
-	UPROPERTY(BlueprintReadOnly)
-	TObjectPtr<UBuildResourceComponent> BuildResourceComp;
+	UBuildResourceComponent* GetBuildResourceComponent() const { return BuildResourceComp; }
+	UInventoryComponent* GetInventoryComponent() const { return InventoryComp; }
 	
 protected:
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TObjectPtr<UBuildResourceComponent> BuildResourceComp;
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TObjectPtr<UInventoryComponent> InventoryComp;
+	
 	UPROPERTY()
 	TObjectPtr<UFBCAbilitySystemComponent> ASC;
 

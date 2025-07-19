@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
-#include "Data/BitGrid.h"
-#include "Data/StructureInfoDataAsset.h"
+#include "Structure/Data/BitGrid.h"
+#include "Structure/Data/StructureInfoDataAsset.h"
 #include "GameFramework/Actor.h"
 #include "Interface/Traversable.h"
 #include "PlacedStructure.generated.h"

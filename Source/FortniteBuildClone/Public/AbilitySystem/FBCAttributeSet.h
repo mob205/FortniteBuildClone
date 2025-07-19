@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "AttributeSet.h"
 #include "AbilitySystemComponent.h"
-#include "Data/StructureResourceTypes.h"
+#include "Structure/Data/StructureResourceTypes.h"
 #include "FBCAttributeSet.generated.h"
 
 // This macro does NOT work for actually defining attributes, since UHT runs before C++ preprocessor

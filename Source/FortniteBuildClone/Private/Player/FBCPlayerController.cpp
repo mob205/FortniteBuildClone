@@ -124,15 +124,24 @@ AActor* AFBCPlayerController::GetInteractable() const
 
 void AFBCPlayerController::ServerStartInteract_Implementation(AActor* Interactable)
 {
-	IInteractable::Execute_StartInteract(Interactable, GetPawn());
+	if (IsValid(Interactable))
+	{
+		IInteractable::Execute_StartInteract(Interactable, GetPawn());
+	}
 }
 void AFBCPlayerController::ServerStopInteract_Implementation(AActor* Interactable)
 {
-	IInteractable::Execute_StopInteract(Interactable, GetPawn());
+	if (IsValid(Interactable))
+	{
+		IInteractable::Execute_StopInteract(Interactable, GetPawn());
+	}
+	
 }
 
 void AFBCPlayerController::StartInteraction(AActor* Interactable)
 {
+	if (!IsValid(Interactable)) { return; }
+
 	if (HasAuthority())
 	{
 		IInteractable::Execute_StartInteract(Interactable, GetPawn());
@@ -145,6 +154,7 @@ void AFBCPlayerController::StartInteraction(AActor* Interactable)
 
 void AFBCPlayerController::StopInteraction(AActor* Interactable)
 {
+	if (!IsValid(Interactable)) { return; }
 	if (HasAuthority())
 	{
 		IInteractable::Execute_StopInteract(Interactable, GetPawn());

@@ -6,6 +6,7 @@
 #include "AbilitySystem/FBCAbilitySystemComponent.h"
 #include "AbilitySystem/FBCAttributeSet.h"
 #include "Component/BuildResourceComponent.h"
+#include "Component/InventoryComponent.h"
 
 AFBCPlayerState::AFBCPlayerState()
 {
@@ -18,4 +19,6 @@ AFBCPlayerState::AFBCPlayerState()
 	AS = CreateDefaultSubobject<UFBCAttributeSet>("AttributeSet");
 
 	BuildResourceComp = CreateDefaultSubobject<UBuildResourceComponent>("BuildResourceComponent");
+
+	InventoryComp = CreateDefaultSubobject<UInventoryComponent>("InventoryComponent");
 }

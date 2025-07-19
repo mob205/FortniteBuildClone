@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbilityTargetActor.h"
-#include "Data/EditMapDataAsset.h"
+#include "Structure/Data/EditMapDataAsset.h"
 #include "StructureTargetingActor.generated.h"
 
 class UBuildResourceComponent;

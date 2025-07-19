@@ -17,7 +17,8 @@ public class FortniteBuildClone : ModuleRules
 			"EnhancedInput", 
 			"GameplayAbilities", 
 			"UMG", 
-			"DedicatedServers"
+			"DedicatedServers",
+			"NetCore"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "GameplayTags", "GameplayTasks" });

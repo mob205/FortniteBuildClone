@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Data/StructureResourceTypes.h"
+#include "Structure/Data/StructureResourceTypes.h"
 #include "Component/BuildResourceComponent.h"
 #include "FBCHUDWidget.generated.h"
 

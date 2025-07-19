@@ -5,7 +5,7 @@
 #include "AbilitySystem/FBCAbilitySystemComponent.h"
 #include "GameplayAbilitySpec.h"
 #include "GameplayEffect.h"
-#include "Data/StructureInfoDataAsset.h"
+#include "Structure/Data/StructureInfoDataAsset.h"
 #include "InputAction.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "Net/UnrealNetwork.h"

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Data/StructureInfoDataAsset.h"
+#include "Structure/Data/StructureInfoDataAsset.h"
 
 FGameplayTag UStructureInfoDataAsset::GetTagFromInput(const UInputAction* InputAction) const
 {

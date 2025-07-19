@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/FBCGameplayAbility.h"
 #include "Abilities/GameplayAbility.h"
-#include "Data/BitGrid.h"
-#include "Data/StructureResourceTypes.h"
+#include "Structure/Data/BitGrid.h"
+#include "Structure/Data/StructureResourceTypes.h"
 #include "Subsystem/StructureStrategyWorldSubsystem.h"
 #include "BuildAbility.generated.h"
 
