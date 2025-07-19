@@ -7,7 +7,6 @@
 #include "ItemData.generated.h"
 
 class UItemSlotWidget;
-class UItemSlot;
 
 USTRUCT()
 struct FTestItemData
@@ -34,34 +33,39 @@ public:
 	UScriptStruct* GetItemInfoStruct() const { return ItemInstanceInfoStruct; }
 
 	UFUNCTION(BlueprintCallable, Category = "ItemData")
-	TSubclassOf<UItemSlot> GetItemSlotClass() const { return ItemSlotClass; }
-
-	UFUNCTION(BlueprintCallable, Category = "ItemData")
 	TSubclassOf<AActor> GetActorClass() const { return ActorClass.LoadSynchronous(); } // TODO: make this non-blocking
 
 	UFUNCTION(BlueprintCallable, Category = "ItemData")
-	TSubclassOf<UItemSlotWidget> GetItemSlotWidget() const { return }
+	TSubclassOf<UItemSlotWidget> GetItemSlotWidgetClass() const { return ItemSlotWidgetClass; }
+
+	UFUNCTION(BlueprintCallable, Category = "ItemData")
+	FLinearColor GetItemColor() const { return ItemColor; }
+
+	UFUNCTION(BlueprintCallable, Category = "ItemData")
+	TSoftObjectPtr<UTexture> GetItemSlotImage() const { return ItemSlotImage; }
+	
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	FText ItemName{};
+
+	// Actor that is used when the item is equipped. This is where the item's behavior is
+	UPROPERTY(EditDefaultsOnly)
+	TSoftClassPtr<AActor> ActorClass{};
+	
+	// Struct with extra info about this item
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UScriptStruct> ItemInstanceInfoStruct{};
 
 	// Mesh to use when item is in the world (not in an inventory)
 	UPROPERTY(EditDefaultsOnly)
 	TSoftObjectPtr<UStaticMesh> WorldDropMesh{};
 
-	// Struct with extra info about this item
 	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UScriptStruct> ItemInstanceInfoStruct{};
+	TSoftObjectPtr<UTexture> ItemSlotImage{};
 
-	// Type of item slot to use for this item
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UItemSlot> ItemSlotClass{};
-
+	FLinearColor ItemColor{};
+	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UItemSlotWidget> ItemSlotWidgetClass{};
-
-	// Actor that is used when the item is equipped. This is where the item's behavior is
-	UPROPERTY(EditDefaultsOnly)
-	TSoftClassPtr<AActor> ActorClass{};
-
 };

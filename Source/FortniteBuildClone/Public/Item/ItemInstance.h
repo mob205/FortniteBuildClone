@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "StructUtils/InstancedStruct.h"
 #include "UObject/Object.h"
-#include "ItemSlot.generated.h"
+#include "ItemInstance.generated.h"
 
 class UItemData;
 class UWidget;
@@ -22,26 +22,5 @@ struct FItemInstance
 	AActor* AssociatedActor{};
 	
 	UPROPERTY(BlueprintReadOnly)
-	TObjectPtr<UItemData> ItemData{};
-};
-
-UCLASS()
-class FORTNITEBUILDCLONE_API UItemSlot : public UObject
-{
-	GENERATED_BODY()
-
-public:
-	void Initialize(const FItemInstance& InItemInstance)
-	{
-		ItemInstance = InItemInstance;
-	}
-
-	void Initialize(FItemInstance&& InItemInstance)
-	{
-		ItemInstance = InItemInstance;
-	}
-	
-protected:
-	UPROPERTY(BlueprintReadWrite)
-	FItemInstance ItemInstance;
+	TObjectPtr<const UItemData> ItemData{};
 };

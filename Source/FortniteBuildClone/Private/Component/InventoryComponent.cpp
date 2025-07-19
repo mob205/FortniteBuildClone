@@ -4,7 +4,6 @@
 #include "Component/InventoryComponent.h"
 
 #include "Item/ItemData.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -22,7 +21,7 @@ int32 UInventoryComponent::GetAvailableSlotIndex() const
 {
 	for (int i = 0; i < MaxInventorySize; i++)
 	{
-		if (ItemSlots[i] == nullptr)
+		if (ItemSlots[i] == FInventorySlot{})
 		{
 			return i;
 		}
@@ -30,15 +29,17 @@ int32 UInventoryComponent::GetAvailableSlotIndex() const
 	return -1;
 }
 
-void UInventoryComponent::TryAddItem_Implementation(FItemInstance Item)
+void UInventoryComponent::TryAddItem_Implementation(FInstancedStruct ItemInstanceInfo, const UItemData* ItemData)
 {
 	if (!CanAddItem()) { return; }
 
-	AActor* ItemActor = GetWorld()->SpawnActor(Item.ItemData->GetActorClass());
-	Inventory.AddItem(Item, ItemActor, GetAvailableSlotIndex());
+	AActor* ItemActor = GetWorld()->SpawnActor(ItemData->GetActorClass());
+	int32 SlotIndex = GetAvailableSlotIndex();
+	int32 InventoryIndex = Inventory.AddItem({ ItemInstanceInfo, ItemActor, ItemData }, GetAvailableSlotIndex());
+	OnItemAdded({ ItemInstanceInfo, ItemActor, ItemData }, InventoryIndex, SlotIndex);
 }
 
-void UInventoryComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
@@ -51,63 +52,21 @@ void UInventoryComponent::BeginPlay()
 
 	Inventory.OnItemRemoved.BindUObject(this, &ThisClass::OnItemRemoved);
 	Inventory.OnItemAdded.BindUObject(this, &ThisClass::OnItemAdded);
-	Inventory.OnItemAdded.BindUObject(this, &ThisClass::OnItemChanged);
 	
-	ItemSlots.Init(nullptr, MaxInventorySize);
+	ItemSlots.Init({}, MaxInventorySize);
 }
 
-void UInventoryComponent::OnItemRemoved(const FItemInstance& Item, AActor* Actor, int32 SlotIndex)
+void UInventoryComponent::OnItemRemoved(const FItemInstance& Item, int32 InventoryIndex, int32 SlotIndex)
 {
-	
-}
-
-void UInventoryComponent::OnItemAdded(const FItemInstance& Item, AActor* Actor, int32 SlotIndex)
-{
-
-}
-
-void UInventoryComponent::OnItemChanged(const FItemInstance& Item, AActor* Actor, int32 SlotIndex)
-{
-	UpdateSlots();
-}
-
-void UInventoryComponent::UpdateSlots()
-{
-	for (const auto& Item : Inventory.GetItems())
-	{
-		const UItemSlot* Slot = ItemSlots[Item.SlotIndex];
-		const UClass* CurrentSlotClass = Slot ? Slot->GetClass() : nullptr;
-		const UClass* ItemSlotClass = Item.ItemInstance.ItemData->GetClass();
-		
-		if (CurrentSlotClass != ItemSlotClass)
-		{
-			if (Slot)
-			{
-				RemoveSlot(Item.SlotIndex);
-			}
-			if (ItemSlotClass)
-			{
-				AddSlot(Item.SlotIndex, ItemSlotClass, Item.ItemInstance);
-			}
-		}
-	}
-}
-
-void UInventoryComponent::RemoveSlot(int32 SlotIndex)
-{
-	ItemSlots[SlotIndex]->MarkAsGarbage();
-	ItemSlots[SlotIndex] = nullptr;
+	ItemSlots[SlotIndex] = {};
 	OnSlotRemoved.Broadcast(SlotIndex);
 }
 
-void UInventoryComponent::AddSlot(int32 SlotIndex, const UClass* SlotClass, const FItemInstance& Item)
+void UInventoryComponent::OnItemAdded(const FItemInstance& Item, int32 InventoryIndex, int32 SlotIndex)
 {
-	UItemSlot* Slot = NewObject<UItemSlot>(this, SlotClass);
-	ItemSlots[SlotIndex] = Slot;
-	Slot->Initialize(Item);
-	OnSlotAdded.Broadcast(SlotIndex, Slot);
+	ItemSlots[SlotIndex] = { &Item, InventoryIndex };
+	OnSlotAdded.Broadcast(SlotIndex, Item);
 }
-
 
 
 

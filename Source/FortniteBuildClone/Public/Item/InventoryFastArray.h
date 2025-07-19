@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ItemSlot.h"
+#include "ItemInstance.h"
 #include "Net/Serialization/FastArraySerializer.h"
 #include "UObject/Object.h"
 #include "InventoryFastArray.generated.h"
@@ -17,15 +17,12 @@ struct FInventorySerializerItem : public FFastArraySerializerItem
 	FItemInstance ItemInstance;
 
 	UPROPERTY()
-	AActor* ItemActor;
-
-	UPROPERTY()
 	int32 SlotIndex;
 };
 
-DECLARE_DELEGATE_ThreeParams(FOnItemRemovedSignature, const FItemInstance&, AActor*, int32);
-DECLARE_DELEGATE_ThreeParams(FOnItemAddedSignature, const FItemInstance&, AActor*, int32);
-DECLARE_DELEGATE_ThreeParams(FOnItemChangedSignature, const FItemInstance&, AActor*, int32);
+DECLARE_DELEGATE_ThreeParams(FOnItemAddedSignature, const FItemInstance&, int32, int32);
+DECLARE_DELEGATE_ThreeParams(FOnItemRemovedSignature, const FItemInstance&, int32, int32);
+DECLARE_DELEGATE_ThreeParams(FOnItemChangedSignature, const FItemInstance&, int32, int32);
 
 USTRUCT(BlueprintType)
 struct FORTNITEBUILDCLONE_API FInventoryFastArray : public FFastArraySerializer
@@ -36,7 +33,7 @@ struct FORTNITEBUILDCLONE_API FInventoryFastArray : public FFastArraySerializer
 	FOnItemAddedSignature OnItemAdded;
 	FOnItemChangedSignature OnItemChanged;
 
-	void AddItem(const FItemInstance& ItemInstance, AActor* ItemActor, int32 SlotIndex);
+	int32 AddItem(const FItemInstance& ItemInstance, int32 SlotIndex);
 	void RemoveItem(int32 SlotIndex);
 	const TArray<FInventorySerializerItem>& GetItems() const { return Items; }
 	

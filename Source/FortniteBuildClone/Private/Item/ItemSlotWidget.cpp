@@ -3,7 +3,7 @@
 
 #include "Item/ItemSlotWidget.h"
 
-void UItemSlotWidget::SetSlot(UItemSlot* InItemSlot)
+void UItemSlotWidget::UpdateSlot(const FItemInstance& InItemInstance)
 {
-	ItemSlot = InItemSlot;
+	OnSlotUpdated(InItemInstance);
 }

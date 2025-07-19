@@ -6,7 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "ItemSlotWidget.generated.h"
 
-class UItemSlot;
+struct FItemInstance;
 /**
  * 
  */
@@ -17,12 +17,9 @@ class FORTNITEBUILDCLONE_API UItemSlotWidget : public UUserWidget
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void SetSlot(UItemSlot* InItemSlot);
+	void UpdateSlot(const FItemInstance& InItemSlot);
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnSlotSet();
-
-	UPROPERTY(BlueprintReadOnly)
-	TWeakObjectPtr<UItemSlot> ItemSlot;
+	void OnSlotUpdated(const FItemInstance& InItemSlot);
 };
