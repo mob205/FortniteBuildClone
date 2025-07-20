@@ -39,7 +39,7 @@ protected:
 	
 private:
 	UPROPERTY(EditAnywhere, Category = "Input")
-	TObjectPtr<UInputMappingContext> InputContext;
+	TMap<TObjectPtr<UInputMappingContext>, int32> DefaultInputContexts;
 
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UFBCHUDWidget> HUDWidgetClass{};

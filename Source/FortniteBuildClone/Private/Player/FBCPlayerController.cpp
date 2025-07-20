@@ -58,7 +58,10 @@ void AFBCPlayerController::SetupInputComponent()
 	using UInputSubsystem = UEnhancedInputLocalPlayerSubsystem;
 	if (UInputSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UInputSubsystem>(GetLocalPlayer()))
 	{
-		Subsystem->AddMappingContext(InputContext, 0);
+		for (const auto ContextPair : DefaultInputContexts)
+		{
+			Subsystem->AddMappingContext(ContextPair.Key, ContextPair.Value);
+		}
 	}
 }
 

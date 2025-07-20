@@ -36,6 +36,7 @@ struct FORTNITEBUILDCLONE_API FInventoryFastArray : public FFastArraySerializer
 	int32 AddItem(const FItemInstance& ItemInstance, int32 SlotIndex);
 	void RemoveItem(int32 SlotIndex);
 	const TArray<FInventorySerializerItem>& GetItems() const { return Items; }
+	const FInventorySerializerItem& GetItem(int32 Index) const { return Items[Index];}
 	
 	void PreReplicatedRemove(const TArrayView<int32>& RemovedIndices, int32 FinalSize);
 	void PostReplicatedAdd(const TArrayView<int32>& AddedIndices, int32 FinalSize);

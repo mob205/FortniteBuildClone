@@ -38,12 +38,13 @@ void UInventoryComponent::TryAddItem_Implementation(FInstancedStruct ItemInstanc
 	if (!CanAddItem()) { return; }
 
 	AEquippedItemActor* ItemActor = GetWorld()->SpawnActor<AEquippedItemActor>(ItemData->GetActorClass());
+	ItemActor->SetOwner(GetOwner());
 	
 	int32 SlotIndex = GetAvailableSlotIndex();
 	FItemInstance ItemInstance = { ItemInstanceInfo, ItemActor, ItemData };
 	
 	int32 InventoryIndex = Inventory.AddItem(ItemInstance, SlotIndex);
-	OnItemAdded(ItemInstance, InventoryIndex, SlotIndex);
+	OnItemAdded(Inventory.GetItem(InventoryIndex).ItemInstance, InventoryIndex, SlotIndex);
 }
 
 void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -87,9 +88,9 @@ void UInventoryComponent::ServerRequestSwitchItem_Implementation(uint8 NewSelect
 	}
 }
 
-void UInventoryComponent::ClientTryEquipItem(uint8 NewSelection)
+void UInventoryComponent::ClientTryEquipItem(int32 NewSelection)
 {
-	if (NewSelection < MaxInventorySize)
+	if (0 <= NewSelection && NewSelection < MaxInventorySize)
 	{
 		ServerRequestSwitchItem(NewSelection);
 	}

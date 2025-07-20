@@ -12,7 +12,7 @@ int32 FInventoryFastArray::AddItem(const FItemInstance& ItemInstance, int32 Slot
 
 	MarkItemDirty(NewItem);
 
-	return Items.Num();
+	return Items.Num() - 1;
 }
 
 void FInventoryFastArray::RemoveItem(int32 SlotIndex)

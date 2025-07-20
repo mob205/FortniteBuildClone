@@ -9,6 +9,7 @@
 #include "InventoryComponent.generated.h"
 
 class AFBCCharacter;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSlotAddedSignature, int32, SlotIndex, const FItemInstance&, Item);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSlotRemovedSignature, int32, SlotIndex);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSelectedSlotChangedSignature, int32, OldSlotIndex, int32, NewSlotIndex);
@@ -68,7 +69,7 @@ protected:
 	void ServerRequestSwitchItem(uint8 NewSelection);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void ClientTryEquipItem(uint8 NewSelection);
+	void ClientTryEquipItem(int32 NewSelection);
 private:
 	void OnItemRemoved(const FItemInstance& Item, int32 InventoryIndex, int32 SlotIndex);
 	void OnItemAdded(const FItemInstance& Item, int32 InventoryIndex, int32 SlotIndex);
