@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EquippedItemActor.h"
 #include "Engine/DataAsset.h"
 #include "ItemData.generated.h"
 
@@ -33,7 +34,7 @@ public:
 	UScriptStruct* GetItemInfoStruct() const { return ItemInstanceInfoStruct; }
 
 	UFUNCTION(BlueprintCallable, Category = "ItemData")
-	TSubclassOf<AActor> GetActorClass() const { return ActorClass.LoadSynchronous(); } // TODO: make this non-blocking
+	TSubclassOf<AEquippedItemActor> GetActorClass() const { return ActorClass.LoadSynchronous(); } // TODO: make this non-blocking
 
 	UFUNCTION(BlueprintCallable, Category = "ItemData")
 	TSubclassOf<UItemSlotWidget> GetItemSlotWidgetClass() const { return ItemSlotWidgetClass; }
@@ -50,7 +51,7 @@ protected:
 
 	// Actor that is used when the item is equipped. This is where the item's behavior is
 	UPROPERTY(EditDefaultsOnly)
-	TSoftClassPtr<AActor> ActorClass{};
+	TSoftClassPtr<AEquippedItemActor> ActorClass{};
 	
 	// Struct with extra info about this item
 	UPROPERTY(EditDefaultsOnly)

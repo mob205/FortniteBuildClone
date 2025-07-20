@@ -142,8 +142,8 @@ void UBuildAbility::PlaceStructure(const FGameplayAbilityTargetDataHandle& Data)
 	{
 		PC->AddPredictedStructure(PredictionId, PlacedStructure);
 	}
-	// No structure was spawned - alert the player that its prediction may've been wrong
-	else if (HasAuthority(&CurrentActivationInfo) && PlacedStructure == nullptr)
+	// Alert the player to remove its prediction
+	else if (HasAuthority(&CurrentActivationInfo))
 	{
 		PC->RemovePredictedStructure(PredictionId);
 	}
@@ -228,11 +228,8 @@ APlacedStructure* UBuildAbility::PlaceStructureInternal(const FGameplayAbilityTa
 
 	if (!HasAuthority(&CurrentActivationInfo))
 	{
+		// Predicted actor
 		PlacedStructure->PreInitDisableReplication();
-	}
-	else
-	{
-		PlacedStructure->SetPredictionId(OutPredictionId);
 	}
 	
 	UGameplayStatics::FinishSpawningActor(PlacedStructure, BuildingTransform);

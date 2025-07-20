@@ -39,6 +39,9 @@ protected:
 private:
 	void UpdateFromItemData();
 	void LoadItemMesh(const TSoftObjectPtr<UStaticMesh>& ItemMesh);
-	
+
+	bool bWasPickedUp{};
+
+	TObjectPtr<AEquippedItemActor> EquippedActor;
 	
 };

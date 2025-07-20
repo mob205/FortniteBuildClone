@@ -3,8 +3,12 @@
 
 #include "Component/InventoryComponent.h"
 
+#include "FortniteBuildClone/FortniteBuildClone.h"
+#include "GameFramework/PlayerState.h"
+#include "Item/EquippedItemActor.h"
 #include "Item/ItemData.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/FBCCharacter.h"
 
 
 UInventoryComponent::UInventoryComponent()
@@ -21,7 +25,7 @@ int32 UInventoryComponent::GetAvailableSlotIndex() const
 {
 	for (int i = 0; i < MaxInventorySize; i++)
 	{
-		if (ItemSlots[i] == FInventorySlot{})
+		if (ItemSlots[i].IsEmpty())
 		{
 			return i;
 		}
@@ -33,10 +37,13 @@ void UInventoryComponent::TryAddItem_Implementation(FInstancedStruct ItemInstanc
 {
 	if (!CanAddItem()) { return; }
 
-	AActor* ItemActor = GetWorld()->SpawnActor(ItemData->GetActorClass());
+	AEquippedItemActor* ItemActor = GetWorld()->SpawnActor<AEquippedItemActor>(ItemData->GetActorClass());
+	
 	int32 SlotIndex = GetAvailableSlotIndex();
-	int32 InventoryIndex = Inventory.AddItem({ ItemInstanceInfo, ItemActor, ItemData }, GetAvailableSlotIndex());
-	OnItemAdded({ ItemInstanceInfo, ItemActor, ItemData }, InventoryIndex, SlotIndex);
+	FItemInstance ItemInstance = { ItemInstanceInfo, ItemActor, ItemData };
+	
+	int32 InventoryIndex = Inventory.AddItem(ItemInstance, SlotIndex);
+	OnItemAdded(ItemInstance, InventoryIndex, SlotIndex);
 }
 
 void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -44,6 +51,10 @@ void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UInventoryComponent, Inventory);
+
+	FDoRepLifetimeParams Params;
+	Params.bIsPushBased = true;
+	DOREPLIFETIME_WITH_PARAMS_FAST(UInventoryComponent, SelectedSlot, Params);
 }
 
 void UInventoryComponent::BeginPlay()
@@ -54,6 +65,34 @@ void UInventoryComponent::BeginPlay()
 	Inventory.OnItemAdded.BindUObject(this, &ThisClass::OnItemAdded);
 	
 	ItemSlots.Init({}, MaxInventorySize);
+
+	if (APlayerState* OwnerPS = Cast<APlayerState>(GetOwner()))
+	{
+		AvatarActor = Cast<AFBCCharacter>(OwnerPS->GetPawn());
+	}
+	else
+	{
+		UE_LOG(LogFBC, Error, TEXT("Could not find owner actor for inventory component"));
+	}
+}
+
+void UInventoryComponent::ServerRequestSwitchItem_Implementation(uint8 NewSelection)
+{
+	if (SelectedSlot != NewSelection && NewSelection < MaxInventorySize && !ItemSlots[NewSelection].IsEmpty())
+	{
+		uint8 LastSelection = SelectedSlot;
+		SelectedSlot = NewSelection;
+		MARK_PROPERTY_DIRTY_FROM_NAME(UInventoryComponent, SelectedSlot, this);
+		OnSelectedItemChanged(LastSelection);
+	}
+}
+
+void UInventoryComponent::ClientTryEquipItem(uint8 NewSelection)
+{
+	if (NewSelection < MaxInventorySize)
+	{
+		ServerRequestSwitchItem(NewSelection);
+	}
 }
 
 void UInventoryComponent::OnItemRemoved(const FItemInstance& Item, int32 InventoryIndex, int32 SlotIndex)
@@ -65,9 +104,33 @@ void UInventoryComponent::OnItemRemoved(const FItemInstance& Item, int32 Invento
 void UInventoryComponent::OnItemAdded(const FItemInstance& Item, int32 InventoryIndex, int32 SlotIndex)
 {
 	ItemSlots[SlotIndex] = { &Item, InventoryIndex };
-	OnSlotAdded.Broadcast(SlotIndex, Item);
+	UnequipItem(SlotIndex);
+	OnSlotAdded.Broadcast(SlotIndex, *ItemSlots[SlotIndex].Item);
+}
+
+void UInventoryComponent::UnequipItem(int32 SlotIndex)
+{
+	if (SlotIndex >= MaxInventorySize || ItemSlots[SlotIndex].IsEmpty()) { return; }
+	
+	const FItemInstance& Item = *ItemSlots[SlotIndex].Item;
+	Item.AssociatedActor->SetActorHiddenInGame(true);
+	Item.AssociatedActor->OnItemUnequipped(AvatarActor);
+}
+
+void UInventoryComponent::EquipItem(int32 SlotIndex)
+{
+	if (SlotIndex >= MaxInventorySize || ItemSlots[SlotIndex].IsEmpty()) { return; }
+	
+	const FItemInstance& Item = *ItemSlots[SlotIndex].Item;
+	// Item.AssociatedActor->SetActorHiddenInGame(false);
+	// Item.AssociatedActor->OnItemEquipped(AvatarActor);
 }
 
 
-
-
+void UInventoryComponent::OnSelectedItemChanged(uint8 LastSelection)
+{
+	UnequipItem(LastSelection);
+	EquipItem(SelectedSlot);
+	
+	OnSelectedSlotChanged.Broadcast(LastSelection, SelectedSlot);
+}

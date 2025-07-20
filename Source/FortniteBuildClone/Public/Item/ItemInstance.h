@@ -7,6 +7,7 @@
 #include "UObject/Object.h"
 #include "ItemInstance.generated.h"
 
+class AEquippedItemActor;
 class UItemData;
 class UWidget;
 
@@ -19,7 +20,7 @@ struct FItemInstance
 	FInstancedStruct InstanceInfo{};
 
 	UPROPERTY(BlueprintReadWrite)
-	AActor* AssociatedActor{};
+	AEquippedItemActor* AssociatedActor{};
 	
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<const UItemData> ItemData{};

@@ -10,6 +10,7 @@
 #include "Interface/Traversable.h"
 #include "PlacedStructure.generated.h"
 
+class AFBCPlayerState;
 class UStructureGroundingComponent;
 class UDestructionSubsystem;
 class USplineComponent;
@@ -53,7 +54,6 @@ public:
 	bool IsStructureDisabled() const { return bIsDisabled; }
 	void SetIsStructureDisabled(bool bNewIsDisabled) { bIsDisabled = bNewIsDisabled; }
 
-	void SetPredictionId(uint8 NewPredictionId) { PredictionId = NewPredictionId; }
 	void PreInitDisableReplication();
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Ability System")
@@ -97,7 +97,4 @@ private:
 	void UpdateMeshMaterial();
 
 	bool bIsDisabled{};
-
-	UPROPERTY(Replicated)
-	uint8 PredictionId{};
 };
