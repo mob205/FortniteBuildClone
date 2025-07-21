@@ -9,7 +9,7 @@
 
 UStructureStrategyWorldSubsystem::UStructureStrategyWorldSubsystem()
 {
-	static ConstructorHelpers::FObjectFinder<UStructureInfoDataAsset> DataAsset(TEXT("/Script/FortniteBuildClone.StructureInfoDataAsset'/Game/Blueprints/Data/DA_StructureInfo.DA_StructureInfo'"));
+	static ConstructorHelpers::FObjectFinder<UStructureInfoDataAsset> DataAsset(TEXT("/Script/FortniteBuildClone.StructureInfoDataAsset'/Game/Blueprints/Structure/Data/DA_StructureInfo.DA_StructureInfo'"));
 	if (DataAsset.Succeeded())
 	{
 		StructureInfo = DataAsset.Object;
