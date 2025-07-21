@@ -3,6 +3,7 @@
 
 #include "Item/EquippedItemActor.h"
 
+#include "AbilitySystemComponent.h"
 #include "Player/FBCCharacter.h"
 
 AEquippedItemActor::AEquippedItemActor()
@@ -22,15 +23,37 @@ void AEquippedItemActor::BeginPlay()
 void AEquippedItemActor::OnItemEquipped(AFBCCharacter* AvatarActor)
 {
 	FAttachmentTransformRules TransformRules = { EAttachmentRule::SnapToTarget, false };
-	AttachToActor(AvatarActor, TransformRules, SocketName);
+	AttachToComponent(AvatarActor->GetMesh(), TransformRules, SocketName);
 
 	if (EquipMontage)
 	{
 		AvatarActor->PlayAnimMontage(EquipMontage);
 	}
+
+	if (HasAuthority() && !GrantedAbilities.IsEmpty())
+	{
+		UAbilitySystemComponent* ASC = AvatarActor->GetAbilitySystemComponent();
+		if (!ASC) { return; }
+
+		for (TSubclassOf<UGameplayAbility> AbilityClass : GrantedAbilities)
+		{
+			FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec{AbilityClass, 1};
+			AbilitySpec.SourceObject = this;
+			GrantedAbilityHandles.Add(ASC->GiveAbility(AbilitySpec));
+		}
+	}
 }
 
 void AEquippedItemActor::OnItemUnequipped(AFBCCharacter* AvatarActor)
 {
-	
+	if (!HasAuthority() && !GrantedAbilityHandles.IsEmpty())
+	{
+		UAbilitySystemComponent* ASC = AvatarActor->GetAbilitySystemComponent();
+		if (!ASC) { return; }
+		
+		for (const FGameplayAbilitySpecHandle Handle : GrantedAbilityHandles)
+		{
+			ASC->ClearAbility(Handle);
+		}
+	}
 }

@@ -20,9 +20,9 @@ struct FInventorySerializerItem : public FFastArraySerializerItem
 	int32 SlotIndex;
 };
 
-DECLARE_DELEGATE_ThreeParams(FOnItemAddedSignature, const FItemInstance&, int32, int32);
-DECLARE_DELEGATE_ThreeParams(FOnItemRemovedSignature, const FItemInstance&, int32, int32);
-DECLARE_DELEGATE_ThreeParams(FOnItemChangedSignature, const FItemInstance&, int32, int32);
+DECLARE_DELEGATE_ThreeParams(FOnItemAddedSignature, FItemInstance&, int32, int32);
+DECLARE_DELEGATE_ThreeParams(FOnItemRemovedSignature, FItemInstance&, int32, int32);
+DECLARE_DELEGATE_ThreeParams(FOnItemChangedSignature, FItemInstance&, int32, int32);
 
 USTRUCT(BlueprintType)
 struct FORTNITEBUILDCLONE_API FInventoryFastArray : public FFastArraySerializer
@@ -36,7 +36,9 @@ struct FORTNITEBUILDCLONE_API FInventoryFastArray : public FFastArraySerializer
 	int32 AddItem(const FItemInstance& ItemInstance, int32 SlotIndex);
 	void RemoveItem(int32 SlotIndex);
 	const TArray<FInventorySerializerItem>& GetItems() const { return Items; }
+	
 	const FInventorySerializerItem& GetItem(int32 Index) const { return Items[Index];}
+	FInventorySerializerItem& GetItem(int32 Index) { return Items[Index]; }
 	
 	void PreReplicatedRemove(const TArrayView<int32>& RemovedIndices, int32 FinalSize);
 	void PostReplicatedAdd(const TArrayView<int32>& AddedIndices, int32 FinalSize);

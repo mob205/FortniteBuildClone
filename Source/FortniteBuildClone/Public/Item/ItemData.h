@@ -9,13 +9,13 @@
 
 class UItemSlotWidget;
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FTestItemData
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere)
-	int TestInt{};
+	uint8 Count{1};
 };
 
 UCLASS()
@@ -44,7 +44,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "ItemData")
 	TSoftObjectPtr<UTexture> GetItemSlotImage() const { return ItemSlotImage; }
-	
+
+	UFUNCTION(BlueprintCallable, Category = "ItemData")
+	int32 GetMaxStackSize() const { return MaxStackSize; }
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	FText ItemName{};
@@ -69,4 +71,7 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UItemSlotWidget> ItemSlotWidgetClass{};
+
+	UPROPERTY(EditDefaultsOnly)
+	uint8 MaxStackSize{1};
 };

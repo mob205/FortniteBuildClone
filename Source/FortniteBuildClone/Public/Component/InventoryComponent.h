@@ -14,6 +14,13 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSlotAddedSignature, int32, SlotI
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSlotRemovedSignature, int32, SlotIndex);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSelectedSlotChangedSignature, int32, OldSlotIndex, int32, NewSlotIndex);
 
+enum class ESlotAvailability
+{
+	ESA_None,
+	ESA_Empty,
+	ESA_Stackable
+};
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FORTNITEBUILDCLONE_API UInventoryComponent : public UActorComponent
 {
@@ -21,7 +28,7 @@ class FORTNITEBUILDCLONE_API UInventoryComponent : public UActorComponent
 
 	struct FInventorySlot
 	{
-		const FItemInstance* Item;
+		FItemInstance* Item;
 		int32 InventoryIndex;
 
 		bool operator==(const FInventorySlot& Other) const
@@ -52,11 +59,12 @@ public:
 	// Returns true if any item can be added
 	bool CanAddItem() const;
 
-	int32 GetAvailableSlotIndex() const;
+	// Gets the next available inventory slot for the specified item type, if any
+	// Also checks for item stacking
+	ESlotAvailability GetAvailableSlotIndex(const UItemData* ItemData, int32& OutIndex) const;
 	
 	// Attempts to add an item. Returns true if the item was successfully added
-	UFUNCTION(Server, Reliable)
-	void TryAddItem(FInstancedStruct ItemInstanceInfo, const UItemData* ItemData);
+	void ServerTryAddItem(FInstancedStruct ItemInstanceInfo, const UItemData* ItemData);
 	
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 protected:
@@ -71,16 +79,21 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void ClientTryEquipItem(int32 NewSelection);
 private:
-	void OnItemRemoved(const FItemInstance& Item, int32 InventoryIndex, int32 SlotIndex);
-	void OnItemAdded(const FItemInstance& Item, int32 InventoryIndex, int32 SlotIndex);
+	AFBCCharacter* GetAvatarActor();
+	
+	void OnItemRemoved(FItemInstance& Item, int32 InventoryIndex, int32 SlotIndex);
+	void OnItemAdded(FItemInstance& Item, int32 InventoryIndex, int32 SlotIndex);
 
 	void UnequipItem(int32 SlotIndex);
 	void EquipItem(int32 SlotIndex);
 
-	void FinalizeItemAdd(int32 SlotIndex);
+	void MarkItemDirty(int32 InventoryIndex);
 	
 	UFUNCTION()
 	void OnSelectedItemChanged(uint8 LastSelection);
+
+	uint8 GetSlotCount(const FInstancedStruct& ItemInstanceInfo) const;
+	void IncrementSlotCount(FInstancedStruct& ItemInstanceInfo) const;
 
 	UPROPERTY()
 	TObjectPtr<AFBCCharacter> AvatarActor{};
@@ -95,4 +108,3 @@ private:
 	UPROPERTY(ReplicatedUsing = OnSelectedItemChanged)
 	uint8 SelectedSlot{};
 };
-

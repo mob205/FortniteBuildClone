@@ -35,7 +35,7 @@ void AWorldDropActor::StartInteract_Implementation(AActor* Interactor)
 			UInventoryComponent* InventoryComponent = PlayerState->GetInventoryComponent();
 			if (InventoryComponent->CanAddItem())
 			{
-				InventoryComponent->TryAddItem(ItemInstanceInfo, CurrentItemData);
+				InventoryComponent->ServerTryAddItem(ItemInstanceInfo, CurrentItemData);
 				Destroy();
 			}
 		}
