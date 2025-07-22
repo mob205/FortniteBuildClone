@@ -5,13 +5,12 @@
 #include "CoreMinimal.h"
 #include "GameplayAbilitySpecHandle.h"
 #include "GameFramework/Actor.h"
-#include "StructUtils/InstancedStruct.h"
 #include "EquippedItemActor.generated.h"
 
+class UItemData;
 class UGameplayAbility;
 class AFBCCharacter;
 
-DECLARE_DELEGATE(FOnItemInformationChangedSignature);
 DECLARE_DELEGATE(FOnRequestRemoveFromInventorySignature);
 
 UCLASS()
@@ -22,7 +21,6 @@ class FORTNITEBUILDCLONE_API AEquippedItemActor : public AActor
 public:
 	AEquippedItemActor();
 
-	FOnItemInformationChangedSignature OnItemInformationChanged;
 	FOnRequestRemoveFromInventorySignature OnRequestRemoveFromInventory;
 	
 	virtual void OnItemEquipped(AFBCCharacter* AvatarActor);
@@ -30,29 +28,13 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void RemoveFromOwningInventory() const { OnRequestRemoveFromInventory.ExecuteIfBound(); }
-	
-	UFUNCTION(BlueprintCallable)
-	FInstancedStruct& GetItemInfo() const
-	{
-		return *ItemInformation;
-	}
 
 	UFUNCTION(BlueprintCallable)
-	void SetItemInfo(const FInstancedStruct& InItemInfo)
-	{
-		*ItemInformation = InItemInfo;
-	}
-
-	UFUNCTION(BlueprintCallable)
-	void MarkItemInfoDirty() const
-	{
-		OnItemInformationChanged.ExecuteIfBound();
-	}
-	
-	void SetItemInfo(FInstancedStruct* ItemInfo) { ItemInformation = ItemInfo; }
-
+	const UItemData* GetItemData() const { return ItemData; }
+	void SetItemData(const UItemData* NewItemData) { ItemData = NewItemData;}
 protected:
 	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	UPROPERTY(EditDefaultsOnly)
 	FName SocketName{};
@@ -66,6 +48,7 @@ protected:
 	UPROPERTY(Transient)
 	TSet<FGameplayAbilitySpecHandle> GrantedAbilityHandles{};
 
-	FInstancedStruct* ItemInformation{};
+	UPROPERTY(Replicated)
+	TObjectPtr<const UItemData> ItemData{};
 };
 

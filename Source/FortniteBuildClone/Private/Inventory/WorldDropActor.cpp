@@ -1,8 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Item/WorldDropActor.h"
-
+#include "Inventory/WorldDropActor.h"
 #include "Component/InventoryComponent.h"
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
@@ -17,9 +16,21 @@ AWorldDropActor::AWorldDropActor()
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
 }
 
-void AWorldDropActor::SetItemData(UItemData* ItemData)
+void AWorldDropActor::InitializeFromItemData(const UItemData* ItemData)
 {
 	CurrentItemData = ItemData;
+
+	CurrentItemActor = GetWorld()->SpawnActor<AEquippedItemActor>(ItemData->GetActorClass());
+	CurrentItemActor->SetOwner(this);
+	CurrentItemActor->SetItemData(ItemData);
+	
+	UpdateFromItemData();
+}
+
+void AWorldDropActor::InitializeFromItemActor(AEquippedItemActor* InItemActor)
+{
+	CurrentItemData = InItemActor->GetItemData();
+	CurrentItemActor = InItemActor;
 	UpdateFromItemData();
 }
 
@@ -33,9 +44,8 @@ void AWorldDropActor::StartInteract_Implementation(AActor* Interactor)
 		if (AFBCPlayerState* PlayerState = Cast<AFBCPlayerState>(Pawn->GetPlayerState()))
 		{
 			UInventoryComponent* InventoryComponent = PlayerState->GetInventoryComponent();
-			if (InventoryComponent->CanAddItem())
+			if (InventoryComponent->ServerTryAddItem(CurrentItemActor))
 			{
-				InventoryComponent->ServerTryAddItem(ItemInstanceInfo, CurrentItemData);
 				Destroy();
 			}
 		}
@@ -55,7 +65,10 @@ void AWorldDropActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UpdateFromItemData();
+	if (CurrentItemData && !CurrentItemActor)
+	{
+		InitializeFromItemData(CurrentItemData);
+	}
 }
 
 void AWorldDropActor::UpdateFromItemData()
@@ -63,7 +76,6 @@ void AWorldDropActor::UpdateFromItemData()
 	if (CurrentItemData)
 	{
 		LoadItemMesh(CurrentItemData->GetWorldDropMesh());
-		ItemInstanceInfo.InitializeAs(CurrentItemData->GetItemInfoStruct());	
 	}
 }
 

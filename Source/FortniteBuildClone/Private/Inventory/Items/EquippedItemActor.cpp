@@ -1,15 +1,17 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Item/EquippedItemActor.h"
+#include "Inventory/Items/EquippedItemActor.h"
 
 #include "AbilitySystemComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "Player/FBCCharacter.h"
 
 AEquippedItemActor::AEquippedItemActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
+	bNetUseOwnerRelevancy = true;
 	SocketName = FName("RightHand");
 }
 
@@ -18,6 +20,13 @@ void AEquippedItemActor::BeginPlay()
 	Super::BeginPlay();
 
 	SetActorHiddenInGame(true);
+}
+
+void AEquippedItemActor::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(AEquippedItemActor, ItemData, COND_InitialOnly);
 }
 
 void AEquippedItemActor::OnItemEquipped(AFBCCharacter* AvatarActor)
@@ -46,7 +55,7 @@ void AEquippedItemActor::OnItemEquipped(AFBCCharacter* AvatarActor)
 
 void AEquippedItemActor::OnItemUnequipped(AFBCCharacter* AvatarActor)
 {
-	if (!HasAuthority() && !GrantedAbilityHandles.IsEmpty())
+	if (HasAuthority() && !GrantedAbilityHandles.IsEmpty())
 	{
 		UAbilitySystemComponent* ASC = AvatarActor->GetAbilitySystemComponent();
 		if (!ASC) { return; }

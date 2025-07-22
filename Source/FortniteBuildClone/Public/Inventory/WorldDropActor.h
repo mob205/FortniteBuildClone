@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Item/ItemData.h"
+#include "Inventory/ItemData.h"
 #include "GameFramework/Actor.h"
 #include "Interface/Interactable.h"
 #include "StructUtils/InstancedStruct.h"
@@ -17,7 +17,8 @@ class FORTNITEBUILDCLONE_API AWorldDropActor : public AActor, public IInteractab
 public:
 	AWorldDropActor();
 
-	void SetItemData(UItemData* ItemData);
+	void InitializeFromItemData(const UItemData* ItemData);
+	void InitializeFromItemActor(AEquippedItemActor* InItemActor);
 
 	virtual void StartInteract_Implementation(AActor* Interactor) override;
 
@@ -32,7 +33,7 @@ protected:
 	TObjectPtr<UStaticMeshComponent> MeshComponent;
 
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UItemData> CurrentItemData;
+	TObjectPtr<const UItemData> CurrentItemData;
 
 	UPROPERTY(EditAnywhere)
 	FInstancedStruct ItemInstanceInfo;
@@ -42,6 +43,7 @@ private:
 
 	bool bWasPickedUp{};
 
-	TObjectPtr<AEquippedItemActor> EquippedActor;
+	UPROPERTY()
+	TObjectPtr<AEquippedItemActor> CurrentItemActor;
 	
 };

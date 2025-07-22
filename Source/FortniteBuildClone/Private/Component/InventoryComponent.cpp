@@ -5,8 +5,9 @@
 
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "GameFramework/PlayerState.h"
-#include "Item/EquippedItemActor.h"
-#include "Item/ItemData.h"
+#include "Inventory/ItemData.h"
+#include "Inventory/Items/CountableItem.h"
+#include "Inventory/Items/EquippedItemActor.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/FBCCharacter.h"
 
@@ -16,61 +17,81 @@ UInventoryComponent::UInventoryComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-void UInventoryComponent::ServerTryAddItem(FInstancedStruct ItemInstanceInfo, const UItemData* ItemData)
+bool UInventoryComponent::ServerTryAddItem(AEquippedItemActor* ItemActor)
 {
-	if (!CanAddItem()) { return; }
+	if (!IsValid(ItemActor)) { return false; }
 
 	// TODO: Need to handle the case when the incoming item has a count higher than 1 - may affect availability
 	// Idea: split the item into separate sub-items, each with 1 count, and add the subobjects separately
 	
 	int32 SlotIndex;
-	ESlotAvailability SlotAvailability = GetAvailableSlotIndex(ItemData, SlotIndex);
+	ACountableItem* AsCountable = Cast<ACountableItem>(ItemActor);
 
-	if (SlotAvailability == ESlotAvailability::ESA_None) { return; }
-
-	if (SlotAvailability == ESlotAvailability::ESA_Empty)
+	// Attempt to add item to existing stack
+	if (AsCountable && GetAvailableSlotIndex(AsCountable, SlotIndex))
 	{
-		// Create new item
-		AEquippedItemActor* ItemActor = GetWorld()->SpawnActor<AEquippedItemActor>(ItemData->GetActorClass());
+		if (ACountableItem* CountableItemSlot = Cast<ACountableItem>(ItemSlots[SlotIndex]))
+		{
+			CountableItemSlot->SetCount(CountableItemSlot->GetCount() + 1);
+		}
+		// TODO: Delete input actor
+		return true;
+	}
+	// Attempt to add item to empty slot
+	else if (GetAvailableSlotIndex(SlotIndex))
+	{
 		ItemActor->SetOwner(GetOwner());
-	
-		FItemInstance ItemInstance = { ItemInstanceInfo, ItemActor, ItemData };
-	
-		int32 InventoryIndex = Inventory.AddItem(ItemInstance, SlotIndex);
-		OnItemAdded(Inventory.GetItem(InventoryIndex).ItemInstance, InventoryIndex, SlotIndex);
+		int32 InventoryIndex = Inventory.AddItem(ItemActor, SlotIndex);
+		OnItemAdded(ItemActor, SlotIndex);
+		return true;
 	}
-	else if (SlotAvailability == ESlotAvailability::ESA_Stackable)
-	{
-		// Update existing item entry
-		IncrementSlotCount(ItemSlots[SlotIndex].Item->InstanceInfo);
-		MarkItemDirty(ItemSlots[SlotIndex].InventoryIndex);
-	}
+	return false;
 }
 
-bool UInventoryComponent::CanAddItem() const
+AEquippedItemActor* UInventoryComponent::GetItem(int32 SlotIndex) const
+{
+	if (SlotIndex < 0 || SlotIndex >= MaxInventorySize) { return nullptr; }
+
+	AEquippedItemActor* Item = ItemSlots[SlotIndex];
+	return IsValid(Item) ? Item : nullptr;
+}
+
+bool UInventoryComponent::IsInventoryFull() const
 {
 	return CurrentInventorySize < MaxInventorySize;
 }
 
-ESlotAvailability UInventoryComponent::GetAvailableSlotIndex(const UItemData* ItemData, int32& OutIndex) const
+bool UInventoryComponent::GetAvailableSlotIndex(const ACountableItem* ItemToCheck, int32& OutIndex) const
+{
+	for (int i = 0; i < MaxInventorySize; ++i)
+	{
+		ACountableItem* Item = Cast<ACountableItem>(GetItem(i));
+		if (IsValid(Item))
+		{
+			const UItemData* Data = Item->GetItemData();
+			if (Data == ItemToCheck->GetItemData() && Item->GetCount() < Data->GetMaxStackSize())
+			{
+				OutIndex = i;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+bool UInventoryComponent::GetAvailableSlotIndex(int32& OutIndex) const
 {
 	for (int i = 0; i < MaxInventorySize; i++)
 	{
-		const FInventorySlot& ItemSlot = ItemSlots[i];
+		AEquippedItemActor* Item = GetItem(i);
 
-		// Slot is available if it's empty OR if the current item can stack with the new one
-		if (ItemSlot.IsEmpty())
+		// Slot is available if it's empty
+		if (!IsValid(Item))
 		{
 			OutIndex = i;
-			return ESlotAvailability::ESA_Empty;
-		}
-		if (ItemSlot.Item->ItemData == ItemData && GetSlotCount(ItemSlot.Item->InstanceInfo) < ItemData->GetMaxStackSize())
-		{
-			OutIndex = i;
-			return ESlotAvailability::ESA_Stackable;
+			return true;
 		}
 	}
-	return ESlotAvailability::ESA_None;
+	return false;
 }
 
 void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -90,14 +111,13 @@ void UInventoryComponent::BeginPlay()
 
 	Inventory.OnItemRemoved.BindUObject(this, &ThisClass::OnItemRemoved);
 	Inventory.OnItemAdded.BindUObject(this, &ThisClass::OnItemAdded);
-	Inventory.PostOnItemsChanged.BindUObject(this, &ThisClass::OnItemsChanged);
 	
 	ItemSlots.Init({}, MaxInventorySize);
 }
 
 void UInventoryComponent::ServerRequestSwitchItem_Implementation(uint8 NewSelection)
 {
-	if (SelectedSlot != NewSelection && NewSelection < MaxInventorySize && !ItemSlots[NewSelection].IsEmpty())
+	if (SelectedSlot != NewSelection && NewSelection < MaxInventorySize && IsValid(ItemSlots[NewSelection]))
 	{
 		uint8 LastSelection = SelectedSlot;
 		SelectedSlot = NewSelection;
@@ -114,34 +134,16 @@ void UInventoryComponent::ClientTryEquipItem(int32 NewSelection)
 	}
 }
 
-void UInventoryComponent::OnItemRemoved(FItemInstance& Item, int32 InventoryIndex, int32 SlotIndex)
+void UInventoryComponent::OnItemAdded(AEquippedItemActor* Item, int32 SlotIndex)
 {
-	if (Item.AssociatedActor)
+	if (!IsValid(Item))
 	{
-		if (SelectedSlot == SlotIndex)
-		{
-			UnequipItem(SlotIndex);
-		}
-		Item.AssociatedActor->OnItemInformationChanged.Unbind();
-		Item.AssociatedActor->OnRequestRemoveFromInventory.Unbind();
+		UE_LOG(LogFBC, Error, TEXT("InventoryComponent: Received invalid item!"));
+		return;
 	}
-	ItemSlots[SlotIndex] = {};
-}
-
-void UInventoryComponent::OnItemAdded(FItemInstance& Item, int32 InventoryIndex, int32 SlotIndex)
-{
-	ItemSlots[SlotIndex] = { &Item, InventoryIndex };
-
-	// We give the item mutable access to the underlying struct, but it needs to tell us when it wants to replicate
-	Item.AssociatedActor->SetItemInfo(&Item.InstanceInfo);
+	ItemSlots[SlotIndex] = Item;
 	
-	Item.AssociatedActor->OnItemInformationChanged.BindLambda(
-		[this, SlotIndex]()
-		{
-			MarkItemDirty(SlotIndex);
-		});
-	
-	Item.AssociatedActor->OnRequestRemoveFromInventory.BindLambda(
+	Item->OnRequestRemoveFromInventory.BindLambda(
 		[this, SlotIndex]
 		{
 			RemoveFromInventory(SlotIndex);
@@ -155,31 +157,40 @@ void UInventoryComponent::OnItemAdded(FItemInstance& Item, int32 InventoryIndex,
 	{
 		UnequipItem(SlotIndex);
 	}
+	OnSlotUpdated.Broadcast(SlotIndex, Item);
 }
 
-void UInventoryComponent::OnItemsChanged()
+void UInventoryComponent::OnItemRemoved(AEquippedItemActor* Item, int32 SlotIndex)
 {
-	RebuildSlots();
+	if (IsValid(Item))
+	{
+		if (SelectedSlot == SlotIndex)
+		{
+			UnequipItem(SlotIndex);
+		}
+		Item->OnRequestRemoveFromInventory.Unbind();
+	}
+	ItemSlots[SlotIndex] = {};
+	OnSlotUpdated.Broadcast(SlotIndex, nullptr);
 }
 
 void UInventoryComponent::UnequipItem(int32 SlotIndex)
 {
-	if (SlotIndex >= MaxInventorySize || ItemSlots[SlotIndex].IsEmpty()) { return; }
-	
-	const FItemInstance& Item = *ItemSlots[SlotIndex].Item;
-	Item.AssociatedActor->SetActorHiddenInGame(true);
-	Item.AssociatedActor->OnItemUnequipped(GetAvatarActor());
+	if (AEquippedItemActor* Item = GetItem(SlotIndex))
+	{
+		Item->SetActorHiddenInGame(true);
+		Item->OnItemUnequipped(GetAvatarActor());
+	}
 }
 
 void UInventoryComponent::EquipItem(int32 SlotIndex)
 {
-	if (SlotIndex >= MaxInventorySize || ItemSlots[SlotIndex].IsEmpty()) { return; }
-	
-	const FItemInstance& Item = *ItemSlots[SlotIndex].Item;
-	Item.AssociatedActor->SetActorHiddenInGame(false);
-	Item.AssociatedActor->OnItemEquipped(GetAvatarActor());
+	if (AEquippedItemActor* Item = GetItem(SlotIndex))
+	{
+		Item->SetActorHiddenInGame(false);
+		Item->OnItemEquipped(GetAvatarActor());
+	}
 }
-
 
 void UInventoryComponent::OnSelectedItemChanged(uint8 LastSelection)
 {
@@ -187,42 +198,6 @@ void UInventoryComponent::OnSelectedItemChanged(uint8 LastSelection)
 	EquipItem(SelectedSlot);
 	
 	OnSelectedSlotChanged.Broadcast(LastSelection, SelectedSlot);
-}
-
-uint8 UInventoryComponent::GetSlotCount(const FInstancedStruct& ItemInstanceInfo) const
-{
-	// Uses reflection to get slot count from the item instance info
-	
-	// Assuming that slot counts are always named uint8's named "Count". Can make this more robust if needed
-	// 1 is fallback, since just having a valid reference means there is an item
-	if (!ItemInstanceInfo.IsValid()) { return 1; }
-
-	FProperty* Prop = ItemInstanceInfo.GetScriptStruct()->FindPropertyByName("Count");
-	if (FByteProperty* ByteProp = CastField<FByteProperty>(Prop))
-	{
-		return ByteProp->GetPropertyValue(ItemInstanceInfo.GetMemory());
-	}
-	return 1;
-}
-
-void UInventoryComponent::IncrementSlotCount(FInstancedStruct& ItemInstanceInfo) const
-{
-	if (!ItemInstanceInfo.IsValid())
-	{
-		UE_LOG(LogFBC, Error, TEXT("InventoryComponent: Could not find \"Count\" property on item instance struct."));
-		return;
-	}
-
-	FProperty* Prop = ItemInstanceInfo.GetScriptStruct()->FindPropertyByName("Count");
-	if (FByteProperty* ByteProp = CastField<FByteProperty>(Prop))
-	{
-		uint8 CurrentValue = ByteProp->GetPropertyValue(ItemInstanceInfo.GetMemory());
-		ByteProp->SetPropertyValue(ItemInstanceInfo.GetMutableMemory(), CurrentValue + 1);
-	}
-	else
-	{
-		UE_LOG(LogFBC, Error, TEXT("InventoryComponent: Could not find \"Count\" property on item instance struct."));
-	}
 }
 
 AFBCCharacter* UInventoryComponent::GetAvatarActor()
@@ -239,31 +214,15 @@ AFBCCharacter* UInventoryComponent::GetAvatarActor()
 	return AvatarActor;
 }
 
-void UInventoryComponent::RebuildSlots()
-{
-	TArray<FInventorySerializerItem> InventoryItems = Inventory.GetItems();
-	for (int i = 0; i < InventoryItems.Num(); ++i)
-	{
-		FInventorySerializerItem& Item = InventoryItems[i];
-		ItemSlots[Item.SlotIndex] = FInventorySlot{ &Item.ItemInstance, i };
-	}
-	for (int i = 0; i < ItemSlots.Num(); ++i)
-	{
-		OnSlotUpdated.Broadcast(i, ItemSlots[i].Item ? *ItemSlots[i].Item : FItemInstance{});
-	}
-}
-
 void UInventoryComponent::RemoveFromInventory(int32 SlotIndex)
 {
-	if (SlotIndex < 0 || SlotIndex >= MaxInventorySize || ItemSlots[SlotIndex].IsEmpty()) { return; }
-	//
-	// FInventorySlot& Slot = ItemSlots[SlotIndex];
-	// OnItemRemoved(*Slot.Item, Slot.InventoryIndex, SlotIndex);
-	// Inventory.RemoveItem(SlotIndex);
-}
-
-void UInventoryComponent::MarkItemDirty(int32 SlotIndex)
-{
-	int32 InventoryIndex = ItemSlots[SlotIndex].InventoryIndex;
-	Inventory.MarkItemDirty(Inventory.GetItem(InventoryIndex));
+	if (AEquippedItemActor* Item = GetItem(SlotIndex))
+	{
+		OnItemRemoved(Item, SlotIndex);
+		
+		if (GetOwner()->HasAuthority())
+		{
+			Inventory.RemoveItem(Item);
+		}
+	}
 }

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EquippedItemActor.h"
+#include "Items/EquippedItemActor.h"
 #include "Engine/DataAsset.h"
 #include "ItemData.generated.h"
 
@@ -20,9 +20,6 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "ItemData")
 	TSoftObjectPtr<UStaticMesh> GetWorldDropMesh() const { return WorldDropMesh; }
-
-	UFUNCTION(BlueprintCallable, Category = "ItemData")
-	UScriptStruct* GetItemInfoStruct() const { return ItemInstanceInfoStruct; }
 
 	UFUNCTION(BlueprintCallable, Category = "ItemData")
 	TSubclassOf<AEquippedItemActor> GetActorClass() const { return ActorClass.LoadSynchronous(); } // TODO: make this non-blocking
@@ -45,10 +42,6 @@ protected:
 	// Actor that is used when the item is equipped. This is where the item's behavior is
 	UPROPERTY(EditDefaultsOnly)
 	TSoftClassPtr<AEquippedItemActor> ActorClass{};
-	
-	// Struct with extra info about this item
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UScriptStruct> ItemInstanceInfoStruct{};
 
 	// Mesh to use when item is in the world (not in an inventory)
 	UPROPERTY(EditDefaultsOnly)

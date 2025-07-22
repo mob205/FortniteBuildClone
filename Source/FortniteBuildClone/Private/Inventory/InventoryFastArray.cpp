@@ -1,18 +1,30 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Item/InventoryFastArray.h"
+#include "Inventory/InventoryFastArray.h"
 
 
-int32 FInventoryFastArray::AddItem(const FItemInstance& ItemInstance, int32 SlotIndex)
+int32 FInventoryFastArray::AddItem(AEquippedItemActor* Item, int32 SlotIndex)
 {
 	FInventorySerializerItem& NewItem = Items.AddDefaulted_GetRef();
-	NewItem.ItemInstance = ItemInstance;
+	NewItem.Item = Item;
 	NewItem.SlotIndex = SlotIndex;
 
 	MarkItemDirty(NewItem);
 
 	return Items.Num() - 1;
+}
+
+void FInventoryFastArray::RemoveItem(AEquippedItemActor* Item)
+{
+	for (auto Iter = Items.CreateIterator(); Iter; ++Iter)
+	{
+		if (Iter->Item == Item)
+		{
+			Iter.RemoveCurrent();
+			MarkArrayDirty();
+		}
+	}
 }
 
 void FInventoryFastArray::RemoveItem(int32 SlotIndex)
@@ -31,7 +43,7 @@ void FInventoryFastArray::PreReplicatedRemove(const TArrayView<int32>& RemovedIn
 {
 	for (const int32 Index : RemovedIndices)
 	{
-		OnItemRemoved.ExecuteIfBound(Items[Index].ItemInstance, Index, Items[Index].SlotIndex);
+		OnItemRemoved.ExecuteIfBound(Items[Index].Item, Items[Index].SlotIndex);
 	}
 }
 
@@ -39,7 +51,7 @@ void FInventoryFastArray::PostReplicatedAdd(const TArrayView<int32>& AddedIndice
 {
 	for (const int32 Index : AddedIndices)
 	{
-		OnItemAdded.ExecuteIfBound(Items[Index].ItemInstance, Index, Items[Index].SlotIndex);
+		OnItemAdded.ExecuteIfBound(Items[Index].Item, Items[Index].SlotIndex);
 	}
 }
 
@@ -47,7 +59,7 @@ void FInventoryFastArray::PostReplicatedChange(const TArrayView<int32>& ChangedI
 {
 	for (const int32 Index : ChangedIndices)
 	{
-		OnItemChanged.ExecuteIfBound(Items[Index].ItemInstance, Index, Items[Index].SlotIndex);
+		OnItemChanged.ExecuteIfBound(Items[Index].Item, Items[Index].SlotIndex);
 	}
 	PostOnItemsChanged.ExecuteIfBound();
 }

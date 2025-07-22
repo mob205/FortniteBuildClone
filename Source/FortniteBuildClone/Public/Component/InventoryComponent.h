@@ -4,41 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Item/InventoryFastArray.h"
-#include "Item/ItemInstance.h"
+#include "Inventory/InventoryFastArray.h"
 #include "InventoryComponent.generated.h"
 
+class ACountableItem;
+class UItemData;
 class AFBCCharacter;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSlotUpdatedSignature, int32, SlotIndex, const FItemInstance&, Item);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSlotUpdatedSignature, int32, SlotIndex, const AEquippedItemActor*, Item);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSelectedSlotChangedSignature, int32, OldSlotIndex, int32, NewSlotIndex);
-
-enum class ESlotAvailability
-{
-	ESA_None,
-	ESA_Empty,
-	ESA_Stackable
-};
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FORTNITEBUILDCLONE_API UInventoryComponent : public UActorComponent
 {
 	GENERATED_BODY()
-
-	struct FInventorySlot
-	{
-		FItemInstance* Item;
-		int32 InventoryIndex;
-
-		bool operator==(const FInventorySlot& Other) const
-		{
-			return Item == Other.Item;
-		}
-		bool IsEmpty() const
-		{
-			return Item == nullptr;
-		}
-	};
 
 public:	
 	UInventoryComponent();
@@ -51,16 +30,21 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	uint8 GetCurrentSelectedSlot() const { return SelectedSlot; }
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	AEquippedItemActor* GetItem(int32 SlotIndex) const;
 	
-	// Returns true if any item can be added
-	bool CanAddItem() const;
+	// Returns true if inventory is full. Does not consider item stacking
+	bool IsInventoryFull() const;
 
 	// Gets the next available inventory slot for the specified item type, if any
 	// Also checks for item stacking
-	ESlotAvailability GetAvailableSlotIndex(const UItemData* ItemData, int32& OutIndex) const;
+	bool GetAvailableSlotIndex(int32& OutIndex) const;
+
+	bool GetAvailableSlotIndex(const ACountableItem* ItemToCheck, int32& OutIndex) const;
 	
 	// Attempts to add an item. Returns true if the item was successfully added
-	void ServerTryAddItem(FInstancedStruct ItemInstanceInfo, const UItemData* ItemData);
+	bool ServerTryAddItem(AEquippedItemActor* ItemActor);
 	
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 protected:
@@ -77,23 +61,16 @@ protected:
 private:
 	AFBCCharacter* GetAvatarActor();
 
-	void RebuildSlots();
 	void RemoveFromInventory(int32 SlotIndex);
 	
-	void OnItemRemoved(FItemInstance& Item, int32 InventoryIndex, int32 SlotIndex);
-	void OnItemAdded(FItemInstance& Item, int32 InventoryIndex, int32 SlotIndex);
-	void OnItemsChanged();
+	void OnItemRemoved(AEquippedItemActor* Item, int32 SlotIndex);
+	void OnItemAdded(AEquippedItemActor* Item, int32 SlotIndex);
 	
 	void UnequipItem(int32 SlotIndex);
 	void EquipItem(int32 SlotIndex);
-
-	void MarkItemDirty(int32 SlotIndex);
 	
 	UFUNCTION()
 	void OnSelectedItemChanged(uint8 LastSelection);
-
-	uint8 GetSlotCount(const FInstancedStruct& ItemInstanceInfo) const;
-	void IncrementSlotCount(FInstancedStruct& ItemInstanceInfo) const;
 
 	UPROPERTY()
 	TObjectPtr<AFBCCharacter> AvatarActor{};
@@ -103,7 +80,7 @@ private:
 	UPROPERTY(Replicated)
 	FInventoryFastArray Inventory{};
 	
-	TArray<FInventorySlot> ItemSlots{};
+	TArray<AEquippedItemActor*> ItemSlots{};
 
 	UPROPERTY(ReplicatedUsing = OnSelectedItemChanged)
 	uint8 SelectedSlot{};
