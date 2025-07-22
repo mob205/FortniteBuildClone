@@ -9,15 +9,6 @@
 
 class UItemSlotWidget;
 
-USTRUCT(BlueprintType)
-struct FTestItemData
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere)
-	uint8 Count{1};
-};
-
 UCLASS()
 class FORTNITEBUILDCLONE_API UItemData : public UPrimaryDataAsset
 {

@@ -10,8 +10,7 @@
 
 class AFBCCharacter;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSlotAddedSignature, int32, SlotIndex, const FItemInstance&, Item);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSlotRemovedSignature, int32, SlotIndex);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSlotUpdatedSignature, int32, SlotIndex, const FItemInstance&, Item);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSelectedSlotChangedSignature, int32, OldSlotIndex, int32, NewSlotIndex);
 
 enum class ESlotAvailability
@@ -33,7 +32,7 @@ class FORTNITEBUILDCLONE_API UInventoryComponent : public UActorComponent
 
 		bool operator==(const FInventorySlot& Other) const
 		{
-			return Item == Other.Item && InventoryIndex == Other.InventoryIndex;
+			return Item == Other.Item;
 		}
 		bool IsEmpty() const
 		{
@@ -45,10 +44,7 @@ public:
 	UInventoryComponent();
 
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
-	FOnSlotAddedSignature OnSlotAdded;
-
-	UPROPERTY(BlueprintAssignable, Category = "Inventory")
-	FOnSlotRemovedSignature OnSlotRemoved;
+	FOnSlotUpdatedSignature OnSlotUpdated;
 
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FOnSelectedSlotChangedSignature OnSelectedSlotChanged;
@@ -80,14 +76,18 @@ protected:
 	void ClientTryEquipItem(int32 NewSelection);
 private:
 	AFBCCharacter* GetAvatarActor();
+
+	void RebuildSlots();
+	void RemoveFromInventory(int32 SlotIndex);
 	
 	void OnItemRemoved(FItemInstance& Item, int32 InventoryIndex, int32 SlotIndex);
 	void OnItemAdded(FItemInstance& Item, int32 InventoryIndex, int32 SlotIndex);
-
+	void OnItemsChanged();
+	
 	void UnequipItem(int32 SlotIndex);
 	void EquipItem(int32 SlotIndex);
 
-	void MarkItemDirty(int32 InventoryIndex);
+	void MarkItemDirty(int32 SlotIndex);
 	
 	UFUNCTION()
 	void OnSelectedItemChanged(uint8 LastSelection);

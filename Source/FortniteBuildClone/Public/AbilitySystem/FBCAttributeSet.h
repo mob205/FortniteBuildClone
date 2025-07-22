@@ -96,4 +96,21 @@ public:
 	{
 		GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, MaxStamina, OldValue);
 	}
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Health, Category = "Vitals")
+	FGameplayAttributeData Health;
+	ATTRIBUTE_ACCESSORS(UFBCAttributeSet, Health);
+	UFUNCTION()
+	void OnRep_Health(const FGameplayAttributeData& OldValue) const
+	{
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, Health, OldValue);
+	}
+	
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Shields, Category = "Vitals")
+	FGameplayAttributeData Shields;
+	ATTRIBUTE_ACCESSORS(UFBCAttributeSet, Shields);
+	UFUNCTION() void OnRep_Shields(const FGameplayAttributeData& OldValue) const
+	{
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, Shields, OldValue);
+	}
 };

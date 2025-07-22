@@ -49,4 +49,5 @@ void FInventoryFastArray::PostReplicatedChange(const TArrayView<int32>& ChangedI
 	{
 		OnItemChanged.ExecuteIfBound(Items[Index].ItemInstance, Index, Items[Index].SlotIndex);
 	}
+	PostOnItemsChanged.ExecuteIfBound();
 }

@@ -90,6 +90,7 @@ void UInventoryComponent::BeginPlay()
 
 	Inventory.OnItemRemoved.BindUObject(this, &ThisClass::OnItemRemoved);
 	Inventory.OnItemAdded.BindUObject(this, &ThisClass::OnItemAdded);
+	Inventory.PostOnItemsChanged.BindUObject(this, &ThisClass::OnItemsChanged);
 	
 	ItemSlots.Init({}, MaxInventorySize);
 }
@@ -115,8 +116,16 @@ void UInventoryComponent::ClientTryEquipItem(int32 NewSelection)
 
 void UInventoryComponent::OnItemRemoved(FItemInstance& Item, int32 InventoryIndex, int32 SlotIndex)
 {
+	if (Item.AssociatedActor)
+	{
+		if (SelectedSlot == SlotIndex)
+		{
+			UnequipItem(SlotIndex);
+		}
+		Item.AssociatedActor->OnItemInformationChanged.Unbind();
+		Item.AssociatedActor->OnRequestRemoveFromInventory.Unbind();
+	}
 	ItemSlots[SlotIndex] = {};
-	OnSlotRemoved.Broadcast(SlotIndex);
 }
 
 void UInventoryComponent::OnItemAdded(FItemInstance& Item, int32 InventoryIndex, int32 SlotIndex)
@@ -125,10 +134,17 @@ void UInventoryComponent::OnItemAdded(FItemInstance& Item, int32 InventoryIndex,
 
 	// We give the item mutable access to the underlying struct, but it needs to tell us when it wants to replicate
 	Item.AssociatedActor->SetItemInfo(&Item.InstanceInfo);
+	
 	Item.AssociatedActor->OnItemInformationChanged.BindLambda(
-		[this, InventoryIndex]()
+		[this, SlotIndex]()
 		{
-			MarkItemDirty(InventoryIndex);
+			MarkItemDirty(SlotIndex);
+		});
+	
+	Item.AssociatedActor->OnRequestRemoveFromInventory.BindLambda(
+		[this, SlotIndex]
+		{
+			RemoveFromInventory(SlotIndex);
 		});
 	
 	if (SelectedSlot == SlotIndex)
@@ -139,8 +155,11 @@ void UInventoryComponent::OnItemAdded(FItemInstance& Item, int32 InventoryIndex,
 	{
 		UnequipItem(SlotIndex);
 	}
-	
-	OnSlotAdded.Broadcast(SlotIndex, *ItemSlots[SlotIndex].Item);
+}
+
+void UInventoryComponent::OnItemsChanged()
+{
+	RebuildSlots();
 }
 
 void UInventoryComponent::UnequipItem(int32 SlotIndex)
@@ -220,7 +239,31 @@ AFBCCharacter* UInventoryComponent::GetAvatarActor()
 	return AvatarActor;
 }
 
-void UInventoryComponent::MarkItemDirty(int32 InventoryIndex)
+void UInventoryComponent::RebuildSlots()
 {
+	TArray<FInventorySerializerItem> InventoryItems = Inventory.GetItems();
+	for (int i = 0; i < InventoryItems.Num(); ++i)
+	{
+		FInventorySerializerItem& Item = InventoryItems[i];
+		ItemSlots[Item.SlotIndex] = FInventorySlot{ &Item.ItemInstance, i };
+	}
+	for (int i = 0; i < ItemSlots.Num(); ++i)
+	{
+		OnSlotUpdated.Broadcast(i, ItemSlots[i].Item ? *ItemSlots[i].Item : FItemInstance{});
+	}
+}
+
+void UInventoryComponent::RemoveFromInventory(int32 SlotIndex)
+{
+	if (SlotIndex < 0 || SlotIndex >= MaxInventorySize || ItemSlots[SlotIndex].IsEmpty()) { return; }
+	//
+	// FInventorySlot& Slot = ItemSlots[SlotIndex];
+	// OnItemRemoved(*Slot.Item, Slot.InventoryIndex, SlotIndex);
+	// Inventory.RemoveItem(SlotIndex);
+}
+
+void UInventoryComponent::MarkItemDirty(int32 SlotIndex)
+{
+	int32 InventoryIndex = ItemSlots[SlotIndex].InventoryIndex;
 	Inventory.MarkItemDirty(Inventory.GetItem(InventoryIndex));
 }

@@ -124,7 +124,7 @@ public:
 	bool GetWantsToSprint() const { return bWantsToSprint; }
 
 	UFUNCTION(BlueprintCallable)
-	bool CanSprint() const { return !IsStaminaDrained(); }
+	bool CanSprint() const;
 
 	UFUNCTION(BlueprintCallable)
 	bool IsSprinting() const { return bWantsToSprint && CanSprint();}

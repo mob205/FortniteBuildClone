@@ -4,6 +4,5 @@
 namespace FBCTags
 {
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Sprinting);
-	
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(StaminaRecoveryBlocked);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SprintingBlocked);
 }

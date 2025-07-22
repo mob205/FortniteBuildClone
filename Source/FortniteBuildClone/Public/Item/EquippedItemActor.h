@@ -12,6 +12,7 @@ class UGameplayAbility;
 class AFBCCharacter;
 
 DECLARE_DELEGATE(FOnItemInformationChangedSignature);
+DECLARE_DELEGATE(FOnRequestRemoveFromInventorySignature);
 
 UCLASS()
 class FORTNITEBUILDCLONE_API AEquippedItemActor : public AActor
@@ -22,14 +23,24 @@ public:
 	AEquippedItemActor();
 
 	FOnItemInformationChangedSignature OnItemInformationChanged;
+	FOnRequestRemoveFromInventorySignature OnRequestRemoveFromInventory;
 	
 	virtual void OnItemEquipped(AFBCCharacter* AvatarActor);
 	virtual void OnItemUnequipped(AFBCCharacter* AvatarActor);
 
 	UFUNCTION(BlueprintCallable)
+	void RemoveFromOwningInventory() const { OnRequestRemoveFromInventory.ExecuteIfBound(); }
+	
+	UFUNCTION(BlueprintCallable)
 	FInstancedStruct& GetItemInfo() const
 	{
 		return *ItemInformation;
+	}
+
+	UFUNCTION(BlueprintCallable)
+	void SetItemInfo(const FInstancedStruct& InItemInfo)
+	{
+		*ItemInformation = InItemInfo;
 	}
 
 	UFUNCTION(BlueprintCallable)

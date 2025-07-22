@@ -3,6 +3,8 @@
 
 #include "Component/FBCCharacterMovementComponent.h"
 
+#include "AbilitySystemComponent.h"
+#include "AbilitySystem/GameplayTags/FBCTags.h"
 #include "Components/CapsuleComponent.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "GameFramework/Character.h"
@@ -373,6 +375,12 @@ bool UFBCCharacterMovementComponent::IsCustomMovementMode(ECustomMovementMode In
 void UFBCCharacterMovementComponent::ToggleWantsToSprint(bool bNewWantsToSprint)
 {
 	bWantsToSprint = bNewWantsToSprint;
+}
+
+bool UFBCCharacterMovementComponent::CanSprint() const
+{
+	UAbilitySystemComponent* ASC = FBCCharacterOwner->GetAbilitySystemComponent();
+	return !IsStaminaDrained() && (ASC && !ASC->HasMatchingGameplayTag(FBCTags::SprintingBlocked));
 }
 
 void UFBCCharacterMovementComponent::OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation,
