@@ -4,6 +4,7 @@
 #include "Inventory/Items/EquippedItemActor.h"
 
 #include "AbilitySystemComponent.h"
+#include "Inventory/ItemData.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/FBCCharacter.h"
 
@@ -12,7 +13,6 @@ AEquippedItemActor::AEquippedItemActor()
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 	bNetUseOwnerRelevancy = true;
-	SocketName = FName("RightHand");
 }
 
 void AEquippedItemActor::BeginPlay()
@@ -31,14 +31,15 @@ void AEquippedItemActor::GetLifetimeReplicatedProps(TArray<class FLifetimeProper
 
 void AEquippedItemActor::OnItemEquipped(AFBCCharacter* AvatarActor)
 {
-	FAttachmentTransformRules TransformRules = { EAttachmentRule::SnapToTarget, false };
-	AttachToComponent(AvatarActor->GetMesh(), TransformRules, SocketName);
+	FAttachmentTransformRules TransformRules = { EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, false };
+	AttachToComponent(AvatarActor->GetMesh(), TransformRules, ItemData->GetSocketName());
 
-	if (EquipMontage)
+	if (UAnimMontage* EquipMontage = ItemData->GetEquipMontage())
 	{
 		AvatarActor->PlayAnimMontage(EquipMontage);
 	}
 
+	const TArray<TSubclassOf<UGameplayAbility>>& GrantedAbilities = ItemData->GetGrantedAbilities();
 	if (HasAuthority() && !GrantedAbilities.IsEmpty())
 	{
 		UAbilitySystemComponent* ASC = AvatarActor->GetAbilitySystemComponent();

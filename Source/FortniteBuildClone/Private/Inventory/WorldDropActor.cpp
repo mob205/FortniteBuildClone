@@ -92,9 +92,9 @@ void AWorldDropActor::LoadItemMesh(const TSoftObjectPtr<UStaticMesh>& ItemMesh)
 	Streamable.RequestAsyncLoad(
 		ItemMesh.ToSoftObjectPath(),
 		FStreamableDelegate::CreateLambda(
-			[&ItemMesh, this]()
+			[ItemMesh, this]()
 			{
-				if (ItemMesh.Get() != nullptr)
+				if (ItemMesh.IsValid())
 				{
 					MeshComponent->SetStaticMesh(ItemMesh.Get());
 				}

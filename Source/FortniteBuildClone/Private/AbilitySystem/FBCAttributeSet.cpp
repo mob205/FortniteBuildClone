@@ -25,7 +25,9 @@ void UFBCAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME_CONDITION_NOTIFY(UFBCAttributeSet, Metal, COND_None, REPNOTIFY_Always);
 	
 	DOREPLIFETIME_CONDITION_NOTIFY(UFBCAttributeSet, Shields, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UFBCAttributeSet, MaxShields, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UFBCAttributeSet, Health, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UFBCAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
 }
 
 void UFBCAttributeSet::PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const

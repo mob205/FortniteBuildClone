@@ -34,9 +34,6 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<const UItemData> CurrentItemData;
-
-	UPROPERTY(EditAnywhere)
-	FInstancedStruct ItemInstanceInfo;
 private:
 	void UpdateFromItemData();
 	void LoadItemMesh(const TSoftObjectPtr<UStaticMesh>& ItemMesh);

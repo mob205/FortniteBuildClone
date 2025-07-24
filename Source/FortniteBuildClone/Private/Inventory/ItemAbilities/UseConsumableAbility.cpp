@@ -85,7 +85,10 @@ void UUseConsumableAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 		ASC->GetGameplayAttributeValueChangeDelegate(MaxRecoverableAttribute).RemoveAll(this);
 	}
 
-	ASC->RemoveActiveGameplayEffect(ActiveEffectHandle);
+	if (HasAuthority(&ActivationInfo))
+	{
+		ASC->RemoveActiveGameplayEffect(ActiveEffectHandle);
+	}
 	
 	if (ACountableItem* SourceItem = Cast<ACountableItem>(GetCurrentSourceObject()))
 	{

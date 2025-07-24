@@ -35,15 +35,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
-	
-	UPROPERTY(EditDefaultsOnly)
-	FName SocketName{};
-
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UAnimMontage> EquipMontage{};
-
-	UPROPERTY(EditDefaultsOnly)
-	TArray<TSubclassOf<UGameplayAbility>> GrantedAbilities{};
 
 	UPROPERTY(Transient)
 	TSet<FGameplayAbilitySpecHandle> GrantedAbilityHandles{};
