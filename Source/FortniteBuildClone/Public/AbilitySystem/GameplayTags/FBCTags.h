@@ -5,4 +5,6 @@ namespace FBCTags
 {
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Sprinting);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SprintingBlocked);
+
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(MaxResourceRecoverable);
 }

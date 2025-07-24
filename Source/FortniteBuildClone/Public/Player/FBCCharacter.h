@@ -69,6 +69,7 @@ protected:
 
 private:
 	void InitAbilityActorInfo();
+	void OnAbilityFailed(const UGameplayAbility* GameplayAbility, const FGameplayTagContainer& GameplayTags);
 
 	UPROPERTY(EditDefaultsOnly, Category = "Ability System")
 	TArray<FInitialAbility> InitialAbilities;

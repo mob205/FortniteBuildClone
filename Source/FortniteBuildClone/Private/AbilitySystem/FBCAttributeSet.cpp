@@ -3,6 +3,8 @@
 
 #include "AbilitySystem/FBCAttributeSet.h"
 
+#include "GameplayEffectExtension.h"
+#include "AbilitySystem/GameplayTags/FBCTags.h"
 #include "Net/UnrealNetwork.h"
 
 TMap<EFBCResourceType, FGameplayAttribute> UFBCAttributeSet::ResourceToAttributeMap{};
@@ -22,8 +24,6 @@ void UFBCAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME_CONDITION_NOTIFY(UFBCAttributeSet, Brick, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UFBCAttributeSet, Metal, COND_None, REPNOTIFY_Always);
 	
-	DOREPLIFETIME_CONDITION_NOTIFY(UFBCAttributeSet, Stamina, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UFBCAttributeSet, MaxStamina, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UFBCAttributeSet, Shields, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UFBCAttributeSet, Health, COND_None, REPNOTIFY_Always);
 }
@@ -31,9 +31,21 @@ void UFBCAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 void UFBCAttributeSet::PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const
 {
 	Super::PreAttributeBaseChange(Attribute, NewValue);
+}
 
-	if (Attribute == GetStaminaAttribute())
+void UFBCAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data)
+{
+	Super::PostGameplayEffectExecute(Data);
+
+	// Clamp health and shields to max health or the maximum amount recoverable by that gameplay effect
+	if (Data.EvaluatedData.Attribute == GetHealthAttribute())
 	{
-		NewValue = FMath::Clamp(NewValue, 0, GetMaxStamina());
+		float MaxRecoverableAmount = Data.EffectSpec.GetSetByCallerMagnitude(FBCTags::MaxResourceRecoverable, false, GetMaxHealth());
+		SetHealth(FMath::Clamp(GetHealth(), 0.f, MaxRecoverableAmount));
+	}
+	else if (Data.EvaluatedData.Attribute == GetShieldsAttribute())
+	{
+		float MaxRecoverableAmount = Data.EffectSpec.GetSetByCallerMagnitude(FBCTags::MaxResourceRecoverable, false, GetMaxShields());
+		SetShields(FMath::Clamp(GetShields(), 0.f, MaxRecoverableAmount));
 	}
 }

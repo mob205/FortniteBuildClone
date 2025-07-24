@@ -66,10 +66,18 @@ void AFBCCharacter::InitAbilityActorInfo()
 
 	ASC = FBCPlayerState->GetAbilitySystemComponent();
 	ASC->InitAbilityActorInfo(FBCPlayerState, this);
-
+	
 	AS = FBCPlayerState->GetAttributeSet();
 	
 	PlayerController = Cast<AFBCPlayerController>(GetController());
+
+	ASC->AbilityFailedCallbacks.AddUObject(this, &AFBCCharacter::OnAbilityFailed);
+}
+
+void AFBCCharacter::OnAbilityFailed(const UGameplayAbility* GameplayAbility, const FGameplayTagContainer& GameplayTags)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red,
+		FString::Printf(TEXT("Failed to activate ability %s"), *GameplayAbility->GetName()));
 }
 
 void AFBCCharacter::GrantInitialAbilities()

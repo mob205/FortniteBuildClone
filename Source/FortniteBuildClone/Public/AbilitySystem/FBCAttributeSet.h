@@ -45,6 +45,7 @@ public:
 protected:
 	virtual void PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const override;
 
+	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
 	
 /*
 *	Attribute definitions
@@ -60,7 +61,7 @@ public:
 	void OnRep_Wood(const FGameplayAttributeData& OldValue) const
 	{
 		GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, Wood, OldValue);
-	};
+	}
 	
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Brick, Category = "Material Count")
 	FGameplayAttributeData Brick;
@@ -69,7 +70,7 @@ public:
 	void OnRep_Brick(const FGameplayAttributeData& OldValue) const
 	{
 		GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, Brick, OldValue);
-	};
+	}
 	
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Metal, Category = "Material Count") FGameplayAttributeData Metal;
 	ATTRIBUTE_ACCESSORS(UFBCAttributeSet, Metal);
@@ -77,24 +78,6 @@ public:
 	void OnRep_Metal(const FGameplayAttributeData& OldValue) const
 	{
 		GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, Metal, OldValue);
-	};
-
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Stamina, Category = "Vital")
-	FGameplayAttributeData Stamina;
-	ATTRIBUTE_ACCESSORS(UFBCAttributeSet, Stamina);
-	UFUNCTION()
-	void OnRep_Stamina(const FGameplayAttributeData& OldValue)const
-	{
-		GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, Stamina, OldValue);
-	}
-
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxStamina, Category = "Vitals")
-	FGameplayAttributeData MaxStamina;
-	ATTRIBUTE_ACCESSORS(UFBCAttributeSet, MaxStamina);
-	UFUNCTION()
-	void OnRep_MaxStamina(const FGameplayAttributeData& OldValue) const
-	{
-		GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, MaxStamina, OldValue);
 	}
 
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Health, Category = "Vitals")
@@ -112,5 +95,23 @@ public:
 	UFUNCTION() void OnRep_Shields(const FGameplayAttributeData& OldValue) const
 	{
 		GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, Shields, OldValue);
+	}
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxHealth, Category = "Vitals")
+	FGameplayAttributeData MaxHealth;
+	ATTRIBUTE_ACCESSORS(UFBCAttributeSet, MaxHealth);
+	UFUNCTION()
+	void OnRep_MaxHealth(const FGameplayAttributeData& OldValue) const
+	{
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, MaxHealth, OldValue);
+	}
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxShields, Category = "Vitals")
+	FGameplayAttributeData MaxShields;
+	ATTRIBUTE_ACCESSORS(UFBCAttributeSet, MaxShields);
+	UFUNCTION()
+	void OnRep_MaxShields(const FGameplayAttributeData& OldValue) const
+	{
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, MaxShields, OldValue);
 	}
 };
