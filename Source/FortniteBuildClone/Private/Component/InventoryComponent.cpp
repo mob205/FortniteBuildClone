@@ -6,6 +6,7 @@
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "GameFramework/PlayerState.h"
 #include "Inventory/ItemData.h"
+#include "Inventory/WorldDropActor.h"
 #include "Inventory/Items/CountableItem.h"
 #include "Inventory/Items/EquippedItemActor.h"
 #include "Net/UnrealNetwork.h"
@@ -27,25 +28,59 @@ bool UInventoryComponent::ServerTryAddItem(AEquippedItemActor* ItemActor)
 	int32 SlotIndex;
 	ACountableItem* AsCountable = Cast<ACountableItem>(ItemActor);
 
-	// Attempt to add item to existing stack
-	if (AsCountable && GetAvailableSlotIndex(AsCountable, SlotIndex))
+	int32 Iterations = 1;
+	if (AsCountable)
 	{
-		if (ACountableItem* CountableItemSlot = Cast<ACountableItem>(ItemSlots[SlotIndex]))
+		Iterations = AsCountable->GetCount();
+	}
+
+	bool UsedNewSlot{};
+
+	while (Iterations > 0)
+	{
+		// Attempt to add item to existing stack
+		if (AsCountable && GetAvailableSlotIndex(AsCountable, SlotIndex))
 		{
-			CountableItemSlot->SetCount(CountableItemSlot->GetCount() + 1);
+			if (ACountableItem* CountableItemSlot = Cast<ACountableItem>(ItemSlots[SlotIndex]))
+			{
+				CountableItemSlot->SetCount(CountableItemSlot->GetCount() + 1);
+			}
 		}
-		// TODO: Delete input actor
-		return true;
+		// Attempt to add item to empty slot
+		else if (GetAvailableSlotIndex(SlotIndex))
+		{
+			ItemActor->SetOwner(GetOwner());
+			Inventory.AddItem(ItemActor, SlotIndex);
+			OnItemAdded(ItemActor, SlotIndex);
+			UsedNewSlot = true;
+
+			// Assuming that the world item stack is valid, we can just put everything in the slot
+			if (AsCountable)
+			{
+				AsCountable->SetCount(Iterations);
+			}
+			Iterations = 0;
+			break;
+		}
+		--Iterations;
 	}
-	// Attempt to add item to empty slot
-	else if (GetAvailableSlotIndex(SlotIndex))
+
+	// We could not fully add the item
+	if (Iterations > 0)
 	{
-		ItemActor->SetOwner(GetOwner());
-		int32 InventoryIndex = Inventory.AddItem(ItemActor, SlotIndex);
-		OnItemAdded(ItemActor, SlotIndex);
-		return true;
+		if (AsCountable)
+		{
+			AsCountable->SetCount(Iterations);
+		}
+		return false;
 	}
-	return false;
+
+	// We successfully added the item, but it combined with existing items
+	if (!UsedNewSlot)
+	{
+		ItemActor->Destroy();
+	}
+	return true;
 }
 
 AEquippedItemActor* UInventoryComponent::GetItem(int32 SlotIndex) const
@@ -146,7 +181,7 @@ void UInventoryComponent::OnItemAdded(AEquippedItemActor* Item, int32 SlotIndex)
 	Item->OnRequestRemoveFromInventory.BindLambda(
 		[this, SlotIndex]
 		{
-			RemoveFromInventory(SlotIndex);
+			DestroyFromInventory(SlotIndex);
 		});
 	
 	if (SelectedSlot == SlotIndex)
@@ -214,7 +249,34 @@ AFBCCharacter* UInventoryComponent::GetAvatarActor()
 	return AvatarActor;
 }
 
-void UInventoryComponent::RemoveFromInventory(int32 SlotIndex)
+void UInventoryComponent::ClientRequestDropFromInventory(int32 SlotIndex)
+{
+	if (IsValid(GetItem(SlotIndex)))
+	{
+		ServerDropFromInventory(SlotIndex);
+	}
+}
+
+void UInventoryComponent::ServerDropFromInventory_Implementation(uint8 SlotIndex)
+{
+	if (AEquippedItemActor* Item = GetItem(SlotIndex))
+	{
+		OnItemRemoved(Item, SlotIndex);
+
+		// OnItemRemoved may delete the item by ending abilities that remove the item from the inventory
+		if (!IsValid(Item)) { return; }
+		
+		Inventory.RemoveItem(SlotIndex);
+
+		AWorldDropActor* DropActor = GetWorld()->SpawnActor<AWorldDropActor>(
+			WorldDropActorClass,
+			AvatarActor->GetMesh()->GetComponentLocation(), // Mesh location is at the avatar's feet - make this more robust in future
+			{});
+		DropActor->InitializeFromItemActor(Item);
+	}
+}
+
+void UInventoryComponent::DestroyFromInventory(int32 SlotIndex)
 {
 	if (AEquippedItemActor* Item = GetItem(SlotIndex))
 	{
@@ -223,6 +285,7 @@ void UInventoryComponent::RemoveFromInventory(int32 SlotIndex)
 		if (GetOwner()->HasAuthority())
 		{
 			Inventory.RemoveItem(Item);
+			Item->Destroy();
 		}
 	}
 }

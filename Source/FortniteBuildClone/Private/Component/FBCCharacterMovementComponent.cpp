@@ -108,7 +108,7 @@ void UFBCCharacterMovementComponent::CalcVelocity(float DeltaTime, float Frictio
 {
 	Super::CalcVelocity(DeltaTime, Friction, bFluid, BrakingDeceleration);
 
-	if (bWantsToSprint && !bStaminaDrained)
+	if (IsSprinting())
 	{
 		SetStamina(GetStamina() - StaminaDrainRate * DeltaTime);
 	}

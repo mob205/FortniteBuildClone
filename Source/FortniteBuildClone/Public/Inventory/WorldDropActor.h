@@ -6,7 +6,6 @@
 #include "Inventory/ItemData.h"
 #include "GameFramework/Actor.h"
 #include "Interface/Interactable.h"
-#include "StructUtils/InstancedStruct.h"
 #include "WorldDropActor.generated.h"
 
 UCLASS()
@@ -28,6 +27,7 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> MeshComponent;
@@ -40,7 +40,10 @@ private:
 
 	bool bWasPickedUp{};
 
-	UPROPERTY()
+	UFUNCTION()
+	void OnRep_CurrentItemActor();
+	
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentItemActor)
 	TObjectPtr<AEquippedItemActor> CurrentItemActor;
 	
 };

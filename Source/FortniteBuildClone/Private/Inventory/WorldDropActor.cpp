@@ -5,6 +5,7 @@
 #include "Component/InventoryComponent.h"
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
+#include "Net/UnrealNetwork.h"
 #include "Player/FBCPlayerState.h"
 
 AWorldDropActor::AWorldDropActor()
@@ -14,6 +15,7 @@ AWorldDropActor::AWorldDropActor()
 	NetDormancy = DORM_DormantAll;
 
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
+	SetRootComponent(MeshComponent);
 }
 
 void AWorldDropActor::InitializeFromItemData(const UItemData* ItemData)
@@ -71,6 +73,13 @@ void AWorldDropActor::BeginPlay()
 	}
 }
 
+void AWorldDropActor::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AWorldDropActor, CurrentItemActor);
+}
+
 void AWorldDropActor::UpdateFromItemData()
 {
 	if (CurrentItemData)
@@ -82,7 +91,7 @@ void AWorldDropActor::UpdateFromItemData()
 void AWorldDropActor::LoadItemMesh(const TSoftObjectPtr<UStaticMesh>& ItemMesh)
 {
 #if !UE_SERVER
-	if (ItemMesh.Get() != nullptr)
+	if (ItemMesh.IsValid())
 	{
 		MeshComponent->SetStaticMesh(ItemMesh.Get());
 		return;
@@ -100,5 +109,14 @@ void AWorldDropActor::LoadItemMesh(const TSoftObjectPtr<UStaticMesh>& ItemMesh)
 				}
 			}));
 #endif
+}
+
+void AWorldDropActor::OnRep_CurrentItemActor()
+{
+	if (CurrentItemActor && CurrentItemActor->GetItemData())
+	{
+		CurrentItemData = CurrentItemActor->GetItemData();
+		UpdateFromItemData();
+	}
 }
 

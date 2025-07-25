@@ -7,6 +7,7 @@
 #include "Inventory/InventoryFastArray.h"
 #include "InventoryComponent.generated.h"
 
+class AWorldDropActor;
 class ACountableItem;
 class UItemData;
 class AFBCCharacter;
@@ -53,15 +54,24 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	uint8 MaxInventorySize{};
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AWorldDropActor> WorldDropActorClass;
+
 	UFUNCTION(Server, Reliable)
 	void ServerRequestSwitchItem(uint8 NewSelection);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void ClientRequestDropFromInventory(int32 SlotIndex);
+
+	UFUNCTION(Server, Reliable)
+	void ServerDropFromInventory(uint8 SlotIndex);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void ClientTryEquipItem(int32 NewSelection);
 private:
 	AFBCCharacter* GetAvatarActor();
 
-	void RemoveFromInventory(int32 SlotIndex);
+	void DestroyFromInventory(int32 SlotIndex);
 	
 	void OnItemRemoved(AEquippedItemActor* Item, int32 SlotIndex);
 	void OnItemAdded(AEquippedItemActor* Item, int32 SlotIndex);
