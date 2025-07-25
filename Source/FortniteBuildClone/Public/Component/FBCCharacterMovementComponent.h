@@ -198,6 +198,7 @@ protected:
 public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	void SetOwnerASC(UAbilitySystemComponent* NewOwnerASC);
 private:
 	FFBCMoveResponseDataContainer FBCMoveResponseDataContainer;
 	FFBCNetworkMoveDataContainer FBCNetworkMoveDataContainer;
@@ -205,6 +206,9 @@ private:
 protected:
 	UPROPERTY(Transient)
 	TObjectPtr<AFBCCharacter> FBCCharacterOwner;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UAbilitySystemComponent> OwnerASC;
 	
 	UPROPERTY()
 	float Stamina;

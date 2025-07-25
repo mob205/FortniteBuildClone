@@ -7,6 +7,7 @@
 #include "GameplayEffect.h"
 #include "Structure/Data/StructureInfoDataAsset.h"
 #include "InputAction.h"
+#include "Component/FBCCharacterMovementComponent.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/FBCPlayerController.h"
@@ -72,6 +73,8 @@ void AFBCCharacter::InitAbilityActorInfo()
 	PlayerController = Cast<AFBCPlayerController>(GetController());
 
 	ASC->AbilityFailedCallbacks.AddUObject(this, &AFBCCharacter::OnAbilityFailed);
+
+	OnASCInit.Broadcast(ASC);
 }
 
 void AFBCCharacter::OnAbilityFailed(const UGameplayAbility* GameplayAbility, const FGameplayTagContainer& GameplayTags)

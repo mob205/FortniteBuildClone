@@ -4,6 +4,7 @@
 #include "Component/FBCCharacterMovementComponent.h"
 
 #include "AbilitySystemComponent.h"
+#include "AbilitySystem/FBCAttributeSet.h"
 #include "AbilitySystem/GameplayTags/FBCTags.h"
 #include "Components/CapsuleComponent.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
@@ -338,6 +339,10 @@ void UFBCCharacterMovementComponent::OnStaminaChanged(float PrevValue, float New
 void UFBCCharacterMovementComponent::OnMaxStaminaChanged(float PrevValue, float NewValue)
 {
 	SetStamina(GetStamina());
+	if (UAbilitySystemComponent* ASC = FBCCharacterOwner->GetAbilitySystemComponent())
+	{
+		ASC->SetNumericAttributeBase(UFBCAttributeSet::GetMaxStaminaAttribute(), NewValue);
+	}
 }
 
 void UFBCCharacterMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
@@ -349,6 +354,12 @@ void UFBCCharacterMovementComponent::TickComponent(float DeltaTime, enum ELevelT
 	if (CurrentStaminaRegenDelay > 0)
 	{
 		CurrentStaminaRegenDelay -= DeltaTime;
+	}
+
+	// Give GAS a readonly view of Stamina (although it's still managed by the CMC only)
+	if (OwnerASC)
+	{
+		OwnerASC->SetNumericAttributeBase(UFBCAttributeSet::GetStaminaAttribute(), GetStamina());
 	}
 }
 
@@ -639,6 +650,20 @@ void UFBCCharacterMovementComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 	FBCCharacterOwner = Cast<AFBCCharacter>(GetOwner());
+	OwnerASC = FBCCharacterOwner->GetAbilitySystemComponent();
+
+	if (OwnerASC == nullptr)
+	{
+		FBCCharacterOwner->OnASCInit.AddUObject(this, &UFBCCharacterMovementComponent::SetOwnerASC);
+	}
+	
 	SetMaxStamina(DefaultMaxStamina);
 	SetStamina(GetMaxStamina());
+}
+
+void UFBCCharacterMovementComponent::SetOwnerASC(UAbilitySystemComponent* NewOwnerASC)
+{
+	OwnerASC = NewOwnerASC;
+	OwnerASC->SetNumericAttributeBase(UFBCAttributeSet::GetStaminaAttribute(), GetStamina());
+	OwnerASC->SetNumericAttributeBase(UFBCAttributeSet::GetMaxStaminaAttribute(), GetMaxStamina());
 }

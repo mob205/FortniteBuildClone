@@ -17,6 +17,7 @@ class UGameplayEffect;
 class UStructureInfoDataAsset;
 class UInputAction;
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnASCInitSignature, UAbilitySystemComponent*);
 
 USTRUCT(BlueprintType)
 struct FInitialAbility
@@ -47,7 +48,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building")
 	TObjectPtr<UStructureInfoDataAsset> StructureInfo;
-	
+
+	FOnASCInitSignature OnASCInit;
 protected:
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;

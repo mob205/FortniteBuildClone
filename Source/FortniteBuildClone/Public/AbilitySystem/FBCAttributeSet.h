@@ -114,4 +114,22 @@ public:
 	{
 		GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, MaxShields, OldValue);
 	}
+
+	UPROPERTY(BlueprintReadOnly, /**ReplicatedUsing = OnRep_Stamina,**/ Category = "Vitals")
+	FGameplayAttributeData Stamina;
+	ATTRIBUTE_ACCESSORS(UFBCAttributeSet, Stamina);
+	// UFUNCTION()
+	// void OnRep_Stamina(const FGameplayAttributeData& OldValue) const
+	// {
+	// 	GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, Stamina, OldValue);
+	// }
+
+	UPROPERTY(BlueprintReadOnly, /**ReplicatedUsing = OnRep_MaxStamina,**/ Category = "Vitals")
+	FGameplayAttributeData MaxStamina;
+	ATTRIBUTE_ACCESSORS(UFBCAttributeSet, MaxStamina);
+	// UFUNCTION()
+	// void OnRep_MaxStamina(const FGameplayAttributeData& OldValue) const
+	// {
+	// 	GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, MaxStamina, OldValue);
+	// }
 };
