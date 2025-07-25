@@ -28,15 +28,13 @@ bool UInventoryComponent::ServerTryAddItem(AEquippedItemActor* ItemActor)
 	int32 SlotIndex;
 	ACountableItem* AsCountable = Cast<ACountableItem>(ItemActor);
 
-	int32 Iterations = 1;
+	int32 InItemCount = 1;
 	if (AsCountable)
 	{
-		Iterations = AsCountable->GetCount();
+		InItemCount = AsCountable->GetCount();
 	}
 
-	bool UsedNewSlot{};
-
-	while (Iterations > 0)
+	while (InItemCount > 0)
 	{
 		// Attempt to add item to existing stack
 		if (AsCountable && GetAvailableSlotIndex(AsCountable, SlotIndex))
@@ -52,34 +50,35 @@ bool UInventoryComponent::ServerTryAddItem(AEquippedItemActor* ItemActor)
 			ItemActor->SetOwner(GetOwner());
 			Inventory.AddItem(ItemActor, SlotIndex);
 			OnItemAdded(ItemActor, SlotIndex);
-			UsedNewSlot = true;
 
 			// Assuming that the world item stack is valid, we can just put everything in the slot
 			if (AsCountable)
 			{
-				AsCountable->SetCount(Iterations);
+				AsCountable->SetCount(InItemCount);
 			}
-			Iterations = 0;
+			return true;
+		}
+		// No space found
+		else
+		{
 			break;
 		}
-		--Iterations;
+		--InItemCount;
 	}
 
 	// We could not fully add the item
-	if (Iterations > 0)
+	if (InItemCount > 0)
 	{
 		if (AsCountable)
 		{
-			AsCountable->SetCount(Iterations);
+			AsCountable->SetCount(InItemCount);
 		}
 		return false;
 	}
 
 	// We successfully added the item, but it combined with existing items
-	if (!UsedNewSlot)
-	{
-		ItemActor->Destroy();
-	}
+	ItemActor->Destroy();
+	
 	return true;
 }
 
