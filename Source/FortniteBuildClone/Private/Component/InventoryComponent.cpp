@@ -267,12 +267,25 @@ void UInventoryComponent::ServerDropFromInventory_Implementation(uint8 SlotIndex
 		
 		Inventory.RemoveItem(SlotIndex);
 
-		AWorldDropActor* DropActor = GetWorld()->SpawnActor<AWorldDropActor>(
-			WorldDropActorClass,
-			AvatarActor->GetMesh()->GetComponentLocation(), // Mesh location is at the avatar's feet - make this more robust in future
-			{});
-		DropActor->InitializeFromItemActor(Item);
+		TransferToWorldDrop(Item);
 	}
+}
+
+void UInventoryComponent::TransferToWorldDrop(AEquippedItemActor* Item)
+{
+	// TODO: Currently just tries to spawn the item at the player's feet. Need to make this better in the future
+
+	FVector AvatarPos = AvatarActor->GetActorLocation();
+	FHitResult Hit;
+	GetWorld()->LineTraceSingleByChannel(Hit, AvatarPos, AvatarPos+ 200 * FVector::DownVector, ECC_Visibility, AvatarActor->GetIgnoreCharacterParams());
+	FVector ItemLocation = Hit.bBlockingHit ? Hit.Location : AvatarPos;
+		
+	AWorldDropActor* DropActor = GetWorld()->SpawnActor<AWorldDropActor>(
+		WorldDropActorClass,
+		ItemLocation, 
+		{});
+	DropActor->InitializeFromItemActor(Item);
+	Item->SetOwner(DropActor);
 }
 
 void UInventoryComponent::DestroyFromInventory(int32 SlotIndex)

@@ -78,6 +78,9 @@ private:
 	
 	void UnequipItem(int32 SlotIndex);
 	void EquipItem(int32 SlotIndex);
+
+	// Creates a world drop actor and transfers ownership of the item to the world drop actor
+	void TransferToWorldDrop(AEquippedItemActor* Item);
 	
 	UFUNCTION()
 	void OnSelectedItemChanged(uint8 LastSelection);
