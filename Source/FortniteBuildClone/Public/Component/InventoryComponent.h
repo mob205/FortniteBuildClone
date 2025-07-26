@@ -22,6 +22,7 @@ class FORTNITEBUILDCLONE_API UInventoryComponent : public UActorComponent
 
 public:	
 	UInventoryComponent();
+	void AddItemToSlot(AEquippedItemActor* ItemActor, int32 SlotIndex, int32 InItemCount);
 
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FOnSlotUpdatedSignature OnSlotUpdated;
@@ -37,6 +38,8 @@ public:
 	
 	// Returns true if inventory is full. Does not consider item stacking
 	bool IsInventoryFull() const;
+
+	bool CanDropItem(int32 SlotIndex) const;
 
 	// Gets the next available inventory slot for the specified item type, if any
 	// Also checks for item stacking

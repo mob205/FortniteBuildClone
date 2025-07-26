@@ -33,6 +33,7 @@ bool UInventoryComponent::ServerTryAddItem(AEquippedItemActor* ItemActor)
 	{
 		InItemCount = AsCountable->GetCount();
 	}
+	int32 StartItemCount = InItemCount;
 
 	while (InItemCount > 0)
 	{
@@ -47,15 +48,7 @@ bool UInventoryComponent::ServerTryAddItem(AEquippedItemActor* ItemActor)
 		// Attempt to add item to empty slot
 		else if (GetAvailableSlotIndex(SlotIndex))
 		{
-			ItemActor->SetOwner(GetOwner());
-			Inventory.AddItem(ItemActor, SlotIndex);
-			OnItemAdded(ItemActor, SlotIndex);
-
-			// Assuming that the world item stack is valid, we can just put everything in the slot
-			if (AsCountable)
-			{
-				AsCountable->SetCount(InItemCount);
-			}
+			AddItemToSlot(ItemActor, SlotIndex, InItemCount);
 			return true;
 		}
 		// No space found
@@ -69,17 +62,45 @@ bool UInventoryComponent::ServerTryAddItem(AEquippedItemActor* ItemActor)
 	// We could not fully add the item
 	if (InItemCount > 0)
 	{
-		if (AsCountable)
+		// We took at least one stack of the item - keep the world drop, but reduce its count
+		if (AsCountable && StartItemCount < InItemCount)
 		{
 			AsCountable->SetCount(InItemCount);
+			return false;
 		}
+		
+		// Try to replace the incoming item with our currently equipped item
+		// No point swapping if it's the same item type
+		if (CanDropItem(SelectedSlot)
+			&& ItemActor->GetItemData() != ItemSlots[SelectedSlot]->GetItemData())
+		{
+			ServerDropFromInventory(SelectedSlot);
+			AddItemToSlot(ItemActor, SelectedSlot, InItemCount);
+			return true;
+		}
+
+		// No way to add it to the inventory
 		return false;
 	}
 
 	// We successfully added the item, but it combined with existing items
+	// We only need to keep the item actor if it gets its own slot
 	ItemActor->Destroy();
 	
 	return true;
+}
+
+void UInventoryComponent::AddItemToSlot(AEquippedItemActor* ItemActor, int32 SlotIndex, int32 InItemCount)
+{
+	ItemActor->SetOwner(GetOwner());
+	Inventory.AddItem(ItemActor, SlotIndex);
+	OnItemAdded(ItemActor, SlotIndex);
+
+	// InItemCount is how many items we have left to divvy up, so put it all in the new stack
+	if (ACountableItem* AsCountable = Cast<ACountableItem>(ItemActor))
+	{
+		AsCountable->SetCount(InItemCount);
+	}
 }
 
 AEquippedItemActor* UInventoryComponent::GetItem(int32 SlotIndex) const
@@ -93,6 +114,13 @@ AEquippedItemActor* UInventoryComponent::GetItem(int32 SlotIndex) const
 bool UInventoryComponent::IsInventoryFull() const
 {
 	return CurrentInventorySize < MaxInventorySize;
+}
+
+bool UInventoryComponent::CanDropItem(int32 SlotIndex) const
+{
+	AEquippedItemActor* Item = GetItem(SlotIndex);
+	// In future, check some bool for if the slot can't be dropped (like pickaxe slot)
+	return IsValid(Item);
 }
 
 bool UInventoryComponent::GetAvailableSlotIndex(const ACountableItem* ItemToCheck, int32& OutIndex) const
