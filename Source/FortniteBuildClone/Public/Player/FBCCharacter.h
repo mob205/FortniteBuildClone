@@ -49,6 +49,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building")
 	TObjectPtr<UStructureInfoDataAsset> StructureInfo;
 
+	AFBCPlayerController* GetPlayerController() const { return PlayerController;}
+	
 	FOnASCInitSignature OnASCInit;
 protected:
 	virtual void PossessedBy(AController* NewController) override;

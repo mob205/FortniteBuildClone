@@ -31,7 +31,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	const UItemData* GetItemData() const { return ItemData; }
-	virtual void SetItemData(const UItemData* NewItemData) { ItemData = NewItemData;}
+	virtual void SetItemData(const UItemData* NewItemData) { ItemData = NewItemData; }
+
+	UStaticMeshComponent* GetStaticMesh() const { return StaticMeshComp; }
 protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
@@ -41,5 +43,11 @@ protected:
 
 	UPROPERTY(Replicated)
 	TObjectPtr<const UItemData> ItemData{};
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USceneComponent> RootComp{};
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UStaticMeshComponent> StaticMeshComp{};
 };
 

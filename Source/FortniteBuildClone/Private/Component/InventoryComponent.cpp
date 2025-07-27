@@ -21,9 +21,6 @@ UInventoryComponent::UInventoryComponent()
 bool UInventoryComponent::ServerTryAddItem(AEquippedItemActor* ItemActor)
 {
 	if (!IsValid(ItemActor)) { return false; }
-
-	// TODO: Need to handle the case when the incoming item has a count higher than 1 - may affect availability
-	// Idea: split the item into separate sub-items, each with 1 count, and add the subobjects separately
 	
 	int32 SlotIndex;
 	ACountableItem* AsCountable = Cast<ACountableItem>(ItemActor);

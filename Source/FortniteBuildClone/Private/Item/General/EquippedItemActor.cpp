@@ -13,6 +13,13 @@ AEquippedItemActor::AEquippedItemActor()
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 	bNetUseOwnerRelevancy = true;
+
+	RootComp = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	SetRootComponent(RootComp);
+
+	StaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
+	StaticMeshComp->SetupAttachment(RootComp);
+	StaticMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AEquippedItemActor::BeginPlay()
