@@ -31,7 +31,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	const UItemData* GetItemData() const { return ItemData; }
-	void SetItemData(const UItemData* NewItemData) { ItemData = NewItemData;}
+	virtual void SetItemData(const UItemData* NewItemData) { ItemData = NewItemData;}
 protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Inventory/ItemData.h"
+#include "Inventory/Data/ItemData.h"
 #include "GameFramework/Actor.h"
 #include "Interface/Interactable.h"
 #include "WorldDropActor.generated.h"

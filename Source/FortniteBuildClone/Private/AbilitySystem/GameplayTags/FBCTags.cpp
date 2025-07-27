@@ -4,8 +4,17 @@
 
 namespace FBCTags
 {
+	// Movement
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Sprinting, "Movement.Sprint.Sprinting", "Player is actively sprinting");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(SprintingBlocked, "Movement.Sprint.SprintingBlocked", "Player is unable to sprint");
 
+	// Item
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(MaxResourceRecoverable, "Item.Consumable.MaxResourceRecoverable", "The maximum amount of health or shields recoverable by this item");
+
+	// Abilities
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(FireWeapon, "Abilities.Weapon.Fire", "Firing the currently equipped weapon");
+
+	// Input
+	UE_DEFINE_GAMEPLAY_TAG(InputFireDown, "Input.Fire.Down");
+	UE_DEFINE_GAMEPLAY_TAG(InputFireReleased, "Input.Fire.Released");
 }

@@ -4,7 +4,7 @@
 #include "Inventory/Items/EquippedItemActor.h"
 
 #include "AbilitySystemComponent.h"
-#include "Inventory/ItemData.h"
+#include "Inventory/Data/ItemData.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/FBCCharacter.h"
 

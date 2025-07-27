@@ -5,6 +5,7 @@
 
 #include "AbilitySystem/FBCAbilitySystemComponent.h"
 #include "AbilitySystem/FBCAttributeSet.h"
+#include "AbilitySystem/GameplayTags/FBCTags.h"
 #include "Component/BuildResourceComponent.h"
 #include "Component/InventoryComponent.h"
 
@@ -15,6 +16,9 @@ AFBCPlayerState::AFBCPlayerState()
 	ASC = CreateDefaultSubobject<UFBCAbilitySystemComponent>("AbilitySystemComponent");
 	ASC->SetIsReplicated(true);
 	ASC->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+
+	ASC->GenericGameplayEventCallbacks.Add(FBCTags::InputFireDown);
+	ASC->GenericGameplayEventCallbacks.Add(FBCTags::InputFireReleased);
 	
 	AS = CreateDefaultSubobject<UFBCAttributeSet>("AttributeSet");
 
