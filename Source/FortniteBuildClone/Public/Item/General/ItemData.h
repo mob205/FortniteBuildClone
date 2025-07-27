@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Inventory/Items/EquippedItemActor.h"
+#include "Item/General/EquippedItemActor.h"
 #include "Engine/DataAsset.h"
 #include "ItemData.generated.h"
 

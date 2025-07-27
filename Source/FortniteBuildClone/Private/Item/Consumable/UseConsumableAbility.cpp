@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Inventory/ItemAbilities/UseConsumableAbility.h"
+#include "Item/Consumable/UseConsumableAbility.h"
 
 #include "AbilitySystemComponent.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "AbilitySystem/GameplayTags/FBCTags.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
-#include "Inventory/Items/CountableItem.h"
+#include "Item/General/CountableItem.h"
 
 UUseConsumableAbility::UUseConsumableAbility()
 {
@@ -68,7 +68,6 @@ void UUseConsumableAbility::ActivateAbility(const FGameplayAbilitySpecHandle Han
 	// Play the montage of using the consumable
 	PlayMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
 		this, {}, UsingAnimMontage);
-	//PlayMontageTask->OnCompleted.AddDynamic(this, &UUseConsumableAbility::OnMontageEnded);
 	PlayMontageTask->Activate();
 }
 

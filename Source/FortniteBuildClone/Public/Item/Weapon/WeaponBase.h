@@ -3,10 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EquippedItemActor.h"
-#include "GameplayTagContainer.h"
+#include "Item/General/EquippedItemActor.h"
 #include "Abilities/GameplayAbilityTypes.h"
-#include "Inventory/Data/WeaponItemData.h"
+#include "Item/Weapon/WeaponItemData.h"
 #include "WeaponBase.generated.h"
 
 class UAbilitySystemComponent;

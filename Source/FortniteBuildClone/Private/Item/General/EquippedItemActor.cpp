@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Inventory/Items/EquippedItemActor.h"
+#include "Item/General/EquippedItemActor.h"
 
 #include "AbilitySystemComponent.h"
-#include "Inventory/Data/ItemData.h"
+#include "Item/General/ItemData.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/FBCCharacter.h"
 

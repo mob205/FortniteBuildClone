@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Inventory/Items/WeaponBase.h"
+#include "Item/Weapon/WeaponBase.h"
 
 #include "AbilitySystemComponent.h"
 #include "GameplayTagContainer.h"
 #include "AbilitySystem/GameplayTags/FBCTags.h"
-#include "Inventory/Data/WeaponItemData.h"
+#include "Item/Weapon/WeaponItemData.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 #include "Player/FBCCharacter.h"

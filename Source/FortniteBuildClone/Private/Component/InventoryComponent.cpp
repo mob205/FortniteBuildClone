@@ -5,10 +5,10 @@
 
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "GameFramework/PlayerState.h"
-#include "Inventory/Data/ItemData.h"
-#include "Inventory/WorldDropActor.h"
-#include "Inventory/Items/CountableItem.h"
-#include "Inventory/Items/EquippedItemActor.h"
+#include "Item/General/ItemData.h"
+#include "Item/General/WorldDropActor.h"
+#include "Item/General/CountableItem.h"
+#include "Item/General/EquippedItemActor.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/FBCCharacter.h"
 

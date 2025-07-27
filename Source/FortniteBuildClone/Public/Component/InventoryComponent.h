@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Inventory/InventoryFastArray.h"
+#include "Item/General/InventoryFastArray.h"
 #include "InventoryComponent.generated.h"
 
 class AWorldDropActor;

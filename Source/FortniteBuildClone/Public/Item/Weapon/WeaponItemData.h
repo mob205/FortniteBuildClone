@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ItemData.h"
+#include "Item/General/ItemData.h"
 #include "WeaponItemData.generated.h"
 
 UCLASS()

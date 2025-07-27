@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Inventory/InventoryFastArray.h"
+#include "Item/General/InventoryFastArray.h"
 
 
 int32 FInventoryFastArray::AddItem(AEquippedItemActor* Item, int32 SlotIndex)
