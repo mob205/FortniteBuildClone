@@ -17,10 +17,16 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	float GetFireDelay() const { return FireDelay; }
+
+	UFUNCTION(BlueprintCallable)
+	float GetDamage() const { return Damage; }
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	int32 MaxAmmoCount{};
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	float FireDelay{};
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	float Damage{};
 };

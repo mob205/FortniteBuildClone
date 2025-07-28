@@ -132,4 +132,8 @@ public:
 	// {
 	// 	GAMEPLAYATTRIBUTE_REPNOTIFY(UFBCAttributeSet, MaxStamina, OldValue);
 	// }
+
+	UPROPERTY(BlueprintReadOnly, Category = "Meta")
+	FGameplayAttributeData IncomingDamage;
+	ATTRIBUTE_ACCESSORS(UFBCAttributeSet, IncomingDamage);
 };

@@ -13,8 +13,10 @@ namespace FBCTags
 
 	// Abilities
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(FireWeapon, "Abilities.Weapon.Fire", "Firing the currently equipped weapon");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilityDamage, "Abilities.Damage", "Damage dealt by an ability");
 
 	// Input
 	UE_DEFINE_GAMEPLAY_TAG(InputFireDown, "Input.Fire.Down");
 	UE_DEFINE_GAMEPLAY_TAG(InputFireReleased, "Input.Fire.Released");
+
 }

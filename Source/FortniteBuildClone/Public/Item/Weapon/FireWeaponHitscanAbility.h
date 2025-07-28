@@ -4,18 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbility.h"
-#include "FireWeaponHitscan.generated.h"
+#include "FireWeaponHitscanAbility.generated.h"
 
+struct FWeaponTargetData;
 class AFBCCharacter;
 class AWeaponBase;
 
 UCLASS()
-class FORTNITEBUILDCLONE_API UFireWeaponHitscan : public UGameplayAbility
+class FORTNITEBUILDCLONE_API UFireWeaponHitscanAbility : public UGameplayAbility
 {
 	GENERATED_BODY()
 
 public:
-	UFireWeaponHitscan();
+	UFireWeaponHitscanAbility();
 	
 protected:
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
@@ -40,4 +41,6 @@ private:
 	FGameplayAbilityTargetDataHandle GetAimingTargetData() const;
 
 	void OnValidData(const FGameplayAbilityTargetDataHandle& Data, FGameplayTag GameplayTag);
+
+	void ServerFire(const FWeaponTargetData& TargetData) const;
 };

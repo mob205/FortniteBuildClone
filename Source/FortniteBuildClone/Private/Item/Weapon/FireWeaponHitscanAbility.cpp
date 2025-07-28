@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Item/Weapon/FireWeaponHitscan.h"
+#include "Item/Weapon/FireWeaponHitscanAbility.h"
 
 #include "AbilitySystemComponent.h"
 #include "FBCBlueprintLibrary.h"
@@ -14,7 +14,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "Item/Weapon/WeaponTargetData.h"
 
-UFireWeaponHitscan::UFireWeaponHitscan()
+UFireWeaponHitscanAbility::UFireWeaponHitscanAbility()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
@@ -22,7 +22,7 @@ UFireWeaponHitscan::UFireWeaponHitscan()
 	SetAssetTags(FBCTags::FireWeapon.GetTag().GetSingleTagContainer());
 }
 
-void UFireWeaponHitscan::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+void UFireWeaponHitscanAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
 	Super::OnGiveAbility(ActorInfo, Spec);
 
@@ -30,7 +30,7 @@ void UFireWeaponHitscan::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInf
 	GameState = GetWorld()->GetGameState();
 }
 
-void UFireWeaponHitscan::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
+void UFireWeaponHitscanAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                          const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
                                          const FGameplayEventData* TriggerEventData)
 {
@@ -57,7 +57,7 @@ void UFireWeaponHitscan::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	
 	if (HasAuthority(&ActivationInfo))
 	{
-		ASC->AbilityTargetDataSetDelegate(CurrentSpecHandle, ActivationInfo.GetActivationPredictionKey()).AddUObject(this, &UFireWeaponHitscan::OnValidData);
+		ASC->AbilityTargetDataSetDelegate(CurrentSpecHandle, ActivationInfo.GetActivationPredictionKey()).AddUObject(this, &UFireWeaponHitscanAbility::OnValidData);
 	}
 	else
 	{
@@ -68,12 +68,12 @@ void UFireWeaponHitscan::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &ThisClass::EndAbilityLocally));
 }
 
-void UFireWeaponHitscan::EndAbilityLocally()
+void UFireWeaponHitscanAbility::EndAbilityLocally()
 {
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
 }
 
-FGameplayAbilityTargetDataHandle UFireWeaponHitscan::GetAimingTargetData() const
+FGameplayAbilityTargetDataHandle UFireWeaponHitscanAbility::GetAimingTargetData() const
 {
 	double Timestamp = GameState->GetServerWorldTimeSeconds();
 	FVector ViewLocation{};
@@ -85,24 +85,36 @@ FGameplayAbilityTargetDataHandle UFireWeaponHitscan::GetAimingTargetData() const
 
 
 // Reconstruct the client shot on the server
-void UFireWeaponHitscan::OnValidData(const FGameplayAbilityTargetDataHandle& Data,
+void UFireWeaponHitscanAbility::OnValidData(const FGameplayAbilityTargetDataHandle& Data,
                                      FGameplayTag GameplayTag)
 {
-	const FWeaponTargetData* ShotData = static_cast<const FWeaponTargetData*>(Data.Get(0));
+	if (const FGameplayAbilityTargetData* BaseTargetData = Data.Get(0))
+	{
+		if (BaseTargetData->GetScriptStruct() == FWeaponTargetData::StaticStruct())
+		{
+			const FWeaponTargetData* ShotData = static_cast<const FWeaponTargetData*>(BaseTargetData);
+			ServerFire(*ShotData);
+		}
+	}
 
-	FVector Start = ShotData->ViewLocation;
-	FVector End = ShotData->ViewLocation + Range * ShotData->ViewRotation.Vector();
+	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
+}
+
+void UFireWeaponHitscanAbility::ServerFire(const FWeaponTargetData& TargetData) const
+{
+	if (!OnHitEffectClass) { return; }
+	
+	FVector Start = TargetData.ViewLocation;
+	FVector End = TargetData.ViewLocation + Range * TargetData.ViewRotation.Vector();
 	FHitResult Hit;
 	
 	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, FBCOwner->GetIgnoreCharacterParams()))
 	{
 		if (UAbilitySystemComponent* HitASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Hit.GetActor()))
 		{
-			// FGameplayEffectContextHandle ContextHandle = HitASC->MakeEffectContext();
-			// FGameplayEffectSpecHandle SpecHandle = HitASC->MakeOutgoingSpec(OnHitEffectClass, 1, ContextHandle);
-			// HitASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);
-		}
+			FGameplayEffectContextHandle ContextHandle = HitASC->MakeEffectContext();
+			FGameplayEffectSpecHandle SpecHandle = HitASC->MakeOutgoingSpec(OnHitEffectClass, 1, ContextHandle);
+			SpecHandle.Data->SetSetByCallerMagnitude(FBCTags::AbilityDamage, Weapon->GetWeaponItemData()->GetDamage());
+			HitASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);		}
 	}
-
-	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
 }

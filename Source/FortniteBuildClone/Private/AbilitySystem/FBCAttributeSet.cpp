@@ -50,4 +50,30 @@ void UFBCAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 		float MaxRecoverableAmount = Data.EffectSpec.GetSetByCallerMagnitude(FBCTags::MaxResourceRecoverable, false, GetMaxShields());
 		SetShields(FMath::Clamp(GetShields(), 0.f, MaxRecoverableAmount));
 	}
+	else if (Data.EvaluatedData.Attribute == GetIncomingDamageAttribute())
+	{
+		float IncomingDamageValue = FMath::Max(0, GetIncomingDamage());
+		float NewShields = GetShields() - IncomingDamageValue;
+
+		if (NewShields < 0)
+		{
+			IncomingDamageValue = -NewShields;
+			NewShields = 0;
+		}
+		else
+		{
+			IncomingDamageValue = 0;
+		}
+		SetShields(NewShields);
+
+		float NewHealth = GetHealth() - IncomingDamageValue;
+
+		if (NewHealth < 0)
+		{
+			// Do dying stuff here
+			NewHealth = 0;
+		}
+		SetHealth(NewHealth);
+		SetIncomingDamage(0);
+	}
 }
