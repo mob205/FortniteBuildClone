@@ -11,8 +11,8 @@
 #include "Player/FBCCharacter.h"
 #include "Player/FBCPlayerController.h"
 #include "AbilitySystemBlueprintLibrary.h"
-#include "KismetTraceUtils.h"
-#include "Abilities/Tasks/AbilityTask_WaitTargetData.h"
+#include "GameFramework/GameStateBase.h"
+#include "Item/Weapon/WeaponTargetData.h"
 
 UFireWeaponHitscan::UFireWeaponHitscan()
 {
@@ -20,6 +20,14 @@ UFireWeaponHitscan::UFireWeaponHitscan()
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 
 	SetAssetTags(FBCTags::FireWeapon.GetTag().GetSingleTagContainer());
+}
+
+void UFireWeaponHitscan::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+{
+	Super::OnGiveAbility(ActorInfo, Spec);
+
+	FBCOwner = Cast<AFBCCharacter>(ActorInfo->AvatarActor);
+	GameState = GetWorld()->GetGameState();
 }
 
 void UFireWeaponHitscan::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
@@ -30,8 +38,7 @@ void UFireWeaponHitscan::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
 	Weapon = Cast<AWeaponBase>(GetCurrentSourceObject());
-
-	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, FString::Printf(TEXT("Pew?")));
+	
 	if (!Weapon)
 	{
 		UE_LOG(LogFBC, Error, TEXT("FireWeaponHitscan: No weapon source object"));
@@ -47,60 +54,55 @@ void UFireWeaponHitscan::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	}
 
 	Weapon->ResetFireDelay();
-
-	UAbilityTask_WaitTargetData* WaitTargetData = UAbilityTask_WaitTargetData::WaitTargetDataUsingActor(this, {}, EGameplayTargetingConfirmation::Custom, nullptr);
-	WaitTargetData->ValidData.AddDynamic(this, &ThisClass::OnValidData);
-	WaitTargetData->Activate();
-
 	
-	ASC->CallServerSetReplicatedTargetData()
-	//ASC->ServerSetReplicatedTargetData()
-
-	// Right now, abilities are only ever casted by FBCCharacter, so this shouldn't be null. Can be generalized later
-	AFBCCharacter* FBCOwner = Cast<AFBCCharacter>(GetAvatarActorFromActorInfo());
-	APlayerController* PC = FBCOwner->GetPlayerController();
-
-	if (Weapon->GetStaticMesh()->DoesSocketExist("Muzzle"))
+	if (HasAuthority(&ActivationInfo))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Found socket on %d"), HasAuthority(&ActivationInfo));
-	}
-	FVector Start = Weapon->GetStaticMesh()->GetSocketLocation("Muzzle");
-	FVector End;
-	
-	FHitResult Hit;
-	if (UFBCBlueprintLibrary::TraceControllerLook(PC, Range, Hit, ECC_Pawn))
-	{
-		End = Hit.Location;
+		ASC->AbilityTargetDataSetDelegate(CurrentSpecHandle, ActivationInfo.GetActivationPredictionKey()).AddUObject(this, &UFireWeaponHitscan::OnValidData);
 	}
 	else
 	{
-		FVector Location;
-		FRotator Rotation;
-		PC->GetPlayerViewPoint(Location, Rotation);
-		End = Location + Rotation.Vector() * Range;
+		ASC->ServerSetReplicatedTargetData(CurrentSpecHandle, ActivationInfo.GetActivationPredictionKey(), GetAimingTargetData(), {}, ActivationInfo.GetActivationPredictionKey());
 	}
 
-	FGameplayCueParameters Params;
-	Params.SourceObject = Weapon;
-	Params.Location = End;
-	ASC->ExecuteGameplayCue(GameplayCueTag, Params);
+	// Wait until next tick to give GAS a chance to send the target data RPC
+	GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &ThisClass::EndAbilityLocally));
+}
+
+void UFireWeaponHitscan::EndAbilityLocally()
+{
+	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
+}
+
+FGameplayAbilityTargetDataHandle UFireWeaponHitscan::GetAimingTargetData() const
+{
+	double Timestamp = GameState->GetServerWorldTimeSeconds();
+	FVector ViewLocation{};
+	FRotator ViewRotation{};
+	FBCOwner->GetPlayerController()->GetPlayerViewPoint(ViewLocation, ViewRotation);
 	
-	DrawDebugLine(GetWorld(), Start, End, FColor::Red, true, 5);
-	if (HasAuthority(&CurrentActivationInfo) && GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, FBCOwner->GetIgnoreCharacterParams()))
+	return { new FWeaponTargetData{Timestamp, ViewLocation, ViewRotation} };
+}
+
+
+// Reconstruct the client shot on the server
+void UFireWeaponHitscan::OnValidData(const FGameplayAbilityTargetDataHandle& Data,
+                                     FGameplayTag GameplayTag)
+{
+	const FWeaponTargetData* ShotData = static_cast<const FWeaponTargetData*>(Data.Get(0));
+
+	FVector Start = ShotData->ViewLocation;
+	FVector End = ShotData->ViewLocation + Range * ShotData->ViewRotation.Vector();
+	FHitResult Hit;
+	
+	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, FBCOwner->GetIgnoreCharacterParams()))
 	{
 		if (UAbilitySystemComponent* HitASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Hit.GetActor()))
 		{
-			FGameplayEffectContextHandle ContextHandle = HitASC->MakeEffectContext();
-			FGameplayEffectSpecHandle SpecHandle = HitASC->MakeOutgoingSpec(OnHitEffectClass, 1, ContextHandle);
-			HitASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);
-			GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, FString::Printf(TEXT("Hitting %s"), *Hit.GetActor()->GetName()));
+			// FGameplayEffectContextHandle ContextHandle = HitASC->MakeEffectContext();
+			// FGameplayEffectSpecHandle SpecHandle = HitASC->MakeOutgoingSpec(OnHitEffectClass, 1, ContextHandle);
+			// HitASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);
 		}
 	}
 
-	EndAbility(Handle, ActorInfo, ActivationInfo, false, false);
-}
-
-void UFireWeaponHitscan::OnValidData(const FGameplayAbilityTargetDataHandle& Data)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Hello from %s"), HasAuthority(&CurrentActivationInfo) ? TEXT("Server") : TEXT("Client"));
+	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
 }

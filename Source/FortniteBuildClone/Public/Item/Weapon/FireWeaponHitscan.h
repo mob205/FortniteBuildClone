@@ -6,6 +6,7 @@
 #include "Abilities/GameplayAbility.h"
 #include "FireWeaponHitscan.generated.h"
 
+class AFBCCharacter;
 class AWeaponBase;
 
 UCLASS()
@@ -17,9 +18,8 @@ public:
 	UFireWeaponHitscan();
 	
 protected:
+	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
-
-	TObjectPtr<AWeaponBase> Weapon;
 
 	UPROPERTY(EditDefaultsOnly)
 	float Range{999999};
@@ -31,6 +31,13 @@ protected:
 	FGameplayTag GameplayCueTag;
 
 private:
-	UFUNCTION()
-	void OnValidData(const FGameplayAbilityTargetDataHandle& Data);
+	TObjectPtr<AWeaponBase> Weapon;
+	TObjectPtr<AFBCCharacter> FBCOwner;
+	TObjectPtr<AGameStateBase> GameState;
+
+	void EndAbilityLocally();
+
+	FGameplayAbilityTargetDataHandle GetAimingTargetData() const;
+
+	void OnValidData(const FGameplayAbilityTargetDataHandle& Data, FGameplayTag GameplayTag);
 };
