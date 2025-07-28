@@ -35,7 +35,7 @@ private:
 	TObjectPtr<AWeaponBase> Weapon;
 	TObjectPtr<AFBCCharacter> FBCOwner;
 	TObjectPtr<AGameStateBase> GameState;
-
+	
 	void EndAbilityLocally();
 
 	FGameplayAbilityTargetDataHandle GetAimingTargetData() const;

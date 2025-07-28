@@ -128,7 +128,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool IsSprinting() const { return bWantsToSprint && CanSprint();}
-	
+
 	virtual bool IsMovingOnGround() const override;
 	virtual bool CanCrouchInCurrentState() const override;
 	
@@ -239,5 +239,5 @@ private:
 	UPROPERTY()
 	bool bStaminaDrained;
 
-	float Test{};
+	void ToggleMovementTag(UAbilitySystemComponent* ASC, const FGameplayTag& Tag, bool Condition);
 };

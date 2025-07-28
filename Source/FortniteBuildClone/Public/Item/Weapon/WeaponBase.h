@@ -19,7 +19,8 @@ class FORTNITEBUILDCLONE_API AWeaponBase : public AEquippedItemActor
 public:
 	AWeaponBase();
 
-	const UWeaponItemData* GetWeaponItemData() const { return Cast<UWeaponItemData>(ItemData); } 
+	const UWeaponItemData* GetWeaponItemData() const { return WeaponItemData; }
+	
 	UFUNCTION(BlueprintCallable)
 	void SetAmmoCount(int32 NewAmmoCount) { CurrentAmmo = NewAmmoCount; }
 
@@ -36,14 +37,29 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	float GetCurrentFireDelay() const { return CurrentFireDelay; }
+	
+	UFUNCTION(BlueprintCallable)
+	float GetCurrentWeaponSpread() const { return CurrentWeaponSpread; }
+
+	UFUNCTION(BlueprintCallable)
+	void HandleFireSpreadIncrease();
+
+	FRandomStream& GetSpreadStream() { return SpreadStream; }
 protected:
+	virtual void BeginPlay() override;
+	
 	virtual void Tick(float DeltaSeconds) override;
+	virtual void SetItemData(const UItemData* NewItemData) override;
+	virtual void OnRep_ItemData() override;
 	
 	UPROPERTY(ReplicatedUsing = OnRep_CurrentAmmo)
 	uint16 CurrentAmmo{};
 
 	UFUNCTION()
 	void OnRep_CurrentAmmo();
+
+	UFUNCTION()
+	void OnRep_SpreadSeed();
 	
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -51,9 +67,19 @@ private:
 	void OnFireDown(const FGameplayEventData* GameplayEventData);
 	void OnFireReleased(const FGameplayEventData* GameplayEventData);
 	
-	bool bWantsToShoot{};
-	TObjectPtr<UAbilitySystemComponent> OwnerASC;
-	
-	float CurrentFireDelay{};
 	void TryWeaponFire();
+	void UpdateSpread(float DeltaTime);
+
+	TObjectPtr<AFBCCharacter> Owner;
+	TObjectPtr<UAbilitySystemComponent> OwnerASC;
+	TObjectPtr<const UWeaponItemData> WeaponItemData;
+
+	UPROPERTY(ReplicatedUsing=OnRep_SpreadSeed)
+	int32 SpreadSeed{};
+
+	FRandomStream SpreadStream{};
+	
+	bool bWantsToShoot{};
+	float CurrentFireDelay{};
+	float CurrentWeaponSpread{};
 };

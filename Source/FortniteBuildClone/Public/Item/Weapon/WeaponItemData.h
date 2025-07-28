@@ -6,6 +6,36 @@
 #include "Item/General/ItemData.h"
 #include "WeaponItemData.generated.h"
 
+USTRUCT(BlueprintType)
+struct FSpreadSettings
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Spread")
+	float BaseAngle{};
+
+	UPROPERTY(EditDefaultsOnly, Category = "Spread")
+	float MaxAngle{};
+
+	UPROPERTY(EditDefaultsOnly, Category = "Spread")
+	float IncreasePerShot{};
+
+	UPROPERTY(EditDefaultsOnly, Category = "Spread")
+	float RecoveryRate{};
+
+	UPROPERTY(EditDefaultsOnly, Category = "Spread")
+	float ADSMultiplier{};
+
+	UPROPERTY(EditDefaultsOnly, Category = "Spread")
+	float CrouchMultiplier{};
+
+	UPROPERTY(EditDefaultsOnly, Category = "Spread")
+	float AirborneMultiplier{};
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Spread")
+	float MovementPenalty{};
+};
+
 UCLASS()
 class FORTNITEBUILDCLONE_API UWeaponItemData : public UItemData
 {
@@ -20,7 +50,11 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	float GetDamage() const { return Damage; }
+
+	UFUNCTION(BlueprintCallable)
+	const FSpreadSettings& GetSpreadSettings() const { return SpreadSettings; }
 protected:
+	// Weapon
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	int32 MaxAmmoCount{};
 
@@ -29,4 +63,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	float Damage{};
+
+	// Spread
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	FSpreadSettings SpreadSettings{};
 };

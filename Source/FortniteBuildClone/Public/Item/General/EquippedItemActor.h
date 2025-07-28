@@ -38,10 +38,13 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
+	UFUNCTION()
+	virtual void OnRep_ItemData() {};
+	
 	UPROPERTY(Transient)
 	TSet<FGameplayAbilitySpecHandle> GrantedAbilityHandles{};
 
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing = OnRep_ItemData)
 	TObjectPtr<const UItemData> ItemData{};
 
 	UPROPERTY(VisibleAnywhere)

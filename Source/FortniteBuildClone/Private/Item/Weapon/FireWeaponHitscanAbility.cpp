@@ -28,6 +28,7 @@ void UFireWeaponHitscanAbility::OnGiveAbility(const FGameplayAbilityActorInfo* A
 
 	FBCOwner = Cast<AFBCCharacter>(ActorInfo->AvatarActor);
 	GameState = GetWorld()->GetGameState();
+	
 }
 
 void UFireWeaponHitscanAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
@@ -62,6 +63,12 @@ void UFireWeaponHitscanAbility::ActivateAbility(const FGameplayAbilitySpecHandle
 	else
 	{
 		ASC->ServerSetReplicatedTargetData(CurrentSpecHandle, ActivationInfo.GetActivationPredictionKey(), GetAimingTargetData(), {}, ActivationInfo.GetActivationPredictionKey());
+
+		// TODO: Predictions here using random stream
+		FVector Res = Weapon->GetSpreadStream().VRandCone({}, 0);
+
+		Weapon->HandleFireSpreadIncrease();
+
 	}
 
 	// Wait until next tick to give GAS a chance to send the target data RPC
@@ -103,18 +110,37 @@ void UFireWeaponHitscanAbility::OnValidData(const FGameplayAbilityTargetDataHand
 void UFireWeaponHitscanAbility::ServerFire(const FWeaponTargetData& TargetData) const
 {
 	if (!OnHitEffectClass) { return; }
-	
+
+	// TODO: Add validation - the view location and view rotation should be close to server's
+
 	FVector Start = TargetData.ViewLocation;
-	FVector End = TargetData.ViewLocation + Range * TargetData.ViewRotation.Vector();
-	FHitResult Hit;
 	
+	float HalfAngle = FMath::DegreesToRadians(Weapon->GetCurrentWeaponSpread() * .5f);
+	FVector Direction = Weapon->GetSpreadStream().VRandCone(TargetData.ViewRotation.Vector(), HalfAngle);
+
+	FVector EndNoSpread = Start + Range * TargetData.ViewRotation.Vector();
+	FVector End = Start + Range * Direction;
+
+	DrawDebugLine(GetWorld(), Start, EndNoSpread, FColor::Green, false, 20.f);
+
+	FHitResult Hit;
 	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, FBCOwner->GetIgnoreCharacterParams()))
 	{
+		if (Hit.bBlockingHit)
+		{
+			DrawDebugSphere(GetWorld(), Hit.Location, 25.f, 8, FColor::Red, false, 20.0f);
+		}
+		if (!Hit.bBlockingHit)
+		{
+			return;
+		}
 		if (UAbilitySystemComponent* HitASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Hit.GetActor()))
 		{
 			FGameplayEffectContextHandle ContextHandle = HitASC->MakeEffectContext();
 			FGameplayEffectSpecHandle SpecHandle = HitASC->MakeOutgoingSpec(OnHitEffectClass, 1, ContextHandle);
 			SpecHandle.Data->SetSetByCallerMagnitude(FBCTags::AbilityDamage, Weapon->GetWeaponItemData()->GetDamage());
-			HitASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);		}
+			HitASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data); }
 	}
+
+	Weapon->HandleFireSpreadIncrease();
 }

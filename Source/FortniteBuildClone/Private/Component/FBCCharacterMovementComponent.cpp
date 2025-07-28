@@ -356,10 +356,15 @@ void UFBCCharacterMovementComponent::TickComponent(float DeltaTime, enum ELevelT
 		CurrentStaminaRegenDelay -= DeltaTime;
 	}
 
-	// Give GAS a readonly view of Stamina (although it's still managed by the CMC only)
 	if (OwnerASC)
 	{
+		// Give GAS a readonly view of Stamina (although it's still managed by the CMC only)
 		OwnerASC->SetNumericAttributeBase(UFBCAttributeSet::GetStaminaAttribute(), GetStamina());
+
+		// TODO: Update these when they are set rather than checking every frame
+		ToggleMovementTag(OwnerASC, FBCTags::Sprinting.GetTag(), IsSprinting());
+		ToggleMovementTag(OwnerASC, FBCTags::Airborne.GetTag(), IsFalling());
+		ToggleMovementTag(OwnerASC, FBCTags::Crouching.GetTag(), IsCrouching());
 	}
 }
 
@@ -390,8 +395,7 @@ void UFBCCharacterMovementComponent::ToggleWantsToSprint(bool bNewWantsToSprint)
 
 bool UFBCCharacterMovementComponent::CanSprint() const
 {
-	UAbilitySystemComponent* ASC = FBCCharacterOwner->GetAbilitySystemComponent();
-	return !IsStaminaDrained() && (ASC && !ASC->HasMatchingGameplayTag(FBCTags::SprintingBlocked));
+	return !IsStaminaDrained() && (OwnerASC && !OwnerASC->HasMatchingGameplayTag(FBCTags::SprintingBlocked));
 }
 
 void UFBCCharacterMovementComponent::OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation,
@@ -459,6 +463,21 @@ float UFBCCharacterMovementComponent::GetWalkSpeed() const
 	// {
 	// 	return FMath::GetMappedRangeValueClamped(FVector2D{1, 2}, FVector2D{Speeds.Y, Speeds.Z}, StrafeSpeedMap);
 	// }
+}
+
+void UFBCCharacterMovementComponent::ToggleMovementTag(UAbilitySystemComponent* ASC, const FGameplayTag& Tag, bool Condition)
+{
+	if (ASC->HasMatchingGameplayTag(Tag) != Condition)
+	{
+		if (Condition)
+		{
+			ASC->AddLooseGameplayTag(Tag);
+		}
+		else
+		{
+			ASC->RemoveLooseGameplayTag(Tag);
+		}
+	}
 }
 
 float UFBCCharacterMovementComponent::GetMaxAcceleration() const
