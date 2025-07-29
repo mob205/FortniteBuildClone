@@ -7,11 +7,22 @@
 #include "GameplayEffect.h"
 #include "Structure/Data/StructureInfoDataAsset.h"
 #include "InputAction.h"
-#include "Component/FBCCharacterMovementComponent.h"
+#include "AbilitySystem/GameplayTags/FBCTags.h"
+#include "Camera/CameraComponent.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/FBCPlayerController.h"
 #include "Player/FBCPlayerState.h"
+
+AFBCCharacter::AFBCCharacter()
+{
+	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>("SpringArm");
+	SpringArmComponent->SetupAttachment(GetRootComponent());
+
+	CameraComponent = CreateDefaultSubobject<UCameraComponent>("Camera");
+	CameraComponent->SetupAttachment(SpringArmComponent);
+}
 
 UAbilitySystemComponent* AFBCCharacter::GetAbilitySystemComponent() const
 {
@@ -71,16 +82,24 @@ void AFBCCharacter::InitAbilityActorInfo()
 	AS = FBCPlayerState->GetAttributeSet();
 	
 	PlayerController = Cast<AFBCPlayerController>(GetController());
+	
+	OnASCInit.Broadcast(ASC);
 
 	ASC->AbilityFailedCallbacks.AddUObject(this, &AFBCCharacter::OnAbilityFailed);
-
-	OnASCInit.Broadcast(ASC);
+	ASC->RegisterGameplayTagEvent(FBCTags::AimingDownSights).AddUObject(this, &AFBCCharacter::HandleADS);
 }
 
 void AFBCCharacter::OnAbilityFailed(const UGameplayAbility* GameplayAbility, const FGameplayTagContainer& GameplayTags)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red,
 		FString::Printf(TEXT("Failed to activate ability %s"), *GameplayAbility->GetName()));
+}
+
+void AFBCCharacter::HandleADS(FGameplayTag GameplayTag, int Count)
+{
+#if !UE_SERVER
+	SetCameraADS(Count != 0);
+#endif
 }
 
 void AFBCCharacter::GrantInitialAbilities()

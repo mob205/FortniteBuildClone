@@ -403,6 +403,11 @@ bool UFBCCharacterMovementComponent::CanSprint() const
 	return !IsStaminaDrained() && (OwnerASC && !OwnerASC->HasMatchingGameplayTag(FBCTags::SprintingBlocked));
 }
 
+bool UFBCCharacterMovementComponent::ShouldWalk() const
+{
+	return bIsAimingDownSights || (OwnerASC && OwnerASC->HasMatchingGameplayTag(FBCTags::RunningBlocked));
+}
+
 void UFBCCharacterMovementComponent::OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation,
                                                        const FVector& OldVelocity)
 {
@@ -425,7 +430,7 @@ float UFBCCharacterMovementComponent::GetWalkSpeed() const
 	{
 		return SprintSpeeds.X;
 	}
-	if (bIsAimingDownSights)
+	if (bIsAimingDownSights || ShouldWalk())
 	{
 		return WalkSpeeds.X;
 	}

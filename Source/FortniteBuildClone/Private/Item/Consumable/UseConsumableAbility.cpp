@@ -7,7 +7,9 @@
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "AbilitySystem/GameplayTags/FBCTags.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
+#include "GameFramework/GameStateBase.h"
 #include "Item/General/CountableItem.h"
+#include "Kismet/GameplayStatics.h"
 
 UUseConsumableAbility::UUseConsumableAbility()
 {
@@ -45,14 +47,12 @@ void UUseConsumableAbility::ActivateAbility(const FGameplayAbilitySpecHandle Han
 
 	// Apply the consumable gameplay effect
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
-	FGameplayEffectContextHandle EffectContext = ASC->MakeEffectContext();
-	FGameplayEffectSpecHandle Spec = ASC->MakeOutgoingSpec(GameplayEffectClass, 1.0f, EffectContext);
-
+	FGameplayEffectSpecHandle Spec = MakeOutgoingGameplayEffectSpec(GameplayEffectClass, 1.0f);
 	if (MaxRecoverableMagnitude > 0)
 	{
 		Spec.Data->SetSetByCallerMagnitude(FBCTags::MaxResourceRecoverable, MaxRecoverableMagnitude);
 	}
-	ActiveEffectHandle = ASC->ApplyGameplayEffectSpecToSelf(*Spec.Data, ActivationInfo.GetActivationPredictionKey());
+	ActiveEffectHandle = ASC->ApplyGameplayEffectSpecToSelf(*Spec.Data);
 
 	if(auto Delegate = ASC->OnGameplayEffectRemoved_InfoDelegate(ActiveEffectHandle))
 	{
@@ -75,7 +75,11 @@ void UUseConsumableAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	bool bReplicateEndAbility, bool bWasCancelled)
 {
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
+
+	GEngine->AddOnScreenDebugMessage(-1, 10, HasAuthority(&ActivationInfo) ? FColor::Red : FColor::Green, FString::Printf(TEXT("%lf"), UGameplayStatics::GetGameState(this)->GetServerWorldTimeSeconds() - Test));
 
 	ASC->CurrentMontageStop();
 
@@ -97,7 +101,6 @@ void UUseConsumableAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 		}
 	}
 
-	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
 void UUseConsumableAbility::OnMontageEnded()

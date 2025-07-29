@@ -8,6 +8,8 @@
 #include "GameplayTagContainer.h"
 #include "FBCCharacter.generated.h"
 
+class UCameraComponent;
+class USpringArmComponent;
 class AFBCPlayerState;
 class UFBCAttributeSet;
 class UFBCAbilitySystemComponent;
@@ -39,9 +41,11 @@ class FORTNITEBUILDCLONE_API AFBCCharacter : public ACharacter, public IAbilityS
 	GENERATED_BODY()
 
 public:
+	AFBCCharacter();
+	
 	UPROPERTY(BlueprintReadOnly, Replicated, Category=Character)
 	uint8 bIsSliding:1;
-	
+
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	
 	FCollisionQueryParams GetIgnoreCharacterParams() const;
@@ -56,6 +60,7 @@ protected:
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
 	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION(BlueprintCallable)
 	void OnBuildAction(UInputAction* InputAction);
@@ -68,13 +73,21 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<AFBCPlayerState> FBCPlayerState;
-	
-	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TObjectPtr<USpringArmComponent> SpringArmComponent;
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TObjectPtr<UCameraComponent> CameraComponent;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetCameraADS(bool bIsAiming);
+	
 private:
 	void InitAbilityActorInfo();
 	void OnAbilityFailed(const UGameplayAbility* GameplayAbility, const FGameplayTagContainer& GameplayTags);
-
+	void HandleADS(FGameplayTag GameplayTag, int Count);
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Ability System")
 	TArray<FInitialAbility> InitialAbilities;
 

@@ -7,6 +7,7 @@ namespace FBCTags
 	// Movement
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Sprinting, "Movement.Sprint.Sprinting", "Player is actively sprinting");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(SprintingBlocked, "Movement.Sprint.SprintingBlocked", "Player is unable to sprint");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(RunningBlocked, "Movement.Sprint.RunningBlocked", "Player is unable to run (can only walk)");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Crouching, "Movement.Crouching", "Player is crouching");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Airborne, "Movement.Airborne", "Player is in the air");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(AimingDownSights, "Movement.ADS", "Player is actively aiming down sights with an equipped weapon");

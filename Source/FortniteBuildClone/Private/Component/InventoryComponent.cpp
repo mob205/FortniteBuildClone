@@ -212,10 +212,6 @@ void UInventoryComponent::OnItemAdded(AEquippedItemActor* Item, int32 SlotIndex)
 	{
 		EquipItem(SlotIndex);
 	}
-	else
-	{
-		UnequipItem(SlotIndex);
-	}
 	OnSlotUpdated.Broadcast(SlotIndex, Item);
 }
 

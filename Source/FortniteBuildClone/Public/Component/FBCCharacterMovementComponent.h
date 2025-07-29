@@ -128,6 +128,9 @@ public:
 	bool CanSprint() const;
 
 	UFUNCTION(BlueprintCallable)
+	bool ShouldWalk() const;
+
+	UFUNCTION(BlueprintCallable)
 	bool IsSprinting() const { return bWantsToSprint && CanSprint();}
 
 	UFUNCTION(BlueprintCallable)

@@ -46,11 +46,11 @@ void AWeaponBase::OnItemUnequipped(AFBCCharacter* AvatarActor)
 	Super::OnItemUnequipped(AvatarActor);
 	SetActorTickEnabled(false);
 
-	OwnerASC->GenericGameplayEventCallbacks[FBCTags::InputFireDown]
-		.RemoveAll(this);
-
-	OwnerASC->GenericGameplayEventCallbacks[FBCTags::InputFireReleased]
-		.RemoveAll(this);
+	if (OwnerASC)
+	{
+		OwnerASC->GenericGameplayEventCallbacks[FBCTags::InputFireDown].RemoveAll(this);
+		OwnerASC->GenericGameplayEventCallbacks[FBCTags::InputFireReleased].RemoveAll(this);
+	}
 }
 
 void AWeaponBase::OnRep_CurrentAmmo()
