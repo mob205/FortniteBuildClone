@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystem/GameplayTags/FBCTags.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Player/FBCCharacter.h"
 #include "FBCCharacterMovementComponent.generated.h"
@@ -129,6 +130,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsSprinting() const { return bWantsToSprint && CanSprint();}
 
+	UFUNCTION(BlueprintCallable)
+	bool IsAimingDownSights() const { return bIsAimingDownSights; }
+	
 	virtual bool IsMovingOnGround() const override;
 	virtual bool CanCrouchInCurrentState() const override;
 	
@@ -144,11 +148,15 @@ public:
 
 	void OnStaminaDrained();
 	void OnStaminaDrainRecovered();
+
+	virtual float GetMaxSpeed() const override;
 	
 	bool bWantsToSprint;
 	bool bPrevWantsToCrouch;
 	bool bPrevWasSprinting;
 	float CurrentStaminaRegenDelay{};
+	
+	bool bIsAimingDownSights{};
 protected:
 	// Parameters
 	UPROPERTY(EditDefaultsOnly, Category = "Character Movement: Sliding")
@@ -239,5 +247,7 @@ private:
 	UPROPERTY()
 	bool bStaminaDrained;
 
+	
 	void ToggleMovementTag(UAbilitySystemComponent* ASC, const FGameplayTag& Tag, bool Condition);
+	void OnADSChanged(FGameplayTag GameplayTag, int Count);
 };

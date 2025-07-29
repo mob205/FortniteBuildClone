@@ -9,6 +9,7 @@ namespace FBCTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(SprintingBlocked, "Movement.Sprint.SprintingBlocked", "Player is unable to sprint");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Crouching, "Movement.Crouching", "Player is crouching");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Airborne, "Movement.Airborne", "Player is in the air");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(AimingDownSights, "Movement.ADS", "Player is actively aiming down sights with an equipped weapon");
 
 	// Item
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(MaxResourceRecoverable, "Item.Consumable.MaxResourceRecoverable", "The maximum amount of health or shields recoverable by this item");
@@ -20,5 +21,8 @@ namespace FBCTags
 	// Input
 	UE_DEFINE_GAMEPLAY_TAG(InputFireDown, "Input.Fire.Down");
 	UE_DEFINE_GAMEPLAY_TAG(InputFireReleased, "Input.Fire.Released");
+
+	UE_DEFINE_GAMEPLAY_TAG(AltFireDown, "Input.AltFire.Down");
+	UE_DEFINE_GAMEPLAY_TAG(AltFireReleased, "Input.AltFire.Released");
 
 }

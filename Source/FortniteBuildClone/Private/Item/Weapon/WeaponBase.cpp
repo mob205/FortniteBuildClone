@@ -161,6 +161,11 @@ void AWeaponBase::UpdateSpread(float DeltaTime)
 		TargetSpread *= SpreadSettings.CrouchMultiplier;
 		RecoveryRate /= SpreadSettings.CrouchMultiplier;
 	}
+	if (OwnerASC->HasMatchingGameplayTag(FBCTags::AimingDownSights))
+	{
+		TargetSpread *= SpreadSettings.ADSMultiplier;
+		RecoveryRate /= SpreadSettings.ADSMultiplier;
+	}
 	
 	if (TargetSpread > CurrentWeaponSpread)
 	{

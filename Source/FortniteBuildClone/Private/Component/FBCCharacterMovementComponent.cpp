@@ -320,6 +320,11 @@ void UFBCCharacterMovementComponent::OnStaminaDrainRecovered()
 {
 }
 
+float UFBCCharacterMovementComponent::GetMaxSpeed() const
+{
+	return GetWalkSpeed();
+}
+
 void UFBCCharacterMovementComponent::OnStaminaChanged(float PrevValue, float NewValue)
 {
 	if (FMath::IsNearlyZero(Stamina))
@@ -420,6 +425,14 @@ float UFBCCharacterMovementComponent::GetWalkSpeed() const
 	{
 		return SprintSpeeds.X;
 	}
+	if (bIsAimingDownSights)
+	{
+		return WalkSpeeds.X;
+	}
+	if (IsCrouching())
+	{
+		return MaxWalkSpeedCrouched;
+	}
 	return RunSpeeds.X;
 	// const FRotator Rotation = CharacterOwner->GetActorRotation();
 	//
@@ -504,7 +517,7 @@ void UFBCCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float De
 	}
 	else if (MovementMode == MOVE_Walking)
 	{
-		MaxWalkSpeed = GetWalkSpeed();
+		//MaxWalkSpeed = GetWalkSpeed();
 		MaxAcceleration = GetMaxAcceleration();
 	}
 	
@@ -685,4 +698,11 @@ void UFBCCharacterMovementComponent::SetOwnerASC(UAbilitySystemComponent* NewOwn
 	OwnerASC = NewOwnerASC;
 	OwnerASC->SetNumericAttributeBase(UFBCAttributeSet::GetStaminaAttribute(), GetStamina());
 	OwnerASC->SetNumericAttributeBase(UFBCAttributeSet::GetMaxStaminaAttribute(), GetMaxStamina());
+
+	OwnerASC->RegisterGameplayTagEvent(FBCTags::AimingDownSights.GetTag()).AddUObject(this, &ThisClass::OnADSChanged);
+}
+
+void UFBCCharacterMovementComponent::OnADSChanged(FGameplayTag GameplayTag, int Count)
+{
+	bIsAimingDownSights = Count > 0;
 }

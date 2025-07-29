@@ -8,6 +8,7 @@ namespace FBCTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SprintingBlocked);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Crouching);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Airborne);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(AimingDownSights);
 
 	// Items
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(MaxResourceRecoverable);
@@ -19,5 +20,7 @@ namespace FBCTags
 	// Input
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputFireDown);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputFireReleased);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputAltFireDown);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputAltFireReleased);
 
 }
