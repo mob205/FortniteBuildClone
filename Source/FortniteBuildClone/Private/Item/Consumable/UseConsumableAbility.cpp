@@ -79,8 +79,6 @@ void UUseConsumableAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
 
-	GEngine->AddOnScreenDebugMessage(-1, 10, HasAuthority(&ActivationInfo) ? FColor::Red : FColor::Green, FString::Printf(TEXT("%lf"), UGameplayStatics::GetGameState(this)->GetServerWorldTimeSeconds() - Test));
-
 	ASC->CurrentMontageStop();
 
 	if (MaxRecoverableAttribute.IsValid())
