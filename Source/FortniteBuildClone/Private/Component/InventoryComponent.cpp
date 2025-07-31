@@ -222,6 +222,7 @@ void UInventoryComponent::OnItemRemoved(AEquippedItemActor* Item, int32 SlotInde
 		if (SelectedSlot == SlotIndex)
 		{
 			UnequipItem(SlotIndex);
+			OnEquippedItemChanged.Broadcast(nullptr);
 		}
 		Item->OnRequestRemoveFromInventory.Unbind();
 	}
