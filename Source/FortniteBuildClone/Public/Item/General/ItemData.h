@@ -7,6 +7,7 @@
 #include "Engine/DataAsset.h"
 #include "ItemData.generated.h"
 
+class UCrosshairWidgetBase;
 class UItemSlotWidget;
 
 UCLASS()
@@ -44,6 +45,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "ItemData")
 	UAnimMontage* GetEquipMontage() const { return EquipMontage; }
+
+	UFUNCTION(BlueprintCallable, Category = "ItemData")
+	TSubclassOf<UCrosshairWidgetBase> GetCrosshairClass() const { return CrosshairWidgetClass; }
+	
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Item")
 	FText ItemName{};
@@ -74,6 +79,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UItemSlotWidget> ItemSlotWidgetClass{};
 
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UCrosshairWidgetBase> CrosshairWidgetClass{};
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Item")
 	uint8 MaxStackSize{1};
 };

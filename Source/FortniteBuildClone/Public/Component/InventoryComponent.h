@@ -14,6 +14,7 @@ class AFBCCharacter;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSlotUpdatedSignature, int32, SlotIndex, const AEquippedItemActor*, Item);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSelectedSlotChangedSignature, int32, OldSlotIndex, int32, NewSlotIndex);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEquippedItemChangedSignature, AEquippedItemActor*, Item);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FORTNITEBUILDCLONE_API UInventoryComponent : public UActorComponent
@@ -30,6 +31,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FOnSelectedSlotChangedSignature OnSelectedSlotChanged;
 
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	FOnEquippedItemChangedSignature OnEquippedItemChanged;
+	
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	uint8 GetCurrentSelectedSlot() const { return SelectedSlot; }
 

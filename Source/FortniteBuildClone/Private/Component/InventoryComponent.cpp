@@ -244,6 +244,12 @@ void UInventoryComponent::EquipItem(int32 SlotIndex)
 	{
 		Item->SetActorHiddenInGame(false);
 		Item->OnItemEquipped(GetAvatarActor());
+
+		OnEquippedItemChanged.Broadcast(Item);
+	}
+	else
+	{
+		OnEquippedItemChanged.Broadcast(nullptr);
 	}
 }
 
