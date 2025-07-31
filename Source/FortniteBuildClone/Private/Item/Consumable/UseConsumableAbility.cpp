@@ -29,6 +29,31 @@ bool UUseConsumableAbility::CanActivateAbility(const FGameplayAbilitySpecHandle 
 
 }
 
+void UUseConsumableAbility::SetupPeriodicPrediction(FGameplayEffectSpecHandle Spec)
+{
+	if (Spec.Data->GetDuration() == FGameplayEffectConstants::INSTANT_APPLICATION
+		|| Spec.Data->GetPeriod() == FGameplayEffectConstants::NO_PERIOD)
+	{ return; }
+	
+	GetWorld()->GetTimerManager().SetTimer(
+		ClientEffectDurationTimer,
+		FTimerDelegate::CreateUObject(this, &UUseConsumableAbility::ClientOnEffectEnded),
+		Spec.Data->GetDuration(),
+		false);
+
+	if (FGameplayEffectModifiedAttribute* ModifiedAttribute = Spec.Data->GetModifiedAttribute(MaxRecoverableAttribute))
+	{
+		float Magnitude = ModifiedAttribute->TotalMagnitude;
+		GetWorld()->GetTimerManager().SetTimer(
+			ClientEffectTickTimer,
+			FTimerDelegate::CreateLambda([this, Magnitude](){ ClientOnEffectTick(Magnitude); }),
+			Spec.Data->GetPeriod(),
+			false
+		);
+	}
+	
+}
+
 void UUseConsumableAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                             const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
                                             const FGameplayEventData* TriggerEventData)
@@ -52,7 +77,7 @@ void UUseConsumableAbility::ActivateAbility(const FGameplayAbilitySpecHandle Han
 	{
 		Spec.Data->SetSetByCallerMagnitude(FBCTags::MaxResourceRecoverable, MaxRecoverableMagnitude);
 	}
-	ActiveEffectHandle = ASC->ApplyGameplayEffectSpecToSelf(*Spec.Data);
+	ActiveEffectHandle = ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, Spec);
 
 	if(auto Delegate = ASC->OnGameplayEffectRemoved_InfoDelegate(ActiveEffectHandle))
 	{
@@ -63,6 +88,12 @@ void UUseConsumableAbility::ActivateAbility(const FGameplayAbilitySpecHandle Han
 	if (MaxRecoverableMagnitude > 0 && MaxRecoverableAttribute.IsValid())
 	{
 		ASC->GetGameplayAttributeValueChangeDelegate(MaxRecoverableAttribute).AddUObject(this, &UUseConsumableAbility::OnResourceChanged);
+	}
+
+	// Periodic gameplay effects are not predicted, but we still need to end on time locally
+	if (!HasAuthority(&ActivationInfo) && Spec.Data)
+	{
+		SetupPeriodicPrediction(Spec);
 	}
 	
 	// Play the montage of using the consumable
@@ -110,11 +141,26 @@ void UUseConsumableAbility::OnResourceChanged(const FOnAttributeChangeData& OnAt
 {
 	if (OnAttributeChangeData.NewValue >= MaxRecoverableMagnitude)
 	{
-		EndAbility(GetCurrentAbilitySpecHandle(), CurrentActorInfo, CurrentActivationInfo, true, false);	
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);	
 	}
 }
 
 void UUseConsumableAbility::OnEffectEnded(const FGameplayEffectRemovalInfo& GameplayEffectRemovalInfo)
 {
-	EndAbility(GetCurrentAbilitySpecHandle(), CurrentActorInfo, CurrentActivationInfo, true, false);
+	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+}
+
+void UUseConsumableAbility::ClientOnEffectEnded()
+{
+	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
+
+}
+
+void UUseConsumableAbility::ClientOnEffectTick(float Magnitude)
+{
+	float CurrentPredictedValue = GetAbilitySystemComponentFromActorInfo()->GetNumericAttribute(MaxRecoverableAttribute) + Magnitude;
+	if (CurrentPredictedValue >= MaxRecoverableMagnitude)
+	{
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);	
+	}
 }

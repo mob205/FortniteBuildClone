@@ -40,6 +40,14 @@ private:
 	void OnResourceChanged(const FOnAttributeChangeData& OnAttributeChangeData);
 	void OnEffectEnded(const FGameplayEffectRemovalInfo& GameplayEffectRemovalInfo);
 
+	void SetupPeriodicPrediction(FGameplayEffectSpecHandle Spec);
+	void ClientOnEffectEnded();
+	void ClientOnEffectTick(float Magnitude);
+
 	TObjectPtr<UAbilityTask_PlayMontageAndWait> PlayMontageTask;
 	FActiveGameplayEffectHandle ActiveEffectHandle{};
+
+
+	FTimerHandle ClientEffectDurationTimer{};
+	FTimerHandle ClientEffectTickTimer{};
 };
