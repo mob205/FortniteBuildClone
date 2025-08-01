@@ -9,6 +9,7 @@
 #include "InputAction.h"
 #include "AbilitySystem/GameplayTags/FBCTags.h"
 #include "Camera/CameraComponent.h"
+#include "Components/BoxComponent.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Net/UnrealNetwork.h"
@@ -47,6 +48,8 @@ void AFBCCharacter::PossessedBy(AController* NewController)
 	GrantInitialAbilities();
 	InitializeAttributes();
 	AddInitialEffects();
+
+	CacheHitboxes();
 }
 
 // Called on clients only
@@ -154,4 +157,18 @@ void AFBCCharacter::HandleBuildAction(const FGameplayTag StructureTag) const
 	ASC->TryActivateAbilitiesByTag(BuildAbilityTag.GetSingleTagContainer());
 	FGameplayEventData Payload{};
 	ASC->HandleGameplayEvent(StructureTag, &Payload);
+}
+
+void AFBCCharacter::CacheHitboxes()
+{
+	TArray<USceneComponent*> Children{};
+	GetMesh()->GetChildrenComponents(false, Children);
+
+	for (const auto Child : Children)
+	{
+		if (UBoxComponent* Hitbox = Cast<UBoxComponent>(Child))
+		{
+			Hitboxes.Add(Hitbox);
+		}
+	}
 }

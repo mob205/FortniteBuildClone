@@ -8,6 +8,7 @@
 #include "GameplayTagContainer.h"
 #include "FBCCharacter.generated.h"
 
+class UBoxComponent;
 class UCameraComponent;
 class USpringArmComponent;
 class AFBCPlayerState;
@@ -107,5 +108,11 @@ private:
 	FGameplayTag BuildAbilityTag;
 	
 	void HandleBuildAction(const FGameplayTag StructureTag) const;
-	
+
+
+public:
+	const TArray<UBoxComponent*>& GetHitboxes() const { return Hitboxes;}
+private:
+	void CacheHitboxes();
+	TArray<UBoxComponent*> Hitboxes{};
 };
