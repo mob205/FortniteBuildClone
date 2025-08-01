@@ -8,6 +8,7 @@
 #include "GameplayTagContainer.h"
 #include "FBCCharacter.generated.h"
 
+class ULagCompensationComponent;
 class UBoxComponent;
 class UCameraComponent;
 class USpringArmComponent;
@@ -81,6 +82,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr<UCameraComponent> CameraComponent;
 
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TObjectPtr<ULagCompensationComponent> LagCompensationComponent;
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void SetCameraADS(bool bIsAiming);
 	
@@ -108,7 +112,6 @@ private:
 	FGameplayTag BuildAbilityTag;
 	
 	void HandleBuildAction(const FGameplayTag StructureTag) const;
-
 
 public:
 	const TArray<UBoxComponent*>& GetHitboxes() const { return Hitboxes;}

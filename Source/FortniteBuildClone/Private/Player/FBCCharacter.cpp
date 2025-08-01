@@ -9,6 +9,7 @@
 #include "InputAction.h"
 #include "AbilitySystem/GameplayTags/FBCTags.h"
 #include "Camera/CameraComponent.h"
+#include "Component/LagCompensationComponent.h"
 #include "Components/BoxComponent.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -23,6 +24,10 @@ AFBCCharacter::AFBCCharacter()
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("Camera");
 	CameraComponent->SetupAttachment(SpringArmComponent);
+
+#if WITH_EDITOR || UE_SERVER
+	LagCompensationComponent = CreateDefaultSubobject<ULagCompensationComponent>("LagCompensation");
+#endif
 }
 
 UAbilitySystemComponent* AFBCCharacter::GetAbilitySystemComponent() const
@@ -161,10 +166,10 @@ void AFBCCharacter::HandleBuildAction(const FGameplayTag StructureTag) const
 
 void AFBCCharacter::CacheHitboxes()
 {
-	TArray<USceneComponent*> Children{};
-	GetMesh()->GetChildrenComponents(false, Children);
+	TArray<USceneComponent*> ChildHitboxes{};
+	GetMesh()->GetChildrenComponents(false, ChildHitboxes);
 
-	for (const auto Child : Children)
+	for (const auto Child : ChildHitboxes)
 	{
 		if (UBoxComponent* Hitbox = Cast<UBoxComponent>(Child))
 		{

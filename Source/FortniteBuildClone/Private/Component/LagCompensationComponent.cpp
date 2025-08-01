@@ -18,7 +18,15 @@ void ULagCompensationComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+#if WITH_EDITOR
+	if (GetOwner()->HasAuthority())
+	{
+		UpdateHistory();
+	}
+#else if UE_SERVER
 	UpdateHistory();
+#endif
+	
 }
 
 void ULagCompensationComponent::BeginPlay()
@@ -39,7 +47,7 @@ void ULagCompensationComponent::UpdateHistory()
 	FHitboxData& Data = PositionHistory.First();
 
 	Data.Time = CurrentTime;
-	for (int i = 0; i < MaxHitboxes; ++i)
+	for (int i = 0; i < MaxHitboxes && i < Hitboxes.Num(); ++i)
 	{
 		Data.Hitboxes[i] = Hitboxes[i]->GetComponentTransform();
 	}
