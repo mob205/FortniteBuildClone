@@ -49,6 +49,8 @@ public:
 	uint8 bIsSliding:1;
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+	ULagCompensationComponent* GetLagCompensationComponent() const { return LagCompensationComponent; }
 	
 	FCollisionQueryParams GetIgnoreCharacterParams() const;
 

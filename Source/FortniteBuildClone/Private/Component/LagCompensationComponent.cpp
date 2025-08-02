@@ -8,6 +8,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "Player/FBCCharacter.h"
 
+DEFINE_LOG_CATEGORY(LogLagCompensation)
+
+
 ULagCompensationComponent::ULagCompensationComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -39,18 +42,11 @@ void ULagCompensationComponent::BeginPlay()
 
 void ULagCompensationComponent::UpdateHistory()
 {
-	const float CurrentTime = GameState->GetServerWorldTimeSeconds();
-	const TArray<UBoxComponent*>& Hitboxes = FBCOwner->GetHitboxes();
-
 	// Push new data
 	PositionHistory.PushFirst({});
-	FHitboxData& Data = PositionHistory.First();
+	FillHitboxData(FBCOwner->GetHitboxes(), PositionHistory.First());
 
-	Data.Time = CurrentTime;
-	for (int i = 0; i < MaxHitboxes && i < Hitboxes.Num(); ++i)
-	{
-		Data.Hitboxes[i] = Hitboxes[i]->GetComponentTransform();
-	}
+	const float CurrentTime = GameState->GetServerWorldTimeSeconds();
 
 	// Clear expired data
 	while (PositionHistory.Last().Time < CurrentTime - HistoryDuration)
@@ -59,3 +55,96 @@ void ULagCompensationComponent::UpdateHistory()
 	}
 }
 
+bool ULagCompensationComponent::TryRewind(float Timestamp)
+{
+	const FHitboxData* HitboxData = SearchHistory(Timestamp);
+	if (!HitboxData) { return false; }
+
+	const TArray<UBoxComponent*>& Hitboxes = FBCOwner->GetHitboxes();
+	
+	bIsRewinding = true;
+	FillHitboxData(Hitboxes, PreRewindHitboxData);
+
+	ApplyHitboxData(Hitboxes, *HitboxData);
+	return true;
+}
+
+void ULagCompensationComponent::RestoreToPresent()
+{
+	if (!bIsRewinding)
+	{
+		UE_LOG(LogLagCompensation, Error, TEXT("Attempted to restore a rewind, but there is no active rewind"));
+		return;
+	}
+	bIsRewinding = false;
+
+	ApplyHitboxData(FBCOwner->GetHitboxes(), PreRewindHitboxData);
+}
+
+void ULagCompensationComponent::FillHitboxData(const TArray<UBoxComponent*>& Hitboxes, FHitboxData& OutData)
+{
+	OutData.Time = GameState->GetServerWorldTimeSeconds();
+	for (int i = 0; i < MaxHitboxes && i < Hitboxes.Num(); ++i)
+	{
+		OutData.Hitboxes[i] = Hitboxes[i]->GetComponentTransform();
+	}
+}
+
+void ULagCompensationComponent::ApplyHitboxData(const TArray<UBoxComponent*>& Hitboxes, const FHitboxData& HitboxData)
+{
+	for (int i = 0; i < MaxHitboxes && i < Hitboxes.Num(); ++i)
+	{
+		Hitboxes[i]->SetWorldTransform(HitboxData.Hitboxes[i]);
+	}
+}
+
+const FHitboxData* ULagCompensationComponent::SearchHistory(float Timestamp) const
+{
+	if (PositionHistory.IsEmpty())
+	{
+		UE_LOG(LogLagCompensation, Warning, TEXT("Attempted to search with no history"));
+		return nullptr;
+	}
+	if (PositionHistory.Last().Time > Timestamp)
+	{
+		UE_LOG(LogLagCompensation, Warning, TEXT("Received an expired timestamp"));
+		return &PositionHistory.Last();
+	}
+	if (PositionHistory.First().Time < Timestamp)
+	{
+		UE_LOG(LogLagCompensation, Warning, TEXT("Received a timestamp ahead of current time"));
+		return &PositionHistory.First();
+	}
+
+	// Pick the first datapoint that is older than the timestamp
+	for (const auto& Data : PositionHistory)
+	{
+		if (Data.Time <= Timestamp)
+		{
+			return &Data;
+		}
+	}
+	return nullptr;
+}
+
+FLagCompensatedWindow::FLagCompensatedWindow(const TArray<AFBCCharacter*>& Targets, double Timestamp)
+{
+	for (const auto Target : Targets)
+	{
+		ULagCompensationComponent* Comp = Target->GetLagCompensationComponent();
+		if (!IsValid(Comp)) { return; }
+		
+		if (Comp->TryRewind(Timestamp))
+		{
+			RewindedTargets.Add(Comp);
+		}
+	}
+}
+
+FLagCompensatedWindow::~FLagCompensatedWindow()
+{
+	for (const auto Comp : RewindedTargets)
+	{
+		Comp->RestoreToPresent();
+	}
+}

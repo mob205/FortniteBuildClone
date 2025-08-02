@@ -11,6 +11,7 @@
 #include "Player/FBCCharacter.h"
 #include "Player/FBCPlayerController.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "Component/LagCompensationComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "Item/Weapon/WeaponTargetData.h"
 
@@ -86,8 +87,18 @@ FGameplayAbilityTargetDataHandle UFireWeaponHitscanAbility::GetAimingTargetData(
 	FVector ViewLocation{};
 	FRotator ViewRotation{};
 	FBCOwner->GetPlayerController()->GetPlayerViewPoint(ViewLocation, ViewRotation);
+
+	TArray<AFBCCharacter*> RelevantTargets{};
+	FHitResult Hit{};
+	if (GetWorld()->LineTraceSingleByChannel(Hit, ViewLocation, ViewLocation + Range * ViewRotation.Vector(), ECC_Visibility, FBCOwner->GetIgnoreCharacterParams()))
+	{
+		if (AFBCCharacter* Target = Cast<AFBCCharacter>(Hit.GetActor()))
+		{
+			RelevantTargets.Add(Target);
+		}
+	}
 	
-	return { new FWeaponTargetData{Timestamp, ViewLocation, ViewRotation} };
+	return { new FWeaponTargetData{Timestamp, ViewLocation, ViewRotation, RelevantTargets } };
 }
 
 
@@ -118,28 +129,34 @@ void UFireWeaponHitscanAbility::ServerFire(const FWeaponTargetData& TargetData) 
 	float HalfAngle = FMath::DegreesToRadians(Weapon->GetCurrentWeaponSpread() * .5f);
 	FVector Direction = Weapon->GetSpreadStream().VRandCone(TargetData.ViewRotation.Vector(), HalfAngle);
 
-	FVector EndNoSpread = Start + Range * TargetData.ViewRotation.Vector();
 	FVector End = Start + Range * Direction;
 
-	DrawDebugLine(GetWorld(), Start, EndNoSpread, FColor::Green, false, 20.f);
+	FVector EndNoSpread = Start + Range * TargetData.ViewRotation.Vector();
 
 	FHitResult Hit;
-	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, FBCOwner->GetIgnoreCharacterParams()))
 	{
-		if (Hit.bBlockingHit)
-		{
-			DrawDebugSphere(GetWorld(), Hit.Location, 25.f, 8, FColor::Red, false, 20.0f);
-		}
-		if (!Hit.bBlockingHit)
-		{
-			return;
-		}
+		FLagCompensatedWindow CompensationWindow{TargetData.RelevantTargets, TargetData.Timestamp };
+		GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, FBCOwner->GetIgnoreCharacterParams());
+	}
+
+	if (Cast<AFBCCharacter>(Hit.GetActor()))
+	{
+		DrawDebugLine(GetWorld(), Start, EndNoSpread, FColor::Green, false, 20.f);
+	}
+	else
+	{
+		DrawDebugLine(GetWorld(), Start, EndNoSpread, FColor::Red, false, 20.f);
+	}
+	
+	if (Hit.bBlockingHit)
+	{
 		if (UAbilitySystemComponent* HitASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Hit.GetActor()))
 		{
 			FGameplayEffectContextHandle ContextHandle = HitASC->MakeEffectContext();
 			FGameplayEffectSpecHandle SpecHandle = HitASC->MakeOutgoingSpec(OnHitEffectClass, 1, ContextHandle);
 			SpecHandle.Data->SetSetByCallerMagnitude(FBCTags::AbilityDamage, Weapon->GetWeaponItemData()->GetDamage());
-			HitASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data); }
+			HitASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);
+		}
 	}
 
 	Weapon->HandleFireSpreadIncrease();

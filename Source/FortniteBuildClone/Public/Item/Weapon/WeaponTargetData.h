@@ -17,9 +17,15 @@ struct FWeaponTargetData : public FGameplayAbilityTargetData
 	UPROPERTY()
 	FRotator ViewRotation{};
 
+	UPROPERTY()
+	TArray<AFBCCharacter*> RelevantTargets{};
+
 	FWeaponTargetData() {}
 	FWeaponTargetData(double InTimestamp, const FVector& InViewLocation, const FRotator& InViewRotation)
 		: Timestamp(InTimestamp), ViewLocation(InViewLocation), ViewRotation(InViewRotation)
+	{}
+	FWeaponTargetData(double InTimestamp, const FVector& InViewLocation, const FRotator& InViewRotation, const TArray<AFBCCharacter*>& InTargets)
+		: Timestamp(InTimestamp), ViewLocation(InViewLocation), ViewRotation(InViewRotation), RelevantTargets(InTargets)
 	{}
 
 	virtual UScriptStruct* GetScriptStruct() const override
@@ -37,6 +43,7 @@ struct FWeaponTargetData : public FGameplayAbilityTargetData
 		Ar << Timestamp;
 		Ar << ViewLocation;
 		Ar << ViewRotation;
+		Ar << RelevantTargets;
 	
 		bOutSuccess = true;
 		return true;
