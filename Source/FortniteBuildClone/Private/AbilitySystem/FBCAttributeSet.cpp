@@ -6,6 +6,8 @@
 #include "GameplayEffectExtension.h"
 #include "AbilitySystem/GameplayTags/FBCTags.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/FBCPlayerCharacter.h"
+#include "Player/FBCPlayerController.h"
 
 TMap<EFBCResourceType, FGameplayAttribute> UFBCAttributeSet::ResourceToAttributeMap{};
 
@@ -64,7 +66,6 @@ void UFBCAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 		{
 			IncomingDamageValue = 0;
 		}
-		SetShields(NewShields);
 
 		float NewHealth = GetHealth() - IncomingDamageValue;
 
@@ -73,7 +74,25 @@ void UFBCAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 			// Do dying stuff here
 			NewHealth = 0;
 		}
+
+		if (AFBCPlayerController* PlayerController = TryGetInstigatorController(Data))
+		{
+			float ShieldDamage = GetShields() - NewShields;
+			float HealthDamage = GetHealth() - NewHealth;
+			PlayerController->AlertDamageDealt(&Data.Target, ShieldDamage, HealthDamage);
+		}
+		
+		SetShields(NewShields);
 		SetHealth(NewHealth);
 		SetIncomingDamage(0);
 	}
+}
+
+AFBCPlayerController* UFBCAttributeSet::TryGetInstigatorController(const FGameplayEffectModCallbackData& EffectData)
+{
+	if (AFBCPlayerCharacter* Player = Cast<AFBCPlayerCharacter>(EffectData.EffectSpec.GetEffectContext().GetInstigator()))
+	{
+		return Player->GetPlayerController();
+	}
+	return nullptr;
 }

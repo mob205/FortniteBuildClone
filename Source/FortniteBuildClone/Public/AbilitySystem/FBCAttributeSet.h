@@ -27,11 +27,9 @@
 	GAMEPLAYATTRIBUTE_VALUE_SETTER(PropertyName) \
 	GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
 
+class AFBCPlayerController;
 class FLifetimeProperty;
 
-/**
- * 
- */
 UCLASS()
 class FORTNITEBUILDCLONE_API UFBCAttributeSet : public UAttributeSet
 {
@@ -41,7 +39,6 @@ public:
 	UFBCAttributeSet();
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 protected:
 	virtual void PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const override;
 
@@ -136,4 +133,6 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Meta")
 	FGameplayAttributeData IncomingDamage;
 	ATTRIBUTE_ACCESSORS(UFBCAttributeSet, IncomingDamage);
+
+	AFBCPlayerController* TryGetInstigatorController(const FGameplayEffectModCallbackData& EffectData);
 };

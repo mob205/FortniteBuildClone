@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "FBCPlayerController.generated.h"
 
+class UAbilitySystemComponent;
 class UFBCHUDWidget;
 class IInteractable;
 class UInputMappingContext;
@@ -24,10 +25,13 @@ public:
 
 	UFUNCTION(Client, Reliable)
 	void RemovePredictedStructure(uint8 PredictionId);
+
+	UFUNCTION(Client, Reliable)
+	void AlertDamageDealt(UAbilitySystemComponent* Target, float ShieldDamage, float HealthDamage);
 	
 protected:
 	virtual void OnRep_PlayerState() override;
-
+	
 	virtual void OnPossess(APawn* InPawn) override;
 	
 	virtual void SetupInputComponent() override;
@@ -68,6 +72,9 @@ private:
 	// End interaction
 
 	void InitializeHUD();
+
+	UFUNCTION()
+	void ServerOnDamageReceived(float ShieldDamage, float HealthDamage);
 
 	// List of structures that are currently locally predicted by this player
 	TMap<uint8, APlacedStructure*> ClientPredictedStructures{};

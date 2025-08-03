@@ -155,6 +155,8 @@ void UFireWeaponHitscanAbility::ServerFire(const FWeaponTargetData& TargetData) 
 		if (UAbilitySystemComponent* HitASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Hit.GetActor()))
 		{
 			FGameplayEffectContextHandle ContextHandle = HitASC->MakeEffectContext();
+			ContextHandle.AddInstigator(FBCOwner, Weapon);
+			
 			FGameplayEffectSpecHandle SpecHandle = HitASC->MakeOutgoingSpec(OnHitEffectClass, 1, ContextHandle);
 			SpecHandle.Data->SetSetByCallerMagnitude(FBCTags::AbilityDamage, Weapon->GetWeaponItemData()->GetDamage());
 			HitASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);

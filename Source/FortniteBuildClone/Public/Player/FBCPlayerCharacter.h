@@ -18,6 +18,8 @@ class FORTNITEBUILDCLONE_API AFBCPlayerCharacter : public AFBCCharacterBase
 
 public:
 	AFBCPlayerCharacter();
+
+	AFBCPlayerController* GetPlayerController() const { return PlayerController; }
 protected:
 	void OnRep_PlayerState();
 	virtual void InitAbilityActorInfo() override;

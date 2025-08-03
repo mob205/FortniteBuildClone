@@ -2,6 +2,7 @@
 
 #include "Player/FBCPlayerController.h"
 #include "EnhancedInputSubsystems.h"
+#include "AbilitySystem/FBCAttributeSet.h"
 #include "Blueprint/UserWidget.h"
 #include "Component/StructureGroundingComponent.h"
 #include "Interface/Interactable.h"
@@ -23,6 +24,12 @@ void AFBCPlayerController::RemovePredictedStructure_Implementation(uint8 Predict
 	}
 }
 
+void AFBCPlayerController::AlertDamageDealt_Implementation(UAbilitySystemComponent* Target, float ShieldDamage, float HealthDamage)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Green, FString::Printf(TEXT("Damaged %s for %f shield and %f health"), *Target->GetAvatarActor()->GetName(), ShieldDamage, HealthDamage));
+}
+
+// Called on client
 void AFBCPlayerController::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
@@ -30,11 +37,10 @@ void AFBCPlayerController::OnRep_PlayerState()
 	InitializeHUD();
 }
 
+// Called on server
 void AFBCPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-
-	InitializeHUD();
 }
 
 void AFBCPlayerController::InitializeHUD()
@@ -48,6 +54,11 @@ void AFBCPlayerController::InitializeHUD()
 		HUD->InitializeHUD(PS, PS->GetAbilitySystemComponent());
 		HUD->AddToViewport();
 	}
+}
+
+void AFBCPlayerController::ServerOnDamageReceived(float ShieldDamage, float HealthDamage)
+{
+	
 }
 
 
