@@ -26,7 +26,7 @@ void AFBCPlayerController::RemovePredictedStructure_Implementation(uint8 Predict
 
 void AFBCPlayerController::AlertDamageDealt_Implementation(UAbilitySystemComponent* Target, float ShieldDamage, float HealthDamage)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Green, FString::Printf(TEXT("Damaged %s for %f shield and %f health"), *Target->GetAvatarActor()->GetName(), ShieldDamage, HealthDamage));
+	OnDamageDealt(Target->GetAvatarActor(), ShieldDamage, HealthDamage);
 }
 
 // Called on client
@@ -55,12 +55,6 @@ void AFBCPlayerController::InitializeHUD()
 		HUD->AddToViewport();
 	}
 }
-
-void AFBCPlayerController::ServerOnDamageReceived(float ShieldDamage, float HealthDamage)
-{
-	
-}
-
 
 void AFBCPlayerController::SetupInputComponent()
 {

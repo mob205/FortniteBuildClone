@@ -83,7 +83,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Ability System")
 	TArray<FInitialAbility> InitialAbilities;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Ability System")
+	UPROPERTY(EditAnywhere, Category = "Ability System")
 	TSubclassOf<UGameplayEffect> InitialAttributesEffect;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Ability System")

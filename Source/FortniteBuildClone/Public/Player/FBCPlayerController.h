@@ -31,13 +31,13 @@ public:
 	
 protected:
 	virtual void OnRep_PlayerState() override;
-	
 	virtual void OnPossess(APawn* InPawn) override;
-	
 	virtual void SetupInputComponent() override;
-
 	virtual void Tick(float DeltaSeconds) override;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnDamageDealt(AActor* Target, float ShieldDamage, float HealthDamage);
+	
 	UFUNCTION(BlueprintCallable)
 	void SetInteracting(bool bInIsInteracting);
 	
@@ -72,9 +72,6 @@ private:
 	// End interaction
 
 	void InitializeHUD();
-
-	UFUNCTION()
-	void ServerOnDamageReceived(float ShieldDamage, float HealthDamage);
 
 	// List of structures that are currently locally predicted by this player
 	TMap<uint8, APlacedStructure*> ClientPredictedStructures{};

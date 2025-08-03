@@ -79,7 +79,11 @@ void UFBCAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 		{
 			float ShieldDamage = GetShields() - NewShields;
 			float HealthDamage = GetHealth() - NewHealth;
-			PlayerController->AlertDamageDealt(&Data.Target, ShieldDamage, HealthDamage);
+			
+			if (ShieldDamage > 0 || HealthDamage > 0)
+			{
+				PlayerController->AlertDamageDealt(&Data.Target, ShieldDamage, HealthDamage);
+			}
 		}
 		
 		SetShields(NewShields);
