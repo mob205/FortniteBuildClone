@@ -9,7 +9,7 @@
 
 class UItemData;
 class UGameplayAbility;
-class AFBCCharacter;
+class AFBCCharacterBase;
 
 DECLARE_DELEGATE(FOnRequestRemoveFromInventorySignature);
 
@@ -23,8 +23,8 @@ public:
 
 	FOnRequestRemoveFromInventorySignature OnRequestRemoveFromInventory;
 	
-	virtual void OnItemEquipped(AFBCCharacter* AvatarActor);
-	virtual void OnItemUnequipped(AFBCCharacter* AvatarActor);
+	virtual void OnItemEquipped(AFBCCharacterBase* Owner);
+	virtual void OnItemUnequipped(AFBCCharacterBase* Owner);
 
 	UFUNCTION(BlueprintCallable)
 	void RemoveFromOwningInventory() const { OnRequestRemoveFromInventory.ExecuteIfBound(); }

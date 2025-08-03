@@ -17,6 +17,7 @@ namespace FBCTags
 	// Abilities
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(FireWeapon);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(AbilityDamage);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Build);
 
 	// Input
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputFireDown);

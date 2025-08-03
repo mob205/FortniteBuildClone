@@ -9,7 +9,7 @@
 
 class UBoxComponent;
 class AGameStateBase;
-class AFBCCharacter;
+class AFBCCharacterBase;
 class FLagCompensatedWindow;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogLagCompensation, Log, All);
@@ -56,7 +56,7 @@ private:
 	// Searches position history for closest to the timestamp. Returns nullptr if timestamp is invalid
 	const FHitboxData* SearchHistory(float Timestamp) const;
 	
-	TObjectPtr<AFBCCharacter> FBCOwner{};
+	TObjectPtr<AFBCCharacterBase> FBCOwner{};
 	TObjectPtr<AGameStateBase> GameState{};
 
 	
@@ -73,7 +73,7 @@ class FLagCompensatedWindow
 {
 public:
 	// Starts a lag compensation window by rewinding all Targets
-	explicit FLagCompensatedWindow(const TArray<AFBCCharacter*>& Targets, double Timestamp);
+	explicit FLagCompensatedWindow(const TArray<AFBCCharacterBase*>& Targets, double Timestamp);
 	~FLagCompensatedWindow();
 
 	FLagCompensatedWindow(const FLagCompensatedWindow&) = delete;

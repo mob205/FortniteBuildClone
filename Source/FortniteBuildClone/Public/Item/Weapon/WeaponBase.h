@@ -27,8 +27,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void MarkAmmoDirty() const;
 	
-	virtual void OnItemEquipped(AFBCCharacter* AvatarActor) override;
-	virtual void OnItemUnequipped(AFBCCharacter* AvatarActor) override;
+	virtual void OnItemEquipped(AFBCCharacterBase* AvatarActor) override;
+	virtual void OnItemUnequipped(AFBCCharacterBase* AvatarActor) override;
 	
 	void SetWantsToShoot(bool bNewWantsToShoot);
 
@@ -70,7 +70,7 @@ private:
 	void TryWeaponFire();
 	void UpdateSpread(float DeltaTime);
 
-	TObjectPtr<AFBCCharacter> Owner;
+	TObjectPtr<AFBCCharacterBase> Owner;
 	TObjectPtr<UAbilitySystemComponent> OwnerASC;
 	TObjectPtr<const UWeaponItemData> WeaponItemData;
 

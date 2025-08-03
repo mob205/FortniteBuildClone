@@ -10,7 +10,7 @@
 class AWorldDropActor;
 class ACountableItem;
 class UItemData;
-class AFBCCharacter;
+class AFBCCharacterBase;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSlotUpdatedSignature, int32, SlotIndex, const AEquippedItemActor*, Item);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSelectedSlotChangedSignature, int32, OldSlotIndex, int32, NewSlotIndex);
@@ -76,8 +76,6 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void ClientTryEquipItem(int32 NewSelection);
 private:
-	AFBCCharacter* GetAvatarActor();
-
 	void DestroyFromInventory(int32 SlotIndex);
 	
 	void OnItemRemoved(AEquippedItemActor* Item, int32 SlotIndex);
@@ -93,7 +91,7 @@ private:
 	void OnSelectedItemChanged(uint8 LastSelection);
 
 	UPROPERTY()
-	TObjectPtr<AFBCCharacter> AvatarActor{};
+	TObjectPtr<AFBCCharacterBase> FBCOwner{};
 	
 	uint8 CurrentInventorySize{};
 

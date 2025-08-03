@@ -346,6 +346,8 @@ void UFBCCharacterMovementComponent::OnMaxStaminaChanged(float PrevValue, float 
 	SetStamina(GetStamina());
 	if (UAbilitySystemComponent* ASC = FBCCharacterOwner->GetAbilitySystemComponent())
 	{
+		// ASC is not yet initialized
+		if (ASC->GetAvatarActor() == nullptr) { return; }
 		ASC->SetNumericAttributeBase(UFBCAttributeSet::GetMaxStaminaAttribute(), NewValue);
 	}
 }
@@ -686,10 +688,10 @@ bool UFBCCharacterMovementComponent::GetSlideSurface(FHitResult& Hit) const
 void UFBCCharacterMovementComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
-	FBCCharacterOwner = Cast<AFBCCharacter>(GetOwner());
-	OwnerASC = FBCCharacterOwner->GetAbilitySystemComponent();
 
-	if (OwnerASC == nullptr)
+	FBCCharacterOwner = Cast<AFBCCharacterBase>(GetOwner());
+	OwnerASC = FBCCharacterOwner->GetAbilitySystemComponent();
+	if (OwnerASC == nullptr || OwnerASC->GetAvatarActor() == nullptr)
 	{
 		FBCCharacterOwner->OnASCInit.AddUObject(this, &UFBCCharacterMovementComponent::SetOwnerASC);
 	}

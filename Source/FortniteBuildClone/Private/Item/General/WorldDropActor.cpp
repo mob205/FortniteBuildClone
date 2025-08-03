@@ -6,6 +6,7 @@
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/FBCCharacterBase.h"
 #include "Player/FBCPlayerState.h"
 
 AWorldDropActor::AWorldDropActor()
@@ -40,16 +41,12 @@ void AWorldDropActor::StartInteract_Implementation(AActor* Interactor)
 {
 	if (!Interactor->HasAuthority()) { return; }
 
-	// Currently, the inventory component lives on the player state - drill down to find it
-	if (APawn* Pawn = Cast<APawn>(Interactor))
+	if (AFBCCharacterBase* Character = Cast<AFBCCharacterBase>(Interactor))
 	{
-		if (AFBCPlayerState* PlayerState = Cast<AFBCPlayerState>(Pawn->GetPlayerState()))
+		UInventoryComponent* InventoryComponent = Character->GetInventoryComponent();
+		if (InventoryComponent->ServerTryAddItem(CurrentItemActor))
 		{
-			UInventoryComponent* InventoryComponent = PlayerState->GetInventoryComponent();
-			if (InventoryComponent->ServerTryAddItem(CurrentItemActor))
-			{
-				Destroy();
-			}
+			Destroy();
 		}
 	}
 }

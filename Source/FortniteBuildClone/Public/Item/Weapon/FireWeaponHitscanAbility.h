@@ -7,7 +7,7 @@
 #include "FireWeaponHitscanAbility.generated.h"
 
 struct FWeaponTargetData;
-class AFBCCharacter;
+class AFBCCharacterBase;
 class AWeaponBase;
 
 UCLASS()
@@ -33,7 +33,7 @@ protected:
 
 private:
 	TObjectPtr<AWeaponBase> Weapon;
-	TObjectPtr<AFBCCharacter> FBCOwner;
+	TObjectPtr<AFBCCharacterBase> FBCOwner;
 	TObjectPtr<AGameStateBase> GameState;
 	
 	void EndAbilityLocally();

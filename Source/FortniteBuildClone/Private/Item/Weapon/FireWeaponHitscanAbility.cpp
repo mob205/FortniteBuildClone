@@ -4,12 +4,10 @@
 #include "Item/Weapon/FireWeaponHitscanAbility.h"
 
 #include "AbilitySystemComponent.h"
-#include "FBCBlueprintLibrary.h"
 #include "AbilitySystem/GameplayTags/FBCTags.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "Item/Weapon/WeaponBase.h"
-#include "Player/FBCCharacter.h"
-#include "Player/FBCPlayerController.h"
+#include "Player/FBCCharacterBase.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Component/LagCompensationComponent.h"
 #include "GameFramework/GameStateBase.h"
@@ -27,7 +25,7 @@ void UFireWeaponHitscanAbility::OnGiveAbility(const FGameplayAbilityActorInfo* A
 {
 	Super::OnGiveAbility(ActorInfo, Spec);
 
-	FBCOwner = Cast<AFBCCharacter>(ActorInfo->AvatarActor);
+	FBCOwner = Cast<AFBCCharacterBase>(ActorInfo->AvatarActor);
 	GameState = GetWorld()->GetGameState();
 	
 }
@@ -56,21 +54,25 @@ void UFireWeaponHitscanAbility::ActivateAbility(const FGameplayAbilitySpecHandle
 	}
 
 	Weapon->ResetFireDelay();
+
+	if (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::LocalPredicted)
+	{
+		if (HasAuthority(&ActivationInfo))
+		{
+			ASC->AbilityTargetDataSetDelegate(CurrentSpecHandle, ActivationInfo.GetActivationPredictionKey()).AddUObject(this, &UFireWeaponHitscanAbility::OnValidData);
+		}
+		else
+		{
+			ASC->ServerSetReplicatedTargetData(CurrentSpecHandle, ActivationInfo.GetActivationPredictionKey(), GetAimingTargetData(), {}, ActivationInfo.GetActivationPredictionKey());
+
+			// TODO: Predictions here using random stream
+			FVector Res = Weapon->GetSpreadStream().VRandCone({}, 0);
+
+			Weapon->HandleFireSpreadIncrease();
+
+		}
+	}
 	
-	if (HasAuthority(&ActivationInfo))
-	{
-		ASC->AbilityTargetDataSetDelegate(CurrentSpecHandle, ActivationInfo.GetActivationPredictionKey()).AddUObject(this, &UFireWeaponHitscanAbility::OnValidData);
-	}
-	else
-	{
-		ASC->ServerSetReplicatedTargetData(CurrentSpecHandle, ActivationInfo.GetActivationPredictionKey(), GetAimingTargetData(), {}, ActivationInfo.GetActivationPredictionKey());
-
-		// TODO: Predictions here using random stream
-		FVector Res = Weapon->GetSpreadStream().VRandCone({}, 0);
-
-		Weapon->HandleFireSpreadIncrease();
-
-	}
 
 	// Wait until next tick to give GAS a chance to send the target data RPC
 	GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &ThisClass::EndAbilityLocally));
@@ -86,13 +88,13 @@ FGameplayAbilityTargetDataHandle UFireWeaponHitscanAbility::GetAimingTargetData(
 	double Timestamp = GameState->GetServerWorldTimeSeconds();
 	FVector ViewLocation{};
 	FRotator ViewRotation{};
-	FBCOwner->GetPlayerController()->GetPlayerViewPoint(ViewLocation, ViewRotation);
+	FBCOwner->GetController()->GetPlayerViewPoint(ViewLocation, ViewRotation);
 
-	TArray<AFBCCharacter*> RelevantTargets{};
+	TArray<AFBCCharacterBase*> RelevantTargets{};
 	FHitResult Hit{};
 	if (GetWorld()->LineTraceSingleByChannel(Hit, ViewLocation, ViewLocation + Range * ViewRotation.Vector(), ECC_Visibility, FBCOwner->GetIgnoreCharacterParams()))
 	{
-		if (AFBCCharacter* Target = Cast<AFBCCharacter>(Hit.GetActor()))
+		if (AFBCCharacterBase* Target = Cast<AFBCCharacterBase>(Hit.GetActor()))
 		{
 			RelevantTargets.Add(Target);
 		}
@@ -139,7 +141,7 @@ void UFireWeaponHitscanAbility::ServerFire(const FWeaponTargetData& TargetData) 
 		GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, FBCOwner->GetIgnoreCharacterParams());
 	}
 
-	if (Cast<AFBCCharacter>(Hit.GetActor()))
+	if (Cast<AFBCCharacterBase>(Hit.GetActor()))
 	{
 		DrawDebugLine(GetWorld(), Start, EndNoSpread, FColor::Green, false, 20.f);
 	}

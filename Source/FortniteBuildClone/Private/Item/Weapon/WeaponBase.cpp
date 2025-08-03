@@ -9,7 +9,7 @@
 #include "Item/Weapon/WeaponItemData.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
-#include "Player/FBCCharacter.h"
+#include "Player/FBCCharacterBase.h"
 
 AWeaponBase::AWeaponBase()
 {
@@ -25,7 +25,7 @@ void AWeaponBase::MarkAmmoDirty() const
 	}
 }
 
-void AWeaponBase::OnItemEquipped(AFBCCharacter* AvatarActor)
+void AWeaponBase::OnItemEquipped(AFBCCharacterBase* AvatarActor)
 {
 	Super::OnItemEquipped(AvatarActor);
 
@@ -41,7 +41,7 @@ void AWeaponBase::OnItemEquipped(AFBCCharacter* AvatarActor)
 
 }
 
-void AWeaponBase::OnItemUnequipped(AFBCCharacter* AvatarActor)
+void AWeaponBase::OnItemUnequipped(AFBCCharacterBase* AvatarActor)
 {
 	Super::OnItemUnequipped(AvatarActor);
 	SetActorTickEnabled(false);

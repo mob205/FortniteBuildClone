@@ -6,7 +6,6 @@
 #include "UObject/Interface.h"
 #include "Interactable.generated.h"
 
-class AFBCCharacter;
 // This class does not need to be modified.
 UINTERFACE()
 class UInteractable : public UInterface

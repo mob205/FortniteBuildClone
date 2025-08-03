@@ -12,11 +12,15 @@ void UFBCHUDWidget::InitializeHUD(AFBCPlayerState* PS, UFBCAbilitySystemComponen
 	AbilitySystemComponent = ASC;
 	AS = PS->GetAttributeSet();
 	Avatar = ASC->GetAvatarActor();
+	if (Avatar)
+	{
+		OwnerInventoryComponent = Avatar->GetComponentByClass<UInventoryComponent>();
+	}
+	
 	Owner = ASC->GetOwnerActor();
 	if (Owner)
 	{
 		OwnerResourceComponent = Owner->GetComponentByClass<UBuildResourceComponent>();
-		OwnerInventoryComponent = Owner->GetComponentByClass<UInventoryComponent>();
 	}
 	
 	// Subscribe to material changes

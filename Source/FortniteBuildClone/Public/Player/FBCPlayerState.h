@@ -25,20 +25,14 @@ public:
 	UFBCAbilitySystemComponent* GetAbilitySystemComponent() const { return ASC; }
 	UFBCAttributeSet* GetAttributeSet() const { return AS; }
 	UBuildResourceComponent* GetBuildResourceComponent() const { return BuildResourceComp; }
-	UInventoryComponent* GetInventoryComponent() const { return InventoryComp; }
 	
 protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr<UBuildResourceComponent> BuildResourceComp;
-
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	TObjectPtr<UInventoryComponent> InventoryComp;
 	
 	UPROPERTY()
 	TObjectPtr<UFBCAbilitySystemComponent> ASC;
 
 	UPROPERTY()
 	TObjectPtr<UFBCAttributeSet> AS;
-
-
 };

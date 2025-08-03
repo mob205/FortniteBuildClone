@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystem/GameplayTags/FBCTags.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Player/FBCCharacter.h"
+#include "Player/FBCCharacterBase.h"
 #include "FBCCharacterMovementComponent.generated.h"
 
 class UCurveFloat;
@@ -216,7 +216,7 @@ private:
 	
 protected:
 	UPROPERTY(Transient)
-	TObjectPtr<AFBCCharacter> FBCCharacterOwner;
+	TObjectPtr<AFBCCharacterBase> FBCCharacterOwner;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UAbilitySystemComponent> OwnerASC;

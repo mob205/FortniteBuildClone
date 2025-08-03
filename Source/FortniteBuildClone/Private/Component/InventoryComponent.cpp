@@ -4,18 +4,18 @@
 #include "Component/InventoryComponent.h"
 
 #include "FortniteBuildClone/FortniteBuildClone.h"
-#include "GameFramework/PlayerState.h"
 #include "Item/General/ItemData.h"
 #include "Item/General/WorldDropActor.h"
 #include "Item/General/CountableItem.h"
 #include "Item/General/EquippedItemActor.h"
 #include "Net/UnrealNetwork.h"
-#include "Player/FBCCharacter.h"
+#include "Player/FBCCharacterBase.h"
 
 
 UInventoryComponent::UInventoryComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	SetIsReplicatedByDefault(true);
 }
 
 bool UInventoryComponent::ServerTryAddItem(AEquippedItemActor* ItemActor)
@@ -168,6 +168,8 @@ void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	FBCOwner = Cast<AFBCCharacterBase>(GetOwner());
+	
 	Inventory.OnItemRemoved.BindUObject(this, &ThisClass::OnItemRemoved);
 	Inventory.OnItemAdded.BindUObject(this, &ThisClass::OnItemAdded);
 	
@@ -235,7 +237,7 @@ void UInventoryComponent::UnequipItem(int32 SlotIndex)
 	if (AEquippedItemActor* Item = GetItem(SlotIndex))
 	{
 		Item->SetActorHiddenInGame(true);
-		Item->OnItemUnequipped(GetAvatarActor());
+		Item->OnItemUnequipped(FBCOwner);
 	}
 }
 
@@ -244,7 +246,7 @@ void UInventoryComponent::EquipItem(int32 SlotIndex)
 	if (AEquippedItemActor* Item = GetItem(SlotIndex))
 	{
 		Item->SetActorHiddenInGame(false);
-		Item->OnItemEquipped(GetAvatarActor());
+		Item->OnItemEquipped(FBCOwner);
 
 		OnEquippedItemChanged.Broadcast(Item);
 	}
@@ -260,20 +262,6 @@ void UInventoryComponent::OnSelectedItemChanged(uint8 LastSelection)
 	EquipItem(SelectedSlot);
 	
 	OnSelectedSlotChanged.Broadcast(LastSelection, SelectedSlot);
-}
-
-AFBCCharacter* UInventoryComponent::GetAvatarActor()
-{
-	if (AvatarActor)
-	{
-		return AvatarActor;
-	}
-	
-	if (APlayerState* OwnerPS = Cast<APlayerState>(GetOwner()))
-	{
-		AvatarActor = Cast<AFBCCharacter>(OwnerPS->GetPawn());
-	}
-	return AvatarActor;
 }
 
 void UInventoryComponent::ClientRequestDropFromInventory(int32 SlotIndex)
@@ -303,10 +291,16 @@ void UInventoryComponent::TransferToWorldDrop(AEquippedItemActor* Item)
 {
 	// TODO: Currently just tries to spawn the item at the player's feet. Need to make this better in the future
 
-	FVector AvatarPos = AvatarActor->GetActorLocation();
+	FVector OwnerPos = FBCOwner->GetActorLocation();
 	FHitResult Hit;
-	GetWorld()->LineTraceSingleByChannel(Hit, AvatarPos, AvatarPos+ 200 * FVector::DownVector, ECC_Visibility, AvatarActor->GetIgnoreCharacterParams());
-	FVector ItemLocation = Hit.bBlockingHit ? Hit.Location : AvatarPos;
+	GetWorld()->LineTraceSingleByChannel(
+		Hit,
+		OwnerPos,
+		OwnerPos + 200 * FVector::DownVector,
+		ECC_Visibility,
+		FBCOwner->GetIgnoreCharacterParams());
+	
+	FVector ItemLocation = Hit.bBlockingHit ? Hit.Location : OwnerPos;
 		
 	AWorldDropActor* DropActor = GetWorld()->SpawnActor<AWorldDropActor>(
 		WorldDropActorClass,

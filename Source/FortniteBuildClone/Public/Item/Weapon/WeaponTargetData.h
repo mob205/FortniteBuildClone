@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Abilities/GameplayAbilityTargetTypes.h"
+#include "Player/FBCCharacterBase.h"
 #include "WeaponTargetData.generated.h"
 
 USTRUCT()
@@ -18,13 +19,13 @@ struct FWeaponTargetData : public FGameplayAbilityTargetData
 	FRotator ViewRotation{};
 
 	UPROPERTY()
-	TArray<AFBCCharacter*> RelevantTargets{};
+	TArray<AFBCCharacterBase*> RelevantTargets{};
 
 	FWeaponTargetData() {}
 	FWeaponTargetData(double InTimestamp, const FVector& InViewLocation, const FRotator& InViewRotation)
 		: Timestamp(InTimestamp), ViewLocation(InViewLocation), ViewRotation(InViewRotation)
 	{}
-	FWeaponTargetData(double InTimestamp, const FVector& InViewLocation, const FRotator& InViewRotation, const TArray<AFBCCharacter*>& InTargets)
+	FWeaponTargetData(double InTimestamp, const FVector& InViewLocation, const FRotator& InViewRotation, const TArray<AFBCCharacterBase*>& InTargets)
 		: Timestamp(InTimestamp), ViewLocation(InViewLocation), ViewRotation(InViewRotation), RelevantTargets(InTargets)
 	{}
 

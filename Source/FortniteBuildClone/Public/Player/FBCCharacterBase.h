@@ -6,16 +6,13 @@
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
 #include "GameplayTagContainer.h"
-#include "FBCCharacter.generated.h"
+#include "FBCCharacterBase.generated.h"
 
+class UInventoryComponent;
 class ULagCompensationComponent;
 class UBoxComponent;
-class UCameraComponent;
-class USpringArmComponent;
-class AFBCPlayerState;
 class UFBCAttributeSet;
 class UFBCAbilitySystemComponent;
-class AFBCPlayerController;
 class UGameplayAbility;
 class UGameplayEffect;
 class UStructureInfoDataAsset;
@@ -37,19 +34,20 @@ struct FInitialAbility
 	bool bActivateImmediately{};
 };
 
-UCLASS()
-class FORTNITEBUILDCLONE_API AFBCCharacter : public ACharacter, public IAbilitySystemInterface
+UCLASS(Abstract)
+class FORTNITEBUILDCLONE_API AFBCCharacterBase : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
 public:
-	AFBCCharacter();
+	AFBCCharacterBase();
 	
 	UPROPERTY(BlueprintReadOnly, Replicated, Category=Character)
 	uint8 bIsSliding:1;
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
+	UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
 	ULagCompensationComponent* GetLagCompensationComponent() const { return LagCompensationComponent; }
 	
 	FCollisionQueryParams GetIgnoreCharacterParams() const;
@@ -57,43 +55,30 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building")
 	TObjectPtr<UStructureInfoDataAsset> StructureInfo;
 
-	AFBCPlayerController* GetPlayerController() const { return PlayerController;}
-	
 	FOnASCInitSignature OnASCInit;
 protected:
 	virtual void PossessedBy(AController* NewController) override;
-	virtual void OnRep_PlayerState() override;
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void InitAbilityActorInfo();
 
 	UFUNCTION(BlueprintCallable)
 	void OnBuildAction(UInputAction* InputAction);
-
-	UPROPERTY(BlueprintReadOnly)
-	TObjectPtr<AFBCPlayerController> PlayerController;
-
+	
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<UFBCAbilitySystemComponent> ASC;
 
-	UPROPERTY(BlueprintReadOnly)
-	TObjectPtr<AFBCPlayerState> FBCPlayerState;
-
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	TObjectPtr<USpringArmComponent> SpringArmComponent;
-
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	TObjectPtr<UCameraComponent> CameraComponent;
+	UPROPERTY()
+	TObjectPtr<UFBCAttributeSet> AS;
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr<ULagCompensationComponent> LagCompensationComponent;
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void SetCameraADS(bool bIsAiming);
-	
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TObjectPtr<UInventoryComponent> InventoryComponent;
+
 private:
-	void InitAbilityActorInfo();
 	void OnAbilityFailed(const UGameplayAbility* GameplayAbility, const FGameplayTagContainer& GameplayTags);
-	void HandleADS(FGameplayTag GameplayTag, int Count);
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Ability System")
 	TArray<FInitialAbility> InitialAbilities;
@@ -107,11 +92,6 @@ private:
 	void GrantInitialAbilities();
 	void InitializeAttributes();
 	void AddInitialEffects();
-
-	UPROPERTY()
-	TObjectPtr<UFBCAttributeSet> AS;
-	
-	FGameplayTag BuildAbilityTag;
 	
 	void HandleBuildAction(const FGameplayTag StructureTag) const;
 

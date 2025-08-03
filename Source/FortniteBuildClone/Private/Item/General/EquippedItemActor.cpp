@@ -6,7 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "Item/General/ItemData.h"
 #include "Net/UnrealNetwork.h"
-#include "Player/FBCCharacter.h"
+#include "Player/FBCCharacterBase.h"
 
 AEquippedItemActor::AEquippedItemActor()
 {
@@ -36,20 +36,20 @@ void AEquippedItemActor::GetLifetimeReplicatedProps(TArray<class FLifetimeProper
 	DOREPLIFETIME_CONDITION(AEquippedItemActor, ItemData, COND_InitialOnly);
 }
 
-void AEquippedItemActor::OnItemEquipped(AFBCCharacter* AvatarActor)
+void AEquippedItemActor::OnItemEquipped(AFBCCharacterBase* ItemOwner)
 {
 	FAttachmentTransformRules TransformRules = { EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, false };
-	AttachToComponent(AvatarActor->GetMesh(), TransformRules, ItemData->GetSocketName());
+	AttachToComponent(ItemOwner->GetMesh(), TransformRules, ItemData->GetSocketName());
 
 	if (UAnimMontage* EquipMontage = ItemData->GetEquipMontage())
 	{
-		AvatarActor->PlayAnimMontage(EquipMontage);
+		ItemOwner->PlayAnimMontage(EquipMontage);
 	}
 
 	const TArray<TSubclassOf<UGameplayAbility>>& GrantedAbilities = ItemData->GetGrantedAbilities();
 	if (HasAuthority() && !GrantedAbilities.IsEmpty())
 	{
-		UAbilitySystemComponent* ASC = AvatarActor->GetAbilitySystemComponent();
+		UAbilitySystemComponent* ASC = ItemOwner->GetAbilitySystemComponent();
 		if (!ASC) { return; }
 
 		for (TSubclassOf<UGameplayAbility> AbilityClass : GrantedAbilities)
@@ -61,11 +61,11 @@ void AEquippedItemActor::OnItemEquipped(AFBCCharacter* AvatarActor)
 	}
 }
 
-void AEquippedItemActor::OnItemUnequipped(AFBCCharacter* AvatarActor)
+void AEquippedItemActor::OnItemUnequipped(AFBCCharacterBase* ItemOwner)
 {
 	if (HasAuthority() && !GrantedAbilityHandles.IsEmpty())
 	{
-		UAbilitySystemComponent* ASC = AvatarActor->GetAbilitySystemComponent();
+		UAbilitySystemComponent* ASC = ItemOwner->GetAbilitySystemComponent();
 		if (!ASC) { return; }
 		
 		for (const FGameplayAbilitySpecHandle Handle : GrantedAbilityHandles)

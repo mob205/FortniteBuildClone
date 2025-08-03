@@ -1,41 +1,34 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Player/FBCCharacter.h"
+#include "Player/FBCCharacterBase.h"
 #include "AbilitySystem/FBCAbilitySystemComponent.h"
 #include "GameplayAbilitySpec.h"
 #include "GameplayEffect.h"
 #include "Structure/Data/StructureInfoDataAsset.h"
 #include "InputAction.h"
 #include "AbilitySystem/GameplayTags/FBCTags.h"
-#include "Camera/CameraComponent.h"
+#include "Component/InventoryComponent.h"
 #include "Component/LagCompensationComponent.h"
 #include "Components/BoxComponent.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "Net/UnrealNetwork.h"
-#include "Player/FBCPlayerController.h"
-#include "Player/FBCPlayerState.h"
 
-AFBCCharacter::AFBCCharacter()
+AFBCCharacterBase::AFBCCharacterBase()
 {
-	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>("SpringArm");
-	SpringArmComponent->SetupAttachment(GetRootComponent());
-
-	CameraComponent = CreateDefaultSubobject<UCameraComponent>("Camera");
-	CameraComponent->SetupAttachment(SpringArmComponent);
+	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>("InventoryComponent");
 
 #if WITH_EDITOR || UE_SERVER
 	LagCompensationComponent = CreateDefaultSubobject<ULagCompensationComponent>("LagCompensation");
 #endif
 }
 
-UAbilitySystemComponent* AFBCCharacter::GetAbilitySystemComponent() const
+UAbilitySystemComponent* AFBCCharacterBase::GetAbilitySystemComponent() const
 {
 	return ASC;
 }
 
-FCollisionQueryParams AFBCCharacter::GetIgnoreCharacterParams() const
+FCollisionQueryParams AFBCCharacterBase::GetIgnoreCharacterParams() const
 {
 	FCollisionQueryParams Params{};
 
@@ -45,7 +38,7 @@ FCollisionQueryParams AFBCCharacter::GetIgnoreCharacterParams() const
 }
 
 // Called on server only
-void AFBCCharacter::PossessedBy(AController* NewController)
+void AFBCCharacterBase::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
@@ -57,60 +50,32 @@ void AFBCCharacter::PossessedBy(AController* NewController)
 	CacheHitboxes();
 }
 
-// Called on clients only
-void AFBCCharacter::OnRep_PlayerState()
-{
-	Super::OnRep_PlayerState();
-
-	InitAbilityActorInfo();
-}
-
-void AFBCCharacter::BeginPlay()
+void AFBCCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
-
-	BuildAbilityTag = FGameplayTag::RequestGameplayTag("Abilities.Build");
 }
 
-void AFBCCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+void AFBCCharacterBase::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME_CONDITION_NOTIFY(AFBCCharacter, bIsSliding, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(AFBCCharacterBase, bIsSliding, COND_None, REPNOTIFY_Always);
 }
 
-void AFBCCharacter::InitAbilityActorInfo()
+void AFBCCharacterBase::InitAbilityActorInfo()
 {
-	FBCPlayerState = GetPlayerState<AFBCPlayerState>();
-	check(FBCPlayerState);
-
-	ASC = FBCPlayerState->GetAbilitySystemComponent();
-	ASC->InitAbilityActorInfo(FBCPlayerState, this);
-	
-	AS = FBCPlayerState->GetAttributeSet();
-	
-	PlayerController = Cast<AFBCPlayerController>(GetController());
-	
 	OnASCInit.Broadcast(ASC);
 
-	ASC->AbilityFailedCallbacks.AddUObject(this, &AFBCCharacter::OnAbilityFailed);
-	ASC->RegisterGameplayTagEvent(FBCTags::AimingDownSights).AddUObject(this, &AFBCCharacter::HandleADS);
+	ASC->AbilityFailedCallbacks.AddUObject(this, &AFBCCharacterBase::OnAbilityFailed);
 }
 
-void AFBCCharacter::OnAbilityFailed(const UGameplayAbility* GameplayAbility, const FGameplayTagContainer& GameplayTags)
+void AFBCCharacterBase::OnAbilityFailed(const UGameplayAbility* GameplayAbility, const FGameplayTagContainer& GameplayTags)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red,
 		FString::Printf(TEXT("Failed to activate ability %s"), *GameplayAbility->GetName()));
 }
 
-void AFBCCharacter::HandleADS(FGameplayTag GameplayTag, int Count)
-{
-#if !UE_SERVER
-	SetCameraADS(Count != 0);
-#endif
-}
-
-void AFBCCharacter::GrantInitialAbilities()
+void AFBCCharacterBase::GrantInitialAbilities()
 {
 	for (const auto& Ability : InitialAbilities)
 	{
@@ -124,7 +89,7 @@ void AFBCCharacter::GrantInitialAbilities()
 	}
 }
 
-void AFBCCharacter::InitializeAttributes()
+void AFBCCharacterBase::InitializeAttributes()
 {
 	if (!InitialAttributesEffect) { return; }
 
@@ -133,7 +98,7 @@ void AFBCCharacter::InitializeAttributes()
 	ASC->ApplyGameplayEffectSpecToSelf(*Effect.Data);
 }
 
-void AFBCCharacter::AddInitialEffects()
+void AFBCCharacterBase::AddInitialEffects()
 {
 	for (const auto& Effect : InitialEffects)
 	{
@@ -143,7 +108,7 @@ void AFBCCharacter::AddInitialEffects()
 	}
 }
 
-void AFBCCharacter::OnBuildAction(UInputAction* InputAction)
+void AFBCCharacterBase::OnBuildAction(UInputAction* InputAction)
 {
 	// Get structure tag associated with the input
 	FGameplayTag StructureTag = StructureInfo->GetTagFromInput(InputAction);
@@ -157,14 +122,14 @@ void AFBCCharacter::OnBuildAction(UInputAction* InputAction)
 	HandleBuildAction(StructureTag);
 }
 
-void AFBCCharacter::HandleBuildAction(const FGameplayTag StructureTag) const
+void AFBCCharacterBase::HandleBuildAction(const FGameplayTag StructureTag) const
 {
-	ASC->TryActivateAbilitiesByTag(BuildAbilityTag.GetSingleTagContainer());
+	ASC->TryActivateAbilitiesByTag(FBCTags::Build.GetTag().GetSingleTagContainer());
 	FGameplayEventData Payload{};
 	ASC->HandleGameplayEvent(StructureTag, &Payload);
 }
 
-void AFBCCharacter::CacheHitboxes()
+void AFBCCharacterBase::CacheHitboxes()
 {
 	TArray<USceneComponent*> ChildHitboxes{};
 	GetMesh()->GetChildrenComponents(false, ChildHitboxes);

@@ -6,7 +6,7 @@
 #include "Components/BoxComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "Kismet/GameplayStatics.h"
-#include "Player/FBCCharacter.h"
+#include "Player/FBCCharacterBase.h"
 
 DEFINE_LOG_CATEGORY(LogLagCompensation)
 
@@ -36,7 +36,7 @@ void ULagCompensationComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	FBCOwner = Cast<AFBCCharacter>(GetOwner());
+	FBCOwner = Cast<AFBCCharacterBase>(GetOwner());
 	GameState = UGameplayStatics::GetGameState(this);
 }
 
@@ -127,7 +127,7 @@ const FHitboxData* ULagCompensationComponent::SearchHistory(float Timestamp) con
 	return nullptr;
 }
 
-FLagCompensatedWindow::FLagCompensatedWindow(const TArray<AFBCCharacter*>& Targets, double Timestamp)
+FLagCompensatedWindow::FLagCompensatedWindow(const TArray<AFBCCharacterBase*>& Targets, double Timestamp)
 {
 	for (const auto Target : Targets)
 	{
