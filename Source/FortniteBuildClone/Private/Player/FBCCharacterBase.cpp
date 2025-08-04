@@ -71,8 +71,7 @@ void AFBCCharacterBase::InitAbilityActorInfo()
 
 void AFBCCharacterBase::OnAbilityFailed(const UGameplayAbility* GameplayAbility, const FGameplayTagContainer& GameplayTags)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red,
-		FString::Printf(TEXT("Failed to activate ability %s"), *GameplayAbility->GetName()));
+	
 }
 
 void AFBCCharacterBase::GrantInitialAbilities()

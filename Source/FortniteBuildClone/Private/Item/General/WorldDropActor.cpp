@@ -23,9 +23,9 @@ void AWorldDropActor::InitializeFromItemData(const UItemData* ItemData)
 {
 	CurrentItemData = ItemData;
 
-	CurrentItemActor = GetWorld()->SpawnActor<AEquippedItemActor>(ItemData->GetActorClass());
-	CurrentItemActor->SetOwner(this);
+	CurrentItemActor = GetWorld()->SpawnActorDeferred<AEquippedItemActor>(ItemData->GetActorClass(), GetActorTransform(), this);
 	CurrentItemActor->SetItemData(ItemData);
+	CurrentItemActor->FinishSpawning(GetActorTransform());
 	
 	UpdateFromItemData();
 }

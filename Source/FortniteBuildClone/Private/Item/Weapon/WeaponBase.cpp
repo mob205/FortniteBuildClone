@@ -65,6 +65,27 @@ void AWeaponBase::OnRep_CurrentAmmo()
 	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, FString::Printf(TEXT("Replicated ammo %d"), CurrentAmmo));
 }
 
+int AWeaponBase::ModifyAmmo(int Amount)
+{
+	int FinalAmmo = FMath::Clamp(CurrentAmmo + Amount, 0, WeaponItemData->GetMaxAmmoCount());
+	int DeltaAmmo = FinalAmmo - CurrentAmmo;
+	CurrentAmmo = FinalAmmo;
+
+	OnAmmoCountChanged.Broadcast(CurrentAmmo);
+	return DeltaAmmo;
+}
+
+void AWeaponBase::SetAmmoCount(int32 NewAmmoCount)
+{
+	CurrentAmmo = FMath::Clamp(NewAmmoCount, 0, WeaponItemData->GetMaxAmmoCount());
+	OnAmmoCountChanged.Broadcast(CurrentAmmo);
+}
+
+bool AWeaponBase::CanShoot()
+{
+	return CurrentAmmo > 0;
+}
+
 void AWeaponBase::OnRep_SpreadSeed()
 {
 	SpreadStream.Initialize(SpreadSeed);
@@ -128,7 +149,12 @@ void AWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SpreadSeed = FMath::Rand32();
+	if (HasAuthority())
+	{
+		SpreadSeed = FMath::Rand32();
+		CurrentAmmo = WeaponItemData->GetMaxAmmoCount();
+		MarkAmmoDirty();
+	}
 }
 
 void AWeaponBase::Tick(float DeltaSeconds)

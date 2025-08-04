@@ -26,8 +26,8 @@ void UFireWeaponHitscanAbility::OnGiveAbility(const FGameplayAbilityActorInfo* A
 	Super::OnGiveAbility(ActorInfo, Spec);
 
 	FBCOwner = Cast<AFBCCharacterBase>(ActorInfo->AvatarActor);
+	Weapon = Cast<AWeaponBase>(GetCurrentSourceObject());
 	GameState = GetWorld()->GetGameState();
-	
 }
 
 void UFireWeaponHitscanAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
@@ -37,7 +37,6 @@ void UFireWeaponHitscanAbility::ActivateAbility(const FGameplayAbilitySpecHandle
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
-	Weapon = Cast<AWeaponBase>(GetCurrentSourceObject());
 	
 	if (!Weapon)
 	{
@@ -69,13 +68,20 @@ void UFireWeaponHitscanAbility::ActivateAbility(const FGameplayAbilitySpecHandle
 			FVector Res = Weapon->GetSpreadStream().VRandCone({}, 0);
 
 			Weapon->HandleFireSpreadIncrease();
-
+			Weapon->ModifyAmmo(-1);
 		}
 	}
-	
 
 	// Wait until next tick to give GAS a chance to send the target data RPC
 	GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &ThisClass::EndAbilityLocally));
+}
+
+bool UFireWeaponHitscanAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags,
+	const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
+{
+	bool Result = (Weapon && Weapon->CanShoot());
+	return Result && Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags);
 }
 
 void UFireWeaponHitscanAbility::EndAbilityLocally()
@@ -105,8 +111,7 @@ FGameplayAbilityTargetDataHandle UFireWeaponHitscanAbility::GetAimingTargetData(
 
 
 // Reconstruct the client shot on the server
-void UFireWeaponHitscanAbility::OnValidData(const FGameplayAbilityTargetDataHandle& Data,
-                                     FGameplayTag GameplayTag)
+void UFireWeaponHitscanAbility::OnValidData(const FGameplayAbilityTargetDataHandle& Data, FGameplayTag GameplayTag)
 {
 	if (const FGameplayAbilityTargetData* BaseTargetData = Data.Get(0))
 	{
@@ -163,5 +168,6 @@ void UFireWeaponHitscanAbility::ServerFire(const FWeaponTargetData& TargetData) 
 		}
 	}
 
+	Weapon->ModifyAmmo(-1);
 	Weapon->HandleFireSpreadIncrease();
 }

@@ -52,6 +52,9 @@ public:
 	float GetDamage() const { return Damage; }
 
 	UFUNCTION(BlueprintCallable)
+	float GetReloadDelay() const { return ReloadDelay; }
+	
+	UFUNCTION(BlueprintCallable)
 	const FSpreadSettings& GetSpreadSettings() const { return SpreadSettings; }
 protected:
 	// Weapon
@@ -64,6 +67,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	float Damage{};
 
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	float ReloadDelay{};
+	
 	// Spread
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	FSpreadSettings SpreadSettings{};

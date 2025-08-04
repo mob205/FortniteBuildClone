@@ -73,6 +73,11 @@ void AEquippedItemActor::OnItemEquipped(AFBCCharacterBase* ItemOwner)
 
 void AEquippedItemActor::OnItemUnequipped(AFBCCharacterBase* ItemOwner)
 {
+	if (UAnimMontage* EquipMontage = ItemData->GetEquipMontage())
+	{
+		ItemOwner->StopAnimMontage(EquipMontage);
+	}
+	
 	if (HasAuthority() && !GrantedAbilityHandles.IsEmpty())
 	{
 		UAbilitySystemComponent* ASC = ItemOwner->GetAbilitySystemComponent();

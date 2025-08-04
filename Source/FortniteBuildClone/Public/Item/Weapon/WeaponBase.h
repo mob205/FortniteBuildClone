@@ -11,6 +11,8 @@
 class UAbilitySystemComponent;
 class UWeaponItemData;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAmmoCountChangedSignature, int, Count);
+
 UCLASS()
 class FORTNITEBUILDCLONE_API AWeaponBase : public AEquippedItemActor
 {
@@ -19,14 +21,24 @@ class FORTNITEBUILDCLONE_API AWeaponBase : public AEquippedItemActor
 public:
 	AWeaponBase();
 
+	UPROPERTY(BlueprintAssignable)
+	FOnAmmoCountChangedSignature OnAmmoCountChanged;
+
+	UFUNCTION(BlueprintCallable)
 	const UWeaponItemData* GetWeaponItemData() const { return WeaponItemData; }
 	
 	UFUNCTION(BlueprintCallable)
-	void SetAmmoCount(int32 NewAmmoCount) { CurrentAmmo = NewAmmoCount; }
+	void SetAmmoCount(int32 NewAmmoCount);
 
 	UFUNCTION(BlueprintCallable)
 	void MarkAmmoDirty() const;
 
+	UFUNCTION(BlueprintCallable)
+	int ModifyAmmo(int Amount);
+
+	UFUNCTION(BlueprintCallable)
+	int GetAmmoCount() const { return CurrentAmmo; }
+	
 	virtual void OnItemEquipped(AFBCCharacterBase* AvatarActor) override;
 	virtual void OnItemUnequipped(AFBCCharacterBase* AvatarActor) override;
 	
@@ -45,6 +57,8 @@ public:
 	void HandleFireSpreadIncrease();
 
 	FRandomStream& GetSpreadStream() { return SpreadStream; }
+	
+	virtual bool CanShoot();
 protected:
 	virtual void BeginPlay() override;
 	
