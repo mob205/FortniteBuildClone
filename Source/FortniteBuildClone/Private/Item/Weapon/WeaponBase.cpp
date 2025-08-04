@@ -38,6 +38,9 @@ void AWeaponBase::OnItemEquipped(AFBCCharacterBase* AvatarActor)
 
 	OwnerASC->GenericGameplayEventCallbacks[FBCTags::InputFireReleased]
 		.AddUObject(this, &ThisClass::OnFireReleased);
+	
+	OwnerASC->RegisterGameplayTagEvent(FBCTags::AimingDownSights, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &ThisClass::OnADSChanged);
 
 }
 
@@ -50,7 +53,11 @@ void AWeaponBase::OnItemUnequipped(AFBCCharacterBase* AvatarActor)
 	{
 		OwnerASC->GenericGameplayEventCallbacks[FBCTags::InputFireDown].RemoveAll(this);
 		OwnerASC->GenericGameplayEventCallbacks[FBCTags::InputFireReleased].RemoveAll(this);
+		OwnerASC->RegisterGameplayTagEvent(FBCTags::AimingDownSights, EGameplayTagEventType::NewOrRemoved).RemoveAll(this);
 	}
+
+	bWantsToShoot = false;
+	CurrentWeaponSpread = 0;
 }
 
 void AWeaponBase::OnRep_CurrentAmmo()
@@ -82,6 +89,20 @@ void AWeaponBase::OnFireDown(const FGameplayEventData* GameplayEventData)
 void AWeaponBase::OnFireReleased(const FGameplayEventData* GameplayEventData)
 {
 	SetWantsToShoot(false);
+}
+
+void AWeaponBase::OnADSChanged(FGameplayTag GameplayTag, int Count)
+{
+	if (Count == 0)
+	{
+		bADS = false;
+		PlayMontageSection(FName("ADS End"));
+	}
+	else
+	{
+		bADS = true;
+		PlayMontageSection(FName("ADS Start"));
+	}
 }
 
 void AWeaponBase::SetWantsToShoot(bool bNewWantsToShoot)
@@ -122,7 +143,7 @@ void AWeaponBase::Tick(float DeltaSeconds)
 	{
 		TryWeaponFire();
 	}
-
+	
 	UpdateSpread(DeltaSeconds);
 }
 
@@ -161,7 +182,7 @@ void AWeaponBase::UpdateSpread(float DeltaTime)
 		TargetSpread *= SpreadSettings.CrouchMultiplier;
 		RecoveryRate /= SpreadSettings.CrouchMultiplier;
 	}
-	if (OwnerASC->HasMatchingGameplayTag(FBCTags::AimingDownSights))
+	if (bADS)
 	{
 		TargetSpread *= SpreadSettings.ADSMultiplier;
 		RecoveryRate /= SpreadSettings.ADSMultiplier;

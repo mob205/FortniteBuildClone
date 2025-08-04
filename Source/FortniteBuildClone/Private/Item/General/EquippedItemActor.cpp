@@ -36,6 +36,14 @@ void AEquippedItemActor::GetLifetimeReplicatedProps(TArray<class FLifetimeProper
 	DOREPLIFETIME_CONDITION(AEquippedItemActor, ItemData, COND_InitialOnly);
 }
 
+void AEquippedItemActor::PlayMontageSection(FName SectionName)
+{
+	if (AnimInstance.IsValid())
+	{
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
 void AEquippedItemActor::OnItemEquipped(AFBCCharacterBase* ItemOwner)
 {
 	FAttachmentTransformRules TransformRules = { EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, false };
@@ -45,7 +53,9 @@ void AEquippedItemActor::OnItemEquipped(AFBCCharacterBase* ItemOwner)
 	{
 		ItemOwner->PlayAnimMontage(EquipMontage);
 	}
-
+	
+	AnimInstance = ItemOwner->GetMesh()->GetAnimInstance();
+	
 	const TArray<TSubclassOf<UGameplayAbility>>& GrantedAbilities = ItemData->GetGrantedAbilities();
 	if (HasAuthority() && !GrantedAbilities.IsEmpty())
 	{

@@ -38,6 +38,8 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
+	void PlayMontageSection(FName SectionName);
+	
 	UFUNCTION()
 	virtual void OnRep_ItemData() {};
 	
@@ -52,5 +54,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> StaticMeshComp{};
+
+private:
+	TWeakObjectPtr<UAnimInstance> AnimInstance;
 };
 

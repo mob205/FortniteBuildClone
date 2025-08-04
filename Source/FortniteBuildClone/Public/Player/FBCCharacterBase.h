@@ -96,7 +96,7 @@ private:
 	void HandleBuildAction(const FGameplayTag StructureTag) const;
 
 public:
-	const TArray<UBoxComponent*>& GetHitboxes() const { return Hitboxes;}
+	const TArray<UBoxComponent*>& GetHitboxes() const { return Hitboxes; }
 private:
 	void CacheHitboxes();
 	TArray<UBoxComponent*> Hitboxes{};

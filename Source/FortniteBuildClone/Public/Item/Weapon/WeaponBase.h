@@ -26,7 +26,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void MarkAmmoDirty() const;
-	
+
 	virtual void OnItemEquipped(AFBCCharacterBase* AvatarActor) override;
 	virtual void OnItemUnequipped(AFBCCharacterBase* AvatarActor) override;
 	
@@ -66,6 +66,7 @@ protected:
 private:
 	void OnFireDown(const FGameplayEventData* GameplayEventData);
 	void OnFireReleased(const FGameplayEventData* GameplayEventData);
+	void OnADSChanged(FGameplayTag GameplayTag, int Count);
 	
 	void TryWeaponFire();
 	void UpdateSpread(float DeltaTime);
@@ -73,12 +74,14 @@ private:
 	TObjectPtr<AFBCCharacterBase> Owner;
 	TObjectPtr<UAbilitySystemComponent> OwnerASC;
 	TObjectPtr<const UWeaponItemData> WeaponItemData;
+	
 
 	UPROPERTY(ReplicatedUsing=OnRep_SpreadSeed)
 	int32 SpreadSeed{};
 
 	FRandomStream SpreadStream{};
-	
+
+	bool bADS{};
 	bool bWantsToShoot{};
 	float CurrentFireDelay{};
 	float CurrentWeaponSpread{};
