@@ -167,6 +167,10 @@ void AWeaponBase::Tick(float DeltaSeconds)
 	if (CurrentFireDelay > 0.0f)
 	{
 		CurrentFireDelay -= DeltaSeconds;
+		if (CurrentFireDelay <= 0.0f)
+		{
+			OnFireDelayComplete.Broadcast();
+		}
 	}
 	else if (bWantsToShoot)
 	{

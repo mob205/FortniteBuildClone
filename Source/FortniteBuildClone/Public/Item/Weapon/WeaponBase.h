@@ -13,6 +13,8 @@ class UWeaponItemData;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAmmoCountChangedSignature, int, Count);
 
+DECLARE_MULTICAST_DELEGATE(FOnFireDelayCompleteSignature);
+
 UCLASS()
 class FORTNITEBUILDCLONE_API AWeaponBase : public AEquippedItemActor
 {
@@ -24,6 +26,8 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnAmmoCountChangedSignature OnAmmoCountChanged;
 
+	FOnFireDelayCompleteSignature OnFireDelayComplete;
+	
 	UFUNCTION(BlueprintCallable)
 	const UWeaponItemData* GetWeaponItemData() const { return WeaponItemData; }
 	

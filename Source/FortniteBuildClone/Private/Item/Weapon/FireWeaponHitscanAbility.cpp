@@ -32,6 +32,14 @@ void UFireWeaponHitscanAbility::OnGiveAbility(const FGameplayAbilityActorInfo* A
 	GameState = GetWorld()->GetGameState();
 }
 
+bool UFireWeaponHitscanAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags,
+	const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
+{
+	bool Result = (Weapon && Weapon->CanShoot()) && (!IsLocallyControlled() || (IsLocallyControlled() && Weapon->GetCurrentFireDelay() <= 0));
+	return Result && Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags);
+}
+
 void UFireWeaponHitscanAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                          const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
                                          const FGameplayEventData* TriggerEventData)
@@ -47,14 +55,6 @@ void UFireWeaponHitscanAbility::ActivateAbility(const FGameplayAbilitySpecHandle
 		return;
 	}
 
-	if (Weapon->GetCurrentFireDelay() > 0)
-	{
-		UE_LOG(LogFBC, Error, TEXT("FireWeaponHitscan: Weapon has active fire delay"));
-		CancelAbility(Handle, ActorInfo, ActivationInfo, false);
-		return;
-	}
-
-	Weapon->ResetFireDelay();
 
 	FGameplayCueParameters CueParams;
 	CueParams.SourceObject = Weapon;
@@ -75,20 +75,25 @@ void UFireWeaponHitscanAbility::ActivateAbility(const FGameplayAbilitySpecHandle
 			FVector Res = Weapon->GetSpreadStream().VRandCone({}, 0);
 
 			Weapon->HandleFireSpreadIncrease();
+			Weapon->ResetFireDelay();
 			Weapon->ModifyAmmo(-1);
+
+			// Wait until next tick to give GAS a chance to send the target data RPC
+			GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &ThisClass::EndAbilityLocally));
 		}
 	}
-
-	// Wait until next tick to give GAS a chance to send the target data RPC
-	GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &ThisClass::EndAbilityLocally));
 }
 
-bool UFireWeaponHitscanAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags,
-	const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
+void UFireWeaponHitscanAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+	bool bReplicateEndAbility, bool bWasCancelled)
 {
-	bool Result = (Weapon && Weapon->CanShoot());
-	return Result && Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags);
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+
+	if (IsValid(Weapon))
+	{
+		Weapon->OnFireDelayComplete.RemoveAll(this);
+	}
 }
 
 void UFireWeaponHitscanAbility::EndAbilityLocally()
@@ -116,10 +121,29 @@ FGameplayAbilityTargetDataHandle UFireWeaponHitscanAbility::GetAimingTargetData(
 	return { new FWeaponTargetData{Timestamp, ViewLocation, ViewRotation, RelevantTargets } };
 }
 
+void UFireWeaponHitscanAbility::TryStoredData()
+{
+	OnValidData(StoredDataHandle, {});
+	StoredDataHandle.Clear();
+}
 
 // Reconstruct the client shot on the server
 void UFireWeaponHitscanAbility::OnValidData(const FGameplayAbilityTargetDataHandle& Data, FGameplayTag GameplayTag)
 {
+	if (Weapon->GetCurrentFireDelay() > 0)
+	{
+		if (Weapon->GetCurrentFireDelay() <= ServerEarlyFireThreshold)
+		{
+			// The request is close enough to the actual fire delay
+			// It was probably predicted to be valid, but ping variance resulted in the request coming faster than the last shot
+			StoredDataHandle = Data;
+			Weapon->OnFireDelayComplete.AddUObject(this, &ThisClass::TryStoredData);
+		}
+		
+		return;
+	}
+	Weapon->ResetFireDelay();
+	
 	if (const FGameplayAbilityTargetData* BaseTargetData = Data.Get(0))
 	{
 		if (BaseTargetData->GetScriptStruct() == FWeaponTargetData::StaticStruct())
