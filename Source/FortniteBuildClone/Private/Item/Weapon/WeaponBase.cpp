@@ -62,8 +62,11 @@ void AWeaponBase::OnItemUnequipped(AFBCCharacterBase* AvatarActor)
 
 void AWeaponBase::OnRep_CurrentAmmo(uint16 OldAmmoCount)
 {
+	if (bWantsToShoot && CanShoot())
+	{
+		CurrentAmmo = OldAmmoCount;
+	}
 	OnAmmoCountChanged.Broadcast(CurrentAmmo);
-	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, FString::Printf(TEXT("Replicated ammo %d"), CurrentAmmo));
 }
 
 int AWeaponBase::ModifyAmmo(int Amount)
@@ -78,8 +81,7 @@ void AWeaponBase::SetAmmoCount(int32 NewAmmoCount)
 {
 	CurrentAmmo = FMath::Clamp(NewAmmoCount, 0, WeaponItemData->GetMaxAmmoCount());
 	OnAmmoCountChanged.Broadcast(CurrentAmmo);
-
-	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, CurrentAmmo, this);
+	MarkAmmoDirty();
 }
 
 bool AWeaponBase::CanShoot()

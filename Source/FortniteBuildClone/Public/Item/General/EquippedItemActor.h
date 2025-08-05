@@ -33,6 +33,7 @@ public:
 	const UItemData* GetItemData() const { return ItemData; }
 	virtual void SetItemData(const UItemData* NewItemData) { ItemData = NewItemData; }
 
+	UFUNCTION(BlueprintCallable)
 	UStaticMeshComponent* GetStaticMesh() const { return StaticMeshComp; }
 protected:
 	virtual void BeginPlay() override;

@@ -5,6 +5,8 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/GameplayTags/FBCTags.h"
+#include "AbilitySystemGlobals.h"
+#include "GameplayCueManager.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "Item/Weapon/WeaponBase.h"
 #include "Player/FBCCharacterBase.h"
@@ -53,6 +55,11 @@ void UFireWeaponHitscanAbility::ActivateAbility(const FGameplayAbilitySpecHandle
 	}
 
 	Weapon->ResetFireDelay();
+
+	FGameplayCueParameters CueParams;
+	CueParams.SourceObject = Weapon;
+	CueParams.TargetAttachComponent = Weapon->GetStaticMesh();
+	ASC->ExecuteGameplayCue(GameplayCueTag, CueParams);
 
 	if (NetExecutionPolicy == EGameplayAbilityNetExecutionPolicy::LocalPredicted)
 	{

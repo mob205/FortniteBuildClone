@@ -59,6 +59,7 @@ public:
 	FRandomStream& GetSpreadStream() { return SpreadStream; }
 	
 	virtual bool CanShoot();
+
 protected:
 	virtual void BeginPlay() override;
 	
