@@ -70,7 +70,7 @@ protected:
 	uint16 CurrentAmmo{};
 
 	UFUNCTION()
-	void OnRep_CurrentAmmo();
+	void OnRep_CurrentAmmo(uint16 OldAmmoCount);
 
 	UFUNCTION()
 	void OnRep_SpreadSeed();

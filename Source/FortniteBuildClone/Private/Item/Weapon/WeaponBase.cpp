@@ -60,8 +60,9 @@ void AWeaponBase::OnItemUnequipped(AFBCCharacterBase* AvatarActor)
 	CurrentWeaponSpread = 0;
 }
 
-void AWeaponBase::OnRep_CurrentAmmo()
+void AWeaponBase::OnRep_CurrentAmmo(uint16 OldAmmoCount)
 {
+	OnAmmoCountChanged.Broadcast(CurrentAmmo);
 	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, FString::Printf(TEXT("Replicated ammo %d"), CurrentAmmo));
 }
 
@@ -69,9 +70,7 @@ int AWeaponBase::ModifyAmmo(int Amount)
 {
 	int FinalAmmo = FMath::Clamp(CurrentAmmo + Amount, 0, WeaponItemData->GetMaxAmmoCount());
 	int DeltaAmmo = FinalAmmo - CurrentAmmo;
-	CurrentAmmo = FinalAmmo;
-
-	OnAmmoCountChanged.Broadcast(CurrentAmmo);
+	SetAmmoCount(FinalAmmo);
 	return DeltaAmmo;
 }
 
@@ -79,6 +78,8 @@ void AWeaponBase::SetAmmoCount(int32 NewAmmoCount)
 {
 	CurrentAmmo = FMath::Clamp(NewAmmoCount, 0, WeaponItemData->GetMaxAmmoCount());
 	OnAmmoCountChanged.Broadcast(CurrentAmmo);
+
+	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, CurrentAmmo, this);
 }
 
 bool AWeaponBase::CanShoot()
@@ -97,9 +98,9 @@ void AWeaponBase::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& Ou
 
 	FDoRepLifetimeParams Params;
 	Params.bIsPushBased = true;
-	DOREPLIFETIME_WITH_PARAMS_FAST(AWeaponBase, CurrentAmmo, Params);
+	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, CurrentAmmo, Params);
 
-	DOREPLIFETIME_CONDITION(AWeaponBase, SpreadSeed, COND_InitialOnly);
+	DOREPLIFETIME_CONDITION(ThisClass, SpreadSeed, COND_InitialOnly);
 }
 
 void AWeaponBase::OnFireDown(const FGameplayEventData* GameplayEventData)
