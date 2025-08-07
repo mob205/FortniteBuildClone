@@ -8,11 +8,11 @@
 constexpr int MaxDeletionsPerTick{5};
 constexpr int MaxDisabledActorsPerRPC{10};
 
-void UDestructionSubsystem::QueueDestruction(APlacedStructure* Structure)
+void UDestructionSubsystem::QueueDestruction(AActor* Actor)
 {
-	if (IsValid(Structure))
+	if (IsValid(Actor))
 	{
-		DestructionQueue.Enqueue(Structure);
+		DestructionQueue.Enqueue(Actor);
 		bQueuedThisFrame = true;
 	}
 }
@@ -31,9 +31,9 @@ void UDestructionSubsystem::Tick(float DeltaTime)
 	int NumDeleted{};
 	while (!DestructionQueue.IsEmpty() && NumDeleted < MaxDeletionsPerTick)
 	{
-		APlacedStructure* Structure{};
-		DestructionQueue.Dequeue(Structure);
-		Structure->Destroy();
+		AActor* Actor{};
+		DestructionQueue.Dequeue(Actor);
+		Actor->Destroy();
 		++NumDeleted;
 	}
 }

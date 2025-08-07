@@ -15,9 +15,9 @@ enum ENeighborRemovalGroundUpdateRule
 	NRG_Multicast
 };
 
-class APlacedStructure;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStructureDisabledSignature);
 
-UCLASS(ClassGroup=(Custom), Within=PlacedStructure, meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class FORTNITEBUILDCLONE_API UStructureGroundingComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -25,6 +25,8 @@ class FORTNITEBUILDCLONE_API UStructureGroundingComponent : public UActorCompone
 public:
 	UStructureGroundingComponent();
 
+	FOnStructureDisabledSignature OnStructureDisabled{};
+	
 	const TSet<UStructureGroundingComponent*>& GetNeighbors() const { return Neighbors; }
 
 	// Removes a neighbor, which optionally causes a predicted or replicated ground update
@@ -39,20 +41,22 @@ public:
 	UFUNCTION(NetMulticast, Reliable, BlueprintCallable)
 	void DestroyOnClients();
 
-	 void UnregisterFromNeighbors();
-	
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-	
+	void UnregisterFromNeighbors();
+
+	// Returns true if this structure is valid as a neighbor
+	bool IsValidNeighbor() const;
+
 	// Immediately begins the destruction process
 	// Notifies a ground update on all neighbors
 	void FinishStructureDestruction();
+protected:
+	// Called when the game starts
+	virtual void BeginPlay() override;
 
 private:
-	// Placed structure that owns this component
-	TObjectPtr<APlacedStructure> Owner{};
+	void DisableStructure() const;
 	
+	// Placed structure that owns this component
 	TObjectPtr<UDestructionSubsystem> DestructionSubsystem;
 
 	// Returns true if the structure is connected to ground
@@ -84,4 +88,6 @@ private:
 
 	// Returns true if the ground cache is valid (i.e. it is the same frame it was set on)
 	bool IsGroundCacheValid() const;
+
+	bool bIsPendingDestruction{};
 };

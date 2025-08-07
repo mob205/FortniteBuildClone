@@ -2,9 +2,7 @@
 
 
 #include "Component/StructureGroundingComponent.h"
-
 #include "FBCBlueprintLibrary.h"
-#include "Structure/PlacedStructure.h"
 
 
 UStructureGroundingComponent::UStructureGroundingComponent()
@@ -21,7 +19,7 @@ void UStructureGroundingComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Owner = Cast<APlacedStructure>(GetOwner());
+	AActor* Owner = GetOwner();
 	
 	// Objects with RF_WasLoaded are placed in level in editor and will have their overlaps already updated
 	if (!Owner->HasAnyFlags(RF_WasLoaded))
@@ -40,13 +38,12 @@ void UStructureGroundingComponent::BeginPlay()
 void UStructureGroundingComponent::InitializeNeighbors()
 {
 	TArray<AActor*> OverlappingActors{};
-	Owner->GetOverlappingActors(OverlappingActors);
+	GetOwner()->GetOverlappingActors(OverlappingActors);
 	for (const auto OverlappingActor : OverlappingActors)
 	{
-		if (APlacedStructure* AsStructure = Cast<APlacedStructure>(OverlappingActor))
+		if (UStructureGroundingComponent* GroundingComp = OverlappingActor->GetComponentByClass<UStructureGroundingComponent>())
 		{
-			if (AsStructure->IsStructureDisabled()) { continue; }
-			UStructureGroundingComponent* GroundingComp = AsStructure->GetGroundingComponent();
+			if (!GroundingComp->IsValidNeighbor()) { continue; }
 			Neighbors.Add(GroundingComp);
 			GroundingComp->AddNeighbor(this);
 		}
@@ -105,14 +102,19 @@ void UStructureGroundingComponent::FinishStructureDestruction()
 	
 	// Disabling structures is comparable to the grounding check itself
 	// Defer this to next frame for smoother performance
-	Owner->SetIsStructureDisabled(true);
+	bIsPendingDestruction = true;
 	FTimerHandle DelayedDisable{};
-	GetWorld()->GetTimerManager().SetTimer(DelayedDisable, FTimerDelegate::CreateUObject(Owner, &APlacedStructure::DisableStructure), .01, false);
+	GetWorld()->GetTimerManager().SetTimer(DelayedDisable, FTimerDelegate::CreateUObject(this, &ThisClass::DisableStructure), .01, false);
 
 	if (DestructionSubsystem)
 	{
-		DestructionSubsystem->QueueDestruction(Owner);
+		DestructionSubsystem->QueueDestruction(GetOwner());
 	}
+}
+
+void UStructureGroundingComponent::DisableStructure() const
+{
+	OnStructureDisabled.Broadcast();
 }
 
 void UStructureGroundingComponent::UnregisterFromNeighbors()
@@ -121,6 +123,11 @@ void UStructureGroundingComponent::UnregisterFromNeighbors()
 	{
 		Neighbor->RemoveNeighbor(this, NRG_Local);
 	}
+}
+
+bool UStructureGroundingComponent::IsValidNeighbor() const
+{
+	return !bIsPendingDestruction;
 }
 
 bool UStructureGroundingComponent::IsGrounded()

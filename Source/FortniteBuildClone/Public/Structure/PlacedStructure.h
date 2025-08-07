@@ -7,6 +7,7 @@
 #include "Structure/Data/BitGrid.h"
 #include "Structure/Data/StructureInfoDataAsset.h"
 #include "GameFramework/Actor.h"
+#include "Interface/Damageable.h"
 #include "Interface/Traversable.h"
 #include "PlacedStructure.generated.h"
 
@@ -18,7 +19,7 @@ class USplineComponent;
 
 
 UCLASS()
-class FORTNITEBUILDCLONE_API APlacedStructure : public AActor, public ITraversable
+class FORTNITEBUILDCLONE_API APlacedStructure : public AActor, public ITraversable, public IDamageable
 {
 	GENERATED_BODY()
 
@@ -41,6 +42,17 @@ public:
 	int32 GetEditBitfield() const { return EditBitfield; }
 	UFUNCTION(BlueprintCallable)
 	void SetEditBitfield(int32 InEditBitfield) { EditBitfield = InEditBitfield; }
+
+	void Damage(FGameplayEffectSpecHandle DamageEffectSpec) override;
+	
+	UFUNCTION(BlueprintCallable)
+	float GetHealth() const { return Health; }
+	
+	UFUNCTION(BlueprintCallable)
+	void SetHealth(float InHealth);
+
+	UFUNCTION(BlueprintCallable)
+	void ModifyHealth(float Amount);
 	
 	virtual const TArray<USplineComponent*> GetLedges_Implementation() const override { return Ledges; }
 	virtual const TMap<USplineComponent*, USplineComponent*> GetOppositeLedges_Implementation() const override { return OppositeLedges; }
@@ -49,12 +61,14 @@ public:
 	EFBCResourceType GetResourceType() const { return ResourceType; }
 
 	UStructureGroundingComponent* GetGroundingComponent() const { return GroundingComponent; }
-	
+
+	UFUNCTION()
 	void DisableStructure();
-	bool IsStructureDisabled() const { return bIsDisabled; }
-	void SetIsStructureDisabled(bool bNewIsDisabled) { bIsDisabled = bNewIsDisabled; }
 
 	void PreInitDisableReplication();
+	
+	bool IsValidForNeighbor() const;
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Ability System")
 	FGameplayTag StructureTag{};
@@ -96,5 +110,9 @@ private:
 	
 	void UpdateMeshMaterial();
 
-	bool bIsDisabled{};
+	UFUNCTION()
+	void OnRep_Health();
+	
+	UPROPERTY(ReplicatedUsing=OnRep_Health)
+	float Health{100};
 };

@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
 #include "GameplayTagContainer.h"
+#include "Interface/Damageable.h"
 #include "FBCCharacterBase.generated.h"
 
 class UInventoryComponent;
@@ -35,7 +36,7 @@ struct FInitialAbility
 };
 
 UCLASS(Abstract)
-class FORTNITEBUILDCLONE_API AFBCCharacterBase : public ACharacter, public IAbilitySystemInterface
+class FORTNITEBUILDCLONE_API AFBCCharacterBase : public ACharacter, public IAbilitySystemInterface, public IDamageable
 {
 	GENERATED_BODY()
 
@@ -55,6 +56,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building")
 	TObjectPtr<UStructureInfoDataAsset> StructureInfo;
 
+	UFUNCTION(BlueprintCallable)
+	virtual void Damage(FGameplayEffectSpecHandle DamageEffectSpec) override;
+	
 	FOnASCInitSignature OnASCInit;
 protected:
 	virtual void PossessedBy(AController* NewController) override;

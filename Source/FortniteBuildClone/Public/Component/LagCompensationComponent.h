@@ -77,7 +77,7 @@ public:
 	~FLagCompensatedWindow();
 
 	FLagCompensatedWindow(const FLagCompensatedWindow&) = delete;
-	FLagCompensatedWindow(const FLagCompensatedWindow&&) = delete;
+	FLagCompensatedWindow(FLagCompensatedWindow&&) = delete;
 
 private:
 	TArray<ULagCompensationComponent*> RewindedTargets;

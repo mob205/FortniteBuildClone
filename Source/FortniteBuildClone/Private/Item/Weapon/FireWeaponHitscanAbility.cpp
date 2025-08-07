@@ -13,6 +13,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Component/LagCompensationComponent.h"
 #include "GameFramework/GameStateBase.h"
+#include "Interface/Damageable.h"
 #include "Item/Weapon/WeaponTargetData.h"
 
 UFireWeaponHitscanAbility::UFireWeaponHitscanAbility()
@@ -188,14 +189,16 @@ void UFireWeaponHitscanAbility::ServerFire(const FWeaponTargetData& TargetData) 
 	
 	if (Hit.bBlockingHit)
 	{
-		if (UAbilitySystemComponent* HitASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Hit.GetActor()))
+		if (IDamageable* Damageable = Cast<IDamageable>(Hit.GetActor()))
 		{
-			FGameplayEffectContextHandle ContextHandle = HitASC->MakeEffectContext();
-			ContextHandle.AddInstigator(FBCOwner, Weapon);
-			
-			FGameplayEffectSpecHandle SpecHandle = HitASC->MakeOutgoingSpec(OnHitEffectClass, 1, ContextHandle);
-			SpecHandle.Data->SetSetByCallerMagnitude(FBCTags::AbilityDamage, Weapon->GetWeaponItemData()->GetDamage());
-			HitASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);
+			FGameplayEffectContextHandle Context = FGameplayEffectContextHandle(UAbilitySystemGlobals::Get().AllocGameplayEffectContext());
+			Context.AddInstigator(FBCOwner, Weapon);
+
+			FGameplayEffectSpecHandle Spec = MakeOutgoingGameplayEffectSpec(OnHitEffectClass, 1);
+			Spec.Data->SetContext(Context);
+			Spec.Data->SetSetByCallerMagnitude(FBCTags::AbilityDamage, Weapon->GetWeaponItemData()->GetDamage());
+
+			Damageable->Damage(Spec);
 		}
 	}
 

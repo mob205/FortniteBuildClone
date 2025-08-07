@@ -37,6 +37,14 @@ FCollisionQueryParams AFBCCharacterBase::GetIgnoreCharacterParams() const
 	return Params;
 }
 
+void AFBCCharacterBase::Damage(FGameplayEffectSpecHandle DamageEffectSpec)
+{
+	if (DamageEffectSpec.IsValid())
+	{
+		ASC->ApplyGameplayEffectSpecToSelf(*DamageEffectSpec.Data);
+	}
+}
+
 // Called on server only
 void AFBCCharacterBase::PossessedBy(AController* NewController)
 {

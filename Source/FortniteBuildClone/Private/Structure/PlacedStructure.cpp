@@ -3,8 +3,11 @@
 
 #include "Structure/PlacedStructure.h"
 
+#include "GameplayEffect.h"
+#include "AbilitySystem/FBCAttributeSet.h"
 #include "Component/StructureGroundingComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Net/Core/PushModel/PushModel.h"
 #include "Player/FBCPlayerController.h"
 
 APlacedStructure::APlacedStructure()
@@ -20,8 +23,6 @@ APlacedStructure::APlacedStructure()
 	StaticMesh->SetupAttachment(Root);
 
 	GroundingComponent = CreateDefaultSubobject<UStructureGroundingComponent>("Grounding Component");
-
-	NetDormancy = ENetDormancy::DORM_DormantAll;
 }
 
 void APlacedStructure::PreInitDisableReplication()
@@ -29,9 +30,18 @@ void APlacedStructure::PreInitDisableReplication()
 	bReplicates = false;
 }
 
+bool APlacedStructure::IsValidForNeighbor() const
+{
+	return GroundingComponent->IsValidNeighbor();
+}
+
 void APlacedStructure::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	FDoRepLifetimeParams PushParams{};
+	PushParams.bIsPushBased = true;
+	DOREPLIFETIME_WITH_PARAMS_FAST(APlacedStructure, Health, PushParams)
 
 	DOREPLIFETIME_CONDITION(APlacedStructure, StructureTag, COND_InitialOnly);
 	DOREPLIFETIME_CONDITION(APlacedStructure, EditBitfield, COND_InitialOnly);
@@ -41,14 +51,14 @@ void APlacedStructure::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 void APlacedStructure::BeginPlay()
 {
 	Super::BeginPlay();
+
+	GroundingComponent->OnStructureDisabled.AddDynamic(this, &ThisClass::DisableStructure);
 }
 
 void APlacedStructure::DisableStructure()
 {
-	TRACE_CPUPROFILER_EVENT_SCOPE_STR("Disable");
 	Root->SetVisibility(false, true);
 	SetActorEnableCollision(false);
-	bIsDisabled = true;
 }
 
 void APlacedStructure::SetStructureMeshVisibility(bool bIsVisible)
@@ -85,3 +95,39 @@ void APlacedStructure::SetStructureMeshMaterial_Implementation(UMaterialInstance
 	StaticMesh->SetMaterial(0, Material);
 }
 
+void APlacedStructure::Damage(FGameplayEffectSpecHandle DamageEffectSpec)
+{
+	check(DamageEffectSpec.IsValid());
+
+	DamageEffectSpec.Data->CalculateModifierMagnitudes();
+
+	for (int i = 0; i < DamageEffectSpec.Data->Modifiers.Num(); ++i)
+	{
+		if (DamageEffectSpec.Data->Def->Modifiers[i].Attribute == UFBCAttributeSet::GetIncomingDamageAttribute())
+		{
+			ModifyHealth(-DamageEffectSpec.Data->Modifiers[i].GetEvaluatedMagnitude());
+		}
+	}
+}
+
+void APlacedStructure::OnRep_Health()
+{
+	if (Health <= 0)
+	{
+		GroundingComponent->FinishStructureDestruction();
+	}
+}
+
+void APlacedStructure::SetHealth(float InHealth)
+{
+	Health = InHealth;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, Health, this);
+
+	OnRep_Health();
+}
+
+void APlacedStructure::ModifyHealth(float Amount)
+{
+	float NewHealth = FMath::Clamp(Health + Amount, 0.f, 100.f);
+	SetHealth(NewHealth);
+}

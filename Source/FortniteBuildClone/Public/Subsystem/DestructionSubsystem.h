@@ -3,12 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Structure/PlacedStructure.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "DestructionSubsystem.generated.h"
 
 class AFBCGameState;
-class APlacedStructure;
 
 inline constexpr int DestructionCellLength{8};
 
@@ -23,13 +21,13 @@ public:
 	* An object pool can also be used, but due to the vast amounts of different structures from edits and the relative infrequency
 	* of structures being placed, this doesn't seem like an easier option
 	*/
-	void QueueDestruction(APlacedStructure* Structure);
+	void QueueDestruction(AActor* Actor);
 
 	virtual TStatId GetStatId() const override { return TStatId(); }
 protected:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	TQueue<APlacedStructure*> DestructionQueue;
+	TQueue<AActor*> DestructionQueue;
 	bool bQueuedThisFrame{};
 };
