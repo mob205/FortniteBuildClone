@@ -12,7 +12,7 @@
 #include "Component/StructureGroundingComponent.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "Kismet/GameplayStatics.h"
-#include "Structure/PlacedStructure.h"
+#include "Structure/PlacedStructure/PlacedStructure.h"
 
 void UEditAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
                                    const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)

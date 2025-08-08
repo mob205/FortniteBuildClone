@@ -9,7 +9,6 @@
 #include "Components/CapsuleComponent.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "GameFramework/Character.h"
-#include "Structure/PlacedStructure.h"
 
 void FFBCMoveResponseDataContainer::ServerFillResponseData(const UCharacterMovementComponent& CharacterMovement,
                                                            const FClientAdjustment& PendingAdjustment)

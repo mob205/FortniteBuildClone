@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Structure/Data/StructureResourceTypes.h"
+#include "Structure/PlacedStructure/Data/StructureResourceTypes.h"
 #include "BuildResourceComponent.generated.h"
 
 class UAbilitySystemComponent;

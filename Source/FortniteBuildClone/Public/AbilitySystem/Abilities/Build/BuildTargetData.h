@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Abilities/GameplayAbilityTargetTypes.h"
-#include "Structure/Data/StructureResourceTypes.h"
+#include "Structure/PlacedStructure/Data/StructureResourceTypes.h"
 #include "BuildTargetData.generated.h"
 
 USTRUCT()

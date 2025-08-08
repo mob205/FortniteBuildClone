@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbilityTargetActor.h"
-#include "Structure/Data/EditMapDataAsset.h"
+#include "Structure/PlacedStructure/Data/EditMapDataAsset.h"
 #include "EditTargetingActor.generated.h"
 
 class AEditSelectionTile;

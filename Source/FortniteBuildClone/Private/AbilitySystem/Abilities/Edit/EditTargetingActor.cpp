@@ -6,7 +6,6 @@
 #include "AbilitySystem/Abilities/Edit/EditSelectionTile.h"
 #include "FBCBlueprintLibrary.h"
 #include "AbilitySystem/Abilities/Edit/EditTargetData.h"
-#include "Structure/Data/EditMapDataAsset.h"
 
 AEditTargetingActor::AEditTargetingActor()
 {

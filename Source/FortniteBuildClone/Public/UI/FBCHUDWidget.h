@@ -6,7 +6,6 @@
 #include "AttributeSet.h"
 #include "GameplayEffectTypes.h"
 #include "Blueprint/UserWidget.h"
-#include "Structure/Data/StructureResourceTypes.h"
 #include "Component/BuildResourceComponent.h"
 #include "Component/InventoryComponent.h"
 #include "FBCHUDWidget.generated.h"

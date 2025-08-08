@@ -1,12 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Structure/PlacementStrategy/RampPlacementStrategy.h"
-
+#include "Structure/PlacedStructure/PlacementStrategy/FloorPlacementStrategy.h"
 #include "FBCBlueprintLibrary.h"
-#include "GridSizes.h"
 
-bool URampPlacementStrategy::GetTargetingLocation(
+bool UFloorPlacementStrategy::GetTargetingLocation(
 	APawn* Player, int RotationOffset, int32 Edit, FTransform& OutResult)
 {
 	APlayerController* PC = Cast<APlayerController>(Player->GetController());
@@ -16,17 +14,23 @@ bool URampPlacementStrategy::GetTargetingLocation(
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
 
 	FVector TargetLocation = GetViewLocation(PC, ObjectQueryParams);
-
-	// DrawDebugSphere(GetWorld(), TargetLocation, 10.f, 10, FColor::Red);
-
-	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation));
-
-	const float Yaw = UFBCBlueprintLibrary::SnapAngleToGrid(PC->GetControlRotation().Yaw + (RotationOffset * 90.0f));
-
-	FRotator TargetRotator = {0, Yaw, 0};
+	
+	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_RoundZ(TargetLocation));
+	
+	const float Yaw = PC->GetControlRotation().Yaw;
+	const FRotator TargetRotator = {0, UFBCBlueprintLibrary::SnapAngleToGrid(Yaw + (RotationOffset * 90)), 0};
 	OutResult.SetRotation(TargetRotator.Quaternion());
 
 	FTransform PrimaryTargetLocation = OutResult;
+	
+	if (CanPlace(OutResult, Edit))
+	{
+		return true;
+	}
+
+	// Try placing in same vertical block as player
+	TargetLocation.Z = Player->GetActorLocation().Z;
+	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_RoundZ(TargetLocation));
 
 	// Don't check occupied for the primary targeting location
 	// If this is a valid place but it is occupied, no targeting ghost should be visible
@@ -35,17 +39,8 @@ bool URampPlacementStrategy::GetTargetingLocation(
 		return true;
 	}
 
-	// Try placing in same vertical block as player
-	TargetLocation.Z = Player->GetActorLocation().Z;
-	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation));
-
-	if (CanPlace(OutResult, Edit) && !IsOccupied(OutResult))
-	{
-		return true;
-	}
-
-	// Try placing in one below the player's vertical block
-	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(TargetLocation) - FVector{0, 0, GridSizeVertical });
+	// Try the player's current grid slot
+	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_FloorZ(Player->GetActorLocation()));
 	if (CanPlace(OutResult, Edit) && !IsOccupied(OutResult))
 	{
 		return true;

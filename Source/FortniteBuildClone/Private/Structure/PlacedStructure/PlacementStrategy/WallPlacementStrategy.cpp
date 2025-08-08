@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Structure/PlacementStrategy/WallPlacementStrategy.h"
+#include "Structure/PlacedStructure/PlacementStrategy/WallPlacementStrategy.h"
 #include "FBCBlueprintLibrary.h"
 #include "GridSizes.h"
-#include "Structure/PlacedStructure.h"
+#include "Structure/PlacedStructure/PlacedStructure.h"
 
 bool UWallPlacementStrategy::GetTargetingLocation(
 	APawn* Player, int RotationOffset, int32 Edit, FTransform& OutResult)

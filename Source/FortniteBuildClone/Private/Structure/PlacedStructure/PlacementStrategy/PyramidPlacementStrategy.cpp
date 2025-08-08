@@ -1,15 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Structure/PlacementStrategy/FloorPlacementStrategy.h"
-
+#include "Structure/PlacedStructure/PlacementStrategy/PyramidPlacementStrategy.h"
 #include "FBCBlueprintLibrary.h"
 
-bool UFloorPlacementStrategy::GetTargetingLocation(
+bool UPyramidPlacementStrategy::GetTargetingLocation(
 	APawn* Player, int RotationOffset, int32 Edit, FTransform& OutResult)
 {
 	APlayerController* PC = Cast<APlayerController>(Player->GetController());
-	
+
 	FCollisionObjectQueryParams ObjectQueryParams{};
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
@@ -24,6 +23,8 @@ bool UFloorPlacementStrategy::GetTargetingLocation(
 
 	FTransform PrimaryTargetLocation = OutResult;
 	
+	// Don't check occupied for the primary targeting location
+	// If this is a valid place but it is occupied, no targeting ghost should be visible
 	if (CanPlace(OutResult, Edit))
 	{
 		return true;
@@ -33,9 +34,7 @@ bool UFloorPlacementStrategy::GetTargetingLocation(
 	TargetLocation.Z = Player->GetActorLocation().Z;
 	OutResult.SetLocation(UFBCBlueprintLibrary::SnapLocationToGrid_RoundZ(TargetLocation));
 
-	// Don't check occupied for the primary targeting location
-	// If this is a valid place but it is occupied, no targeting ghost should be visible
-	if (CanPlace(OutResult, Edit))
+	if (CanPlace(OutResult, Edit) && !IsOccupied(OutResult))
 	{
 		return true;
 	}
@@ -46,7 +45,7 @@ bool UFloorPlacementStrategy::GetTargetingLocation(
 	{
 		return true;
 	}
-	
+
 	// Use cached target location to show invalid placement indicator
 	OutResult = PrimaryTargetLocation;
 	return false;

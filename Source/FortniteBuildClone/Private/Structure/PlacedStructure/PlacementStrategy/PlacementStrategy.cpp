@@ -1,14 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Structure/PlacementStrategy/PlacementStrategy.h"
-
+#include "Structure/PlacedStructure/PlacementStrategy/PlacementStrategy.h"
 #include "FBCBlueprintLibrary.h"
 #include "Components/BoxComponent.h"
 #include "Engine/SCS_Node.h"
 #include "Engine/SimpleConstructionScript.h"
-#include "FortniteBuildClone/FortniteBuildClone.h"
-#include "Structure/PlacedStructure.h"
+#include "Structure/PlacedStructure/PlacedStructure.h"
 
 bool UPlacementStrategy::CanPlace(const FTransform& QueryTransform, int32 Edit)
 {

@@ -5,7 +5,7 @@
 #include "AbilitySystem/FBCAbilitySystemComponent.h"
 #include "GameplayAbilitySpec.h"
 #include "GameplayEffect.h"
-#include "Structure/Data/StructureInfoDataAsset.h"
+#include "Structure/PlacedStructure/Data/StructureInfoDataAsset.h"
 #include "InputAction.h"
 #include "AbilitySystem/GameplayTags/FBCTags.h"
 #include "Component/InventoryComponent.h"

@@ -6,16 +6,16 @@
 #include "AbilitySystemComponent.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "Abilities/Tasks/AbilityTask_WaitTargetData.h"
-#include "Structure/PlacedStructure.h"
-#include "Structure/Data/StructureInfoDataAsset.h"
+#include "Structure/PlacedStructure/Data/StructureInfoDataAsset.h"
 #include "Kismet/GameplayStatics.h"
 #include "FBCBlueprintLibrary.h"
 #include "GameplayTagContainer.h"
 #include "AbilitySystem/Abilities/Build/BuildTargetData.h"
 #include "Component/BuildResourceComponent.h"
-#include "Structure/PlacementStrategy/PlacementStrategy.h"
+#include "Structure/PlacedStructure/PlacedStructure.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "Player/FBCPlayerController.h"
+#include "Structure/PlacedStructure/PlacementStrategy/PlacementStrategy.h"
 
 UBuildAbility::UBuildAbility()
 {

@@ -8,7 +8,7 @@
 #include "Abilities/GameplayAbility.h"
 #include "Abilities/GameplayAbilityTargetTypes.h"
 #include "AbilitySystem/Abilities/Build/StructureTargetingActor.h"
-#include "Structure/Data/StructureInfoDataAsset.h"
+#include "Structure/PlacedStructure/Data/StructureInfoDataAsset.h"
 #include "EditAbility.generated.h"
 
 class APlacedStructure;

@@ -4,7 +4,7 @@
 #include "DetailWidgetRow.h"
 #include "IDetailChildrenBuilder.h"
 #include "IPropertyUtilities.h"
-#include "Structure/Data/BitGrid.h"
+#include "Structure/PlacedStructure/Data/BitGrid.h"
 #include "Widgets/Input/SCheckBox.h"
 #include "Widgets/Text/STextBlock.h"
 

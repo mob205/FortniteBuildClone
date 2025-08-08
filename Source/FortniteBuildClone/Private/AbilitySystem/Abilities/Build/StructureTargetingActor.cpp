@@ -5,7 +5,7 @@
 #include "Abilities/GameplayAbility.h"
 #include "AbilitySystem/Abilities/Build/BuildTargetData.h"
 #include "Component/BuildResourceComponent.h"
-#include "Structure/PlacementStrategy/PlacementStrategy.h"
+#include "Structure/PlacedStructure/PlacementStrategy/PlacementStrategy.h"
 
 uint8 AStructureTargetingActor::StructurePredictionId = 1;
 

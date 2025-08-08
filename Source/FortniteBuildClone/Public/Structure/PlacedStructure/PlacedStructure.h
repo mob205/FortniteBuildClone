@@ -4,22 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
-#include "Structure/Data/BitGrid.h"
-#include "Structure/Data/StructureInfoDataAsset.h"
+#include "Structure/PlacedStructure/Data/BitGrid.h"
+#include "Structure/PlacedStructure/Data/StructureInfoDataAsset.h"
 #include "GameFramework/Actor.h"
-#include "Interface/Damageable.h"
 #include "Interface/Traversable.h"
+#include "Structure/StructureBase.h"
 #include "PlacedStructure.generated.h"
 
 class AFBCPlayerState;
-class UStructureGroundingComponent;
 class UDestructionSubsystem;
 class USplineComponent;
 
 
-
 UCLASS()
-class FORTNITEBUILDCLONE_API APlacedStructure : public AActor, public ITraversable, public IDamageable
+class FORTNITEBUILDCLONE_API APlacedStructure : public AStructureBase, public ITraversable
 {
 	GENERATED_BODY()
 
@@ -43,32 +41,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetEditBitfield(int32 InEditBitfield) { EditBitfield = InEditBitfield; }
 
-	void Damage(FGameplayEffectSpecHandle DamageEffectSpec) override;
-	
-	UFUNCTION(BlueprintCallable)
-	float GetHealth() const { return Health; }
-	
-	UFUNCTION(BlueprintCallable)
-	void SetHealth(float InHealth);
-
-	UFUNCTION(BlueprintCallable)
-	void ModifyHealth(float Amount);
-	
 	virtual const TArray<USplineComponent*> GetLedges_Implementation() const override { return Ledges; }
 	virtual const TMap<USplineComponent*, USplineComponent*> GetOppositeLedges_Implementation() const override { return OppositeLedges; }
 
 	void SetResourceType(EFBCResourceType InResourceType);
 	EFBCResourceType GetResourceType() const { return ResourceType; }
 
-	UStructureGroundingComponent* GetGroundingComponent() const { return GroundingComponent; }
-
-	UFUNCTION()
-	void DisableStructure();
-
 	void PreInitDisableReplication();
 	
-	bool IsValidForNeighbor() const;
-
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Ability System")
 	FGameplayTag StructureTag{};
@@ -77,25 +57,15 @@ protected:
 	TMap<EFBCResourceType, UMaterialInstance*> MaterialMap{};
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	virtual void BeginPlay() override;
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated, Category = "Editing")
 	FBitGrid EditBitfield{};
 	
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<USceneComponent> Root;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<UStaticMeshComponent> StaticMesh;
-
 	UPROPERTY(BlueprintReadWrite)
 	TArray<USplineComponent*> Ledges;
 	
 	UPROPERTY(BlueprintReadWrite)
 	TMap<USplineComponent*, USplineComponent*> OppositeLedges{};
-
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	UStructureGroundingComponent* GroundingComponent{};
 	
 	UFUNCTION(BlueprintNativeEvent)
 	void SetStructureMeshMaterial(UMaterialInstance* Material);
@@ -109,10 +79,4 @@ private:
 	void OnRep_ResourceType(EFBCResourceType NewResourceType);
 	
 	void UpdateMeshMaterial();
-
-	UFUNCTION()
-	void OnRep_Health();
-	
-	UPROPERTY(ReplicatedUsing=OnRep_Health)
-	float Health{100};
 };

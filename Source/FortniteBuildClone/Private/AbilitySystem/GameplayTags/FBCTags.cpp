@@ -20,6 +20,7 @@ namespace FBCTags
 	UE_DEFINE_GAMEPLAY_TAG(ReloadWeapon, "Abilities.Weapon.Reload");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilityDamage, "Abilities.Damage", "Damage dealt by an ability");
 	UE_DEFINE_GAMEPLAY_TAG(Build, "Abilities.Build")
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Harvesting, "Abilities.Harvesting", "Associated with harvesting resources from things in the world")
 
 	// Input
 	UE_DEFINE_GAMEPLAY_TAG(InputFireDown, "Input.Fire.Down");

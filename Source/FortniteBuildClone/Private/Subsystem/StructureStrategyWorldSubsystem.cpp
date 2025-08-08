@@ -3,9 +3,9 @@
 
 #include "Subsystem/StructureStrategyWorldSubsystem.h"
 
-#include "Structure/PlacementStrategy/PlacementStrategy.h"
-#include "Structure/Data/StructureInfoDataAsset.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
+#include "Structure/PlacedStructure/Data/StructureInfoDataAsset.h"
+#include "Structure/PlacedStructure/PlacementStrategy/PlacementStrategy.h"
 
 UStructureStrategyWorldSubsystem::UStructureStrategyWorldSubsystem()
 {

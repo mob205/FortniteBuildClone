@@ -7,7 +7,7 @@
 #include "Component/StructureGroundingComponent.h"
 #include "Interface/Interactable.h"
 #include "Player/FBCPlayerState.h"
-#include "Structure/PlacedStructure.h"
+#include "Structure/PlacedStructure/PlacedStructure.h"
 #include "UI/FBCHUDWidget.h"
 
 void AFBCPlayerController::AddPredictedStructure(uint8 PredictionId, APlacedStructure* Structure)

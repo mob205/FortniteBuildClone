@@ -3,8 +3,6 @@
 
 #include "Subsystem/DestructionSubsystem.h"
 
-#include "Structure/PlacedStructure.h"
-
 constexpr int MaxDeletionsPerTick{5};
 constexpr int MaxDisabledActorsPerRPC{10};
 
