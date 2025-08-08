@@ -8,7 +8,7 @@
 #include "Damageable.generated.h"
 
 // This class does not need to be modified.
-UINTERFACE(NotBlueprintable)
+UINTERFACE(NotBlueprintable, BlueprintType)
 class UDamageable : public UInterface
 {
 	GENERATED_BODY()

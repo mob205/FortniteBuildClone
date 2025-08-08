@@ -11,6 +11,7 @@
 #include "Item/Weapon/WeaponBase.h"
 #include "Player/FBCCharacterBase.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "FBCBlueprintLibrary.h"
 #include "Component/LagCompensationComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "Interface/Damageable.h"
@@ -191,13 +192,14 @@ void UFireWeaponHitscanAbility::ServerFire(const FWeaponTargetData& TargetData) 
 	{
 		if (IDamageable* Damageable = Cast<IDamageable>(Hit.GetActor()))
 		{
-			FGameplayEffectContextHandle Context = FGameplayEffectContextHandle(UAbilitySystemGlobals::Get().AllocGameplayEffectContext());
-			Context.AddInstigator(FBCOwner, Weapon);
+			// FGameplayEffectContextHandle Context = FGameplayEffectContextHandle(UAbilitySystemGlobals::Get().AllocGameplayEffectContext());
+			// Context.AddInstigator(FBCOwner, Weapon);
+			//
+			// FGameplayEffectSpecHandle Spec = MakeOutgoingGameplayEffectSpec(OnHitEffectClass, 1);
+			// Spec.Data->SetContext(Context);
+			// Spec.Data->SetSetByCallerMagnitude(FBCTags::AbilityDamage, Weapon->GetWeaponItemData()->GetDamage());
 
-			FGameplayEffectSpecHandle Spec = MakeOutgoingGameplayEffectSpec(OnHitEffectClass, 1);
-			Spec.Data->SetContext(Context);
-			Spec.Data->SetSetByCallerMagnitude(FBCTags::AbilityDamage, Weapon->GetWeaponItemData()->GetDamage());
-
+			FGameplayEffectSpecHandle Spec = UFBCBlueprintLibrary::MakeDamageSpec(OnHitEffectClass, Weapon->GetWeaponItemData()->GetDamage(), FBCOwner, Weapon);
 			Damageable->Damage(Spec);
 		}
 	}

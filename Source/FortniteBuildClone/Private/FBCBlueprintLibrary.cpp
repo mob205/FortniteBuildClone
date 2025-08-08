@@ -1,7 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "FBCBlueprintLibrary.h"
+
+#include "AbilitySystemGlobals.h"
+#include "GameplayEffect.h"
+#include "GameplayEffectTypes.h"
 #include "GridSizes.h"
+#include "AbilitySystem/GameplayTags/FBCTags.h"
 
 FTransform UFBCBlueprintLibrary::SnapTransformToGrid(const FTransform& InTransform)
 {
@@ -84,5 +89,19 @@ bool UFBCBlueprintLibrary::TraceControllerLook(AController* PC, float Range, FHi
 	FVector ViewEnd = ViewStart + (ViewRot.Vector() * Range);
 	
 	return PC->GetWorld()->LineTraceSingleByChannel(OutHit, ViewStart, ViewEnd, TraceChannel);
+}
 
+FGameplayEffectSpecHandle UFBCBlueprintLibrary::MakeDamageSpec(TSubclassOf<UGameplayEffect> DamageEffectClass, float Damage, AActor* Instigator, AActor* Causer)
+{
+	if (!DamageEffectClass) { return {}; }
+	FGameplayEffectContextHandle Context = FGameplayEffectContextHandle(UAbilitySystemGlobals::Get().AllocGameplayEffectContext());
+	Context.AddInstigator(Instigator, Causer);
+
+	const UGameplayEffect* DefaultEffect = DamageEffectClass->GetDefaultObject<UGameplayEffect>();
+	
+	FGameplayEffectSpecHandle Spec = FGameplayEffectSpecHandle(new FGameplayEffectSpec(DefaultEffect, Context, 1));
+	Spec.Data->SetContext(Context);
+	Spec.Data->SetSetByCallerMagnitude(FBCTags::AbilityDamage, Damage);
+
+	return Spec;
 }

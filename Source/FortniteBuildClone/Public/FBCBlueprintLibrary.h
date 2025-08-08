@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayEffect.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "FBCBlueprintLibrary.generated.h"
 
@@ -44,4 +45,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Trace")
 	static bool TraceControllerLook(AController* PC, float Range, FHitResult& OutHit, ECollisionChannel TraceChannel = ECC_Visibility);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Damage")
+	static FGameplayEffectSpecHandle MakeDamageSpec(TSubclassOf<UGameplayEffect> DamageEffectClass, float Damage, AActor* Instigator, AActor* Causer);
 };
