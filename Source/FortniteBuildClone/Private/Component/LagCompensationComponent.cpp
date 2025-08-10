@@ -66,6 +66,8 @@ bool ULagCompensationComponent::TryRewind(float Timestamp)
 	FillHitboxData(Hitboxes, PreRewindHitboxData);
 
 	ApplyHitboxData(Hitboxes, *HitboxData);
+
+	DebugDisplayHitboxes(Hitboxes);
 	return true;
 }
 
@@ -125,6 +127,14 @@ const FHitboxData* ULagCompensationComponent::SearchHistory(float Timestamp) con
 		}
 	}
 	return nullptr;
+}
+
+void ULagCompensationComponent::DebugDisplayHitboxes(const TArray<UBoxComponent*>& Hitboxes) const
+{
+	for (const auto Hitbox : Hitboxes)
+	{
+		DrawDebugBox(GetWorld(), Hitbox->GetComponentLocation(), Hitbox->GetUnscaledBoxExtent(), FColor::Red, false, 20);
+	}
 }
 
 FLagCompensatedWindow::FLagCompensatedWindow(const TArray<AFBCCharacterBase*>& Targets, double Timestamp)

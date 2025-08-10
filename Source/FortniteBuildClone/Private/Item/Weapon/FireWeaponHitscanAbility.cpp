@@ -174,8 +174,13 @@ void UFireWeaponHitscanAbility::ServerFire(const FWeaponTargetData& TargetData) 
 	FVector EndNoSpread = Start + Range * TargetData.ViewRotation.Vector();
 
 	FHitResult Hit;
+	if (bDebugUseLagCompensation)
 	{
 		FLagCompensatedWindow CompensationWindow{TargetData.RelevantTargets, TargetData.Timestamp };
+		GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, FBCOwner->GetIgnoreCharacterParams());
+	}
+	else
+	{
 		GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, FBCOwner->GetIgnoreCharacterParams());
 	}
 
@@ -192,13 +197,6 @@ void UFireWeaponHitscanAbility::ServerFire(const FWeaponTargetData& TargetData) 
 	{
 		if (IDamageable* Damageable = Cast<IDamageable>(Hit.GetActor()))
 		{
-			// FGameplayEffectContextHandle Context = FGameplayEffectContextHandle(UAbilitySystemGlobals::Get().AllocGameplayEffectContext());
-			// Context.AddInstigator(FBCOwner, Weapon);
-			//
-			// FGameplayEffectSpecHandle Spec = MakeOutgoingGameplayEffectSpec(OnHitEffectClass, 1);
-			// Spec.Data->SetContext(Context);
-			// Spec.Data->SetSetByCallerMagnitude(FBCTags::AbilityDamage, Weapon->GetWeaponItemData()->GetDamage());
-
 			FGameplayEffectSpecHandle Spec = UFBCBlueprintLibrary::MakeDamageSpec(OnHitEffectClass, Weapon->GetWeaponItemData()->GetDamage(), FBCOwner, Weapon);
 			Damageable->Damage(Spec);
 		}

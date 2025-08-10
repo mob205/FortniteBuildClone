@@ -36,6 +36,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	FGameplayTag GameplayCueTag;
 
+	UPROPERTY(EditDefaultsOnly)
+	bool bDebugUseLagCompensation{true};
+
 private:
 	TObjectPtr<AWeaponBase> Weapon;
 	TObjectPtr<AFBCCharacterBase> FBCOwner;
