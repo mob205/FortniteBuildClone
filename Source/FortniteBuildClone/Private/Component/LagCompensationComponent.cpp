@@ -67,7 +67,7 @@ bool ULagCompensationComponent::TryRewind(float Timestamp)
 
 	ApplyHitboxData(Hitboxes, *HitboxData);
 
-	DebugDisplayHitboxes(Hitboxes);
+	// DebugDisplayHitboxes(Hitboxes);
 	return true;
 }
 
@@ -129,6 +129,10 @@ const FHitboxData* ULagCompensationComponent::SearchHistory(float Timestamp) con
 	return nullptr;
 }
 
+void ULagCompensationComponent::DebugDisplayCurrentHitboxes() const
+{
+	DebugDisplayHitboxes(FBCOwner->GetHitboxes());
+}
 void ULagCompensationComponent::DebugDisplayHitboxes(const TArray<UBoxComponent*>& Hitboxes) const
 {
 	for (const auto Hitbox : Hitboxes)

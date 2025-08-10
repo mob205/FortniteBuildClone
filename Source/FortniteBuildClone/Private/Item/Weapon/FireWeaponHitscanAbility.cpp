@@ -184,14 +184,14 @@ void UFireWeaponHitscanAbility::ServerFire(const FWeaponTargetData& TargetData) 
 		GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, FBCOwner->GetIgnoreCharacterParams());
 	}
 
-	if (Cast<AFBCCharacterBase>(Hit.GetActor()))
-	{
-		DrawDebugLine(GetWorld(), Start, EndNoSpread, FColor::Green, false, 20.f);
-	}
-	else
-	{
-		DrawDebugLine(GetWorld(), Start, EndNoSpread, FColor::Red, false, 20.f);
-	}
+	// if (Cast<AFBCCharacterBase>(Hit.GetActor()))
+	// {
+	// 	DrawDebugLine(GetWorld(), Start, EndNoSpread, FColor::Green, false, 20.f);
+	// }
+	// else
+	// {
+	// 	DrawDebugLine(GetWorld(), Start, EndNoSpread, FColor::Red, false, 20.f);
+	// }
 	
 	if (Hit.bBlockingHit)
 	{

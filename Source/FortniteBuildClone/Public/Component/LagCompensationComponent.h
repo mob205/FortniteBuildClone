@@ -31,7 +31,9 @@ public:
 	ULagCompensationComponent();
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	
+
+	void DebugDisplayCurrentHitboxes() const;
+	void DebugDisplayHitboxes(const TArray<UBoxComponent*>& Hitboxes) const;
 protected:
 	virtual void BeginPlay() override;
 
@@ -55,8 +57,6 @@ private:
 
 	// Searches position history for closest to the timestamp. Returns nullptr if timestamp is invalid
 	const FHitboxData* SearchHistory(float Timestamp) const;
-
-	void DebugDisplayHitboxes(const TArray<UBoxComponent*>& Hitboxes) const;
 	
 	TObjectPtr<AFBCCharacterBase> FBCOwner{};
 	TObjectPtr<AGameStateBase> GameState{};
