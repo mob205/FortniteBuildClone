@@ -14,6 +14,14 @@
 #include "Kismet/GameplayStatics.h"
 #include "Structure/PlacedStructure/PlacedStructure.h"
 
+bool UEditAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags,
+	const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
+{
+	bool bHasTarget = (GetSelection<APlacedStructure>() != nullptr || GetSelection<AStructureTargetingActor>() != nullptr);
+	return bHasTarget && Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags);
+}
+
 void UEditAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
                                    const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {

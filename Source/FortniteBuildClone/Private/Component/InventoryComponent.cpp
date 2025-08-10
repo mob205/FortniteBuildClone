@@ -3,6 +3,8 @@
 
 #include "Component/InventoryComponent.h"
 
+#include "AbilitySystemComponent.h"
+#include "AbilitySystem/GameplayTags/FBCTags.h"
 #include "FortniteBuildClone/FortniteBuildClone.h"
 #include "Item/General/ItemData.h"
 #include "Item/General/WorldDropActor.h"
@@ -172,8 +174,22 @@ void UInventoryComponent::BeginPlay()
 	
 	Inventory.OnItemRemoved.BindUObject(this, &ThisClass::OnItemRemoved);
 	Inventory.OnItemAdded.BindUObject(this, &ThisClass::OnItemAdded);
+
+	if (UAbilitySystemComponent* OwnerASC = FBCOwner->GetAbilitySystemComponent())
+	{
+		RegisterTagEvents(OwnerASC);
+	}
+	else
+	{
+		FBCOwner->OnASCInit.AddLambda([this](UAbilitySystemComponent* ASC){ RegisterTagEvents(ASC); });
+	}
 	
 	ItemSlots.Init({}, MaxInventorySize);
+}
+
+void UInventoryComponent::RegisterTagEvents(UAbilitySystemComponent* ASC)
+{
+	ASC->RegisterGameplayTagEvent(FBCTags::EquippedItemBlocked, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &ThisClass::OnItemBlockChanged);
 }
 
 void UInventoryComponent::ServerRequestSwitchItem_Implementation(uint8 NewSelection)
@@ -236,6 +252,8 @@ void UInventoryComponent::UnequipItem(int32 SlotIndex)
 {
 	if (AEquippedItemActor* Item = GetItem(SlotIndex))
 	{
+		check(Item->GetIsEquipped());
+
 		Item->SetActorHiddenInGame(true);
 		Item->OnItemUnequipped(FBCOwner);
 	}
@@ -243,8 +261,12 @@ void UInventoryComponent::UnequipItem(int32 SlotIndex)
 
 void UInventoryComponent::EquipItem(int32 SlotIndex)
 {
+	if (!bCanEquipItem) { return; }
+	
 	if (AEquippedItemActor* Item = GetItem(SlotIndex))
 	{
+		check(!Item->GetIsEquipped());
+		
 		Item->SetActorHiddenInGame(false);
 		Item->OnItemEquipped(FBCOwner);
 
@@ -253,6 +275,22 @@ void UInventoryComponent::EquipItem(int32 SlotIndex)
 	else
 	{
 		OnEquippedItemChanged.Broadcast(nullptr);
+	}
+}
+
+void UInventoryComponent::OnItemBlockChanged(FGameplayTag GameplayTag, int Count)
+{
+	if (Count == 0)
+	{
+		// Equipping is unblocked
+		bCanEquipItem = true;
+		EquipItem(SelectedSlot);
+	}
+	else if (Count > 0)
+	{
+		// Equipping is blocked
+		bCanEquipItem = false;
+		UnequipItem(SelectedSlot);
 	}
 }
 

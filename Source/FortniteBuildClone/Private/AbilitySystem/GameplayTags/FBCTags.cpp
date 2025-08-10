@@ -14,7 +14,8 @@ namespace FBCTags
 
 	// Item
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(MaxResourceRecoverable, "Item.Consumable.MaxResourceRecoverable", "The maximum amount of health or shields recoverable by this item");
-
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(EquippedItemBlocked, "Item.Inventory.Blocked", "The currently selected item cannot be equipped");
+	
 	// Abilities
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(FireWeapon, "Abilities.Weapon.Fire", "Firing the currently equipped weapon");
 	UE_DEFINE_GAMEPLAY_TAG(ReloadWeapon, "Abilities.Weapon.Reload");

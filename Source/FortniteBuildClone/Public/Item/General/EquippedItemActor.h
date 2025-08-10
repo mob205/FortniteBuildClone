@@ -35,6 +35,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	UStaticMeshComponent* GetStaticMesh() const { return StaticMeshComp; }
+
+	UFUNCTION(BlueprintCallable)
+	bool GetIsEquipped() const { return bIsEquipped; }
 protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
@@ -58,5 +61,7 @@ protected:
 
 private:
 	TWeakObjectPtr<UAnimInstance> AnimInstance;
+
+	bool bIsEquipped{};
 };
 

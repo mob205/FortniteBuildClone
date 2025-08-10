@@ -13,6 +13,7 @@ namespace FBCTags
 
 	// Items
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(MaxResourceRecoverable);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(EquippedItemBlocked);
 
 	// Abilities
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(FireWeapon);

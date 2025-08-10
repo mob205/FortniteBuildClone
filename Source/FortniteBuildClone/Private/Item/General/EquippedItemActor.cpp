@@ -46,6 +46,8 @@ void AEquippedItemActor::PlayMontageSection(FName SectionName)
 
 void AEquippedItemActor::OnItemEquipped(AFBCCharacterBase* ItemOwner)
 {
+	bIsEquipped = true;
+	
 	FAttachmentTransformRules TransformRules = { EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, false };
 	AttachToComponent(ItemOwner->GetMesh(), TransformRules, ItemData->GetSocketName());
 
@@ -73,6 +75,8 @@ void AEquippedItemActor::OnItemEquipped(AFBCCharacterBase* ItemOwner)
 
 void AEquippedItemActor::OnItemUnequipped(AFBCCharacterBase* ItemOwner)
 {
+	bIsEquipped = false;
+	
 	if (UAnimMontage* EquipMontage = ItemData->GetEquipMontage())
 	{
 		ItemOwner->StopAnimMontage(EquipMontage);

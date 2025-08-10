@@ -3,10 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Components/ActorComponent.h"
 #include "Item/General/InventoryFastArray.h"
 #include "InventoryComponent.generated.h"
 
+class UAbilitySystemComponent;
 class AWorldDropActor;
 class ACountableItem;
 class UItemData;
@@ -55,14 +57,6 @@ public:
 	bool ServerTryAddItem(AEquippedItemActor* ItemActor);
 	
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
-protected:
-	virtual void BeginPlay() override;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	uint8 MaxInventorySize{};
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AWorldDropActor> WorldDropActorClass;
 
 	UFUNCTION(Server, Reliable)
 	void ServerRequestSwitchItem(uint8 NewSelection);
@@ -75,8 +69,21 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void ClientTryEquipItem(int32 NewSelection);
+protected:
+	virtual void BeginPlay() override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	uint8 MaxInventorySize{};
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AWorldDropActor> WorldDropActorClass;
+
 private:
+	// Removes the item and destroys it completely
 	void DestroyFromInventory(int32 SlotIndex);
+
+	// Creates a world drop actor and transfers ownership of the item to the world drop actor
+	void TransferToWorldDrop(AEquippedItemActor* Item);
 	
 	void OnItemRemoved(AEquippedItemActor* Item, int32 SlotIndex);
 	void OnItemAdded(AEquippedItemActor* Item, int32 SlotIndex);
@@ -84,8 +91,7 @@ private:
 	void UnequipItem(int32 SlotIndex);
 	void EquipItem(int32 SlotIndex);
 
-	// Creates a world drop actor and transfers ownership of the item to the world drop actor
-	void TransferToWorldDrop(AEquippedItemActor* Item);
+	void OnItemBlockChanged(FGameplayTag GameplayTag, int Count);
 	
 	UFUNCTION()
 	void OnSelectedItemChanged(uint8 LastSelection);
@@ -102,4 +108,8 @@ private:
 
 	UPROPERTY(ReplicatedUsing = OnSelectedItemChanged)
 	uint8 SelectedSlot{};
+
+	void RegisterTagEvents(UAbilitySystemComponent* ASC);
+	
+	bool bCanEquipItem{true};
 };

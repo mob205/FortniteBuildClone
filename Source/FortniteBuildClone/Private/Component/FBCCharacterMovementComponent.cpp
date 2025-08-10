@@ -368,6 +368,7 @@ void UFBCCharacterMovementComponent::TickComponent(float DeltaTime, enum ELevelT
 		OwnerASC->SetNumericAttributeBase(UFBCAttributeSet::GetStaminaAttribute(), GetStamina());
 
 		// TODO: Update these when they are set rather than checking every frame
+		// Could also use a gameplay effect for more versatility in which tags are applied
 		ToggleMovementTag(OwnerASC, FBCTags::Sprinting.GetTag(), IsSprinting());
 		ToggleMovementTag(OwnerASC, FBCTags::Airborne.GetTag(), IsFalling());
 		ToggleMovementTag(OwnerASC, FBCTags::Crouching.GetTag(), IsCrouching());
