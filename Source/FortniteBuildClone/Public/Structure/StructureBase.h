@@ -10,6 +10,8 @@
 
 class UStructureGroundingComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDamageTaken, float, NewHealth);
+
 USTRUCT(BlueprintType)
 struct FHarvestInfo
 {
@@ -44,6 +46,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ModifyHealth(float Amount);
 
+	UPROPERTY(BlueprintAssignable)
+	FOnDamageTaken OnDamageTaken;
+	
 	virtual void Damage(FGameplayEffectSpecHandle DamageEffectSpec) override;
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
@@ -53,6 +58,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TArray<FHarvestInfo> HarvestInfo;
 
+	UPROPERTY(EditAnywhere)
+	float MaxHealth{100};
+	
 	UFUNCTION()
 	void DisableStructure();
 
@@ -67,11 +75,11 @@ protected:
 
 private:
 	UFUNCTION()
-	void OnRep_Health();
+	void OnRep_Health(float OldHealth);
 
 	void ApplyHarvest(AActor* Harvester);
 	
 	UPROPERTY(ReplicatedUsing=OnRep_Health)
-	float Health{100};
+	float Health{};
 };
 

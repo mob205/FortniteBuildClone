@@ -25,11 +25,15 @@ AStructureBase::AStructureBase()
 	GroundingComponent = CreateDefaultSubobject<UStructureGroundingComponent>("Grounding Component");
 }
 
-void AStructureBase::OnRep_Health()
+void AStructureBase::OnRep_Health(float OldHealth)
 {
 	if (Health <= 0)
 	{
 		GroundingComponent->FinishStructureDestruction();
+	}
+	else if (Health < OldHealth)
+	{
+		OnDamageTaken.Broadcast(Health);
 	}
 }
 
@@ -37,6 +41,8 @@ void AStructureBase::BeginPlay()
 {
 	Super::BeginPlay();
 	GroundingComponent->OnStructureDisabled.AddDynamic(this, &ThisClass::DisableStructure);
+
+	SetHealth(MaxHealth);
 }
 
 void AStructureBase::DisableStructure()
@@ -48,10 +54,11 @@ void AStructureBase::DisableStructure()
 
 void AStructureBase::SetHealth(float InHealth)
 {
+	const float OldHealth = Health;
 	Health = InHealth;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, Health, this);
 
-	OnRep_Health();
+	OnRep_Health(OldHealth);
 }
 
 void AStructureBase::ModifyHealth(float Amount)

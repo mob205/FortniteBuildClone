@@ -296,9 +296,11 @@ void UInventoryComponent::OnItemBlockChanged(FGameplayTag GameplayTag, int Count
 
 void UInventoryComponent::OnSelectedItemChanged(uint8 LastSelection)
 {
-	UnequipItem(LastSelection);
-	EquipItem(SelectedSlot);
-	
+	if (bCanEquipItem)
+	{
+		UnequipItem(LastSelection);
+		EquipItem(SelectedSlot);
+	}
 	OnSelectedSlotChanged.Broadcast(LastSelection, SelectedSlot);
 }
 
