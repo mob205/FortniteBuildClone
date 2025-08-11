@@ -33,7 +33,7 @@ void AEquippedItemActor::GetLifetimeReplicatedProps(TArray<class FLifetimeProper
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME_CONDITION(AEquippedItemActor, ItemData, COND_InitialOnly);
+	DOREPLIFETIME_CONDITION(AEquippedItemActor, ItemData, COND_None);
 }
 
 void AEquippedItemActor::PlayMontageSection(FName SectionName)

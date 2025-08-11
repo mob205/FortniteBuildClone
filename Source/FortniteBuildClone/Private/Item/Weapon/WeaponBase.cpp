@@ -102,7 +102,7 @@ void AWeaponBase::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& Ou
 	Params.bIsPushBased = true;
 	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, CurrentAmmo, Params);
 
-	DOREPLIFETIME_CONDITION(ThisClass, SpreadSeed, COND_InitialOnly);
+	DOREPLIFETIME_CONDITION(ThisClass, SpreadSeed, COND_None);
 }
 
 void AWeaponBase::OnFireDown(const FGameplayEventData* GameplayEventData)
